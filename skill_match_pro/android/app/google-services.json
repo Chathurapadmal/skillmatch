@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "336584445757",
+    "project_id": "skillmatchpro-80edf",
+    "storage_bucket": "skillmatchpro-80edf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:336584445757:android:6886a0febfaa551ae6bf54",
+        "android_client_info": {
+          "package_name": "com.skillmatch.pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDi2whWjs_NiiAuKONHA6rLybZW7Qj37JM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
