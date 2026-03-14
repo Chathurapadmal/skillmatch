@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'profilepage.dart';
+import 'services/aiserv.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,10 +12,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const DashboardTab(),
-    const JobsTab(),
-    const ProfilePage(),
+  final List<Widget> _pages = const [
+    DashboardTab(),
+    JobsTab(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -50,8 +51,51 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class DashboardTab extends StatelessWidget {
+class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
+
+  @override
+  State<DashboardTab> createState() => _DashboardTabState();
+}
+
+class _DashboardTabState extends State<DashboardTab> {
+  bool _loading = false;
+
+  Future<void> _testAI() async {
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      final result = await AIService.testAI();
+
+      if (!mounted) return;
+
+      debugPrint("AI RESULT: $result");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result ?? "No response from AI"),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      debugPrint("AI ERROR: $e");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("AI error: $e"),
+        ),
+      );
+    } finally {
+      if (!mounted) return;
+
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,36 +118,60 @@ class DashboardTab extends StatelessWidget {
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.dashboard,
-                size: 80,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Welcome to SkillMatch',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.dashboard,
+                  size: 80,
                   color: Colors.white,
                 ),
-              ),
-              const SizedBox(height: 12),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  'Your dashboard for tracking job matches and career progress',
-                  textAlign: TextAlign.center,
+                const SizedBox(height: 24),
+                const Text(
+                  'Welcome to SkillMatch',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    'Your dashboard for tracking job matches and career progress',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF1565C0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                  ),
+                  onPressed: _loading ? null : _testAI,
+                  child: _loading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          "Test AI",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -134,17 +202,17 @@ class JobsTab extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Center(
+        child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.work_outline,
                 size: 80,
                 color: Colors.white,
               ),
-              const SizedBox(height: 24),
-              const Text(
+              SizedBox(height: 24),
+              Text(
                 'Job Listings',
                 style: TextStyle(
                   fontSize: 28,
@@ -152,8 +220,8 @@ class JobsTab extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 12),
-              const Padding(
+              SizedBox(height: 12),
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
                   'Browse and apply to opportunities matched to your skills',
