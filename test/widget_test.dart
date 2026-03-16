@@ -10,13 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:skillmatch/main.dart';
 
 void main() {
-  testWidgets('App shows splash title', (WidgetTester tester) async {
-    await tester.pumpWidget(const SkillMatchApp());
+  testWidgets('App shows error screen when Firebase is unavailable',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const SkillMatchApp(startupMessage: 'Firebase not available'),
+    );
 
-    expect(find.text('skillMATCH'), findsOneWidget);
-
-    await tester.pump(const Duration(seconds: 4));
-    await tester.pumpAndSettle();
-    expect(find.text('Go to Profile'), findsOneWidget);
+    expect(find.text('Firebase not available'), findsOneWidget);
   });
 }

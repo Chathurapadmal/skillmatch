@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'skillmatch-b37cd.firebasestorage.app',
     measurementId: 'G-R237W8YERE',
   );
+
 }

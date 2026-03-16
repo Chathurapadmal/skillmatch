@@ -1,15 +1,24 @@
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:flutter/foundation.dart';
 
 class AIService {
   static Future<String?> testAI() async {
-    final model = FirebaseAI.googleAI().generativeModel(
-      model: 'gemini-2.5-flash-lite',
-    );
+    try {
+      final ai = FirebaseAI.googleAI();
 
-    final response = await model.generateContent([
-      Content.text('Say hello for my SkillMatch app'),
-    ]);
+      final model = ai.generativeModel(
+          model: 'gemini-2.5-flash-lite',
+      );
 
-    return response.text;
+      final response = await model.generateContent([
+        Content.text('Say hello for my SkillMatch app'),
+      ]);
+
+      return response.text;
+    } catch (e, stack) {
+      debugPrint('AIService error: $e');
+      debugPrint('$stack');
+      rethrow;
+    }
   }
 }

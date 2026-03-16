@@ -1,58 +1,17 @@
 import 'package:flutter/material.dart';
-import 'profilepage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'services/aiserv.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _pages = const [
-    DashboardTab(),
-    JobsTab(),
-    ProfilePage(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.work),
-            label: 'Jobs',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color(0xFF3B4CC0),
-        onTap: _onItemTapped,
-      ),
-    );
-  }
-}
-
 class DashboardTab extends StatefulWidget {
-  const DashboardTab({super.key});
+  final bool firebaseEnabled;
+  final String? startupMessage;
+
+  const DashboardTab({
+    super.key,
+    this.firebaseEnabled = true,
+    this.startupMessage,
+  });
 
   @override
   State<DashboardTab> createState() => _DashboardTabState();
@@ -60,40 +19,94 @@ class DashboardTab extends StatefulWidget {
 
 class _DashboardTabState extends State<DashboardTab> {
   bool _loading = false;
+  late String _status;
+
+  @override
+  void initState() {
+    super.initState();
+    _status = widget.startupMessage ?? "Tap the button to test AI";
+  }
+
+  Future<void> _testFirebaseConnection() async {
+    if (!widget.firebaseEnabled) {
+      setState(() {
+        _status =
+            "Firebase test is disabled on this platform. Run on Android, iOS, Web, macOS, or Windows.";
+      });
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _status = "Testing Firebase connection...";
+    });
+
+    try {
+      final app = Firebase.app();
+
+      await FirebaseFirestore.instance
+          .collection('_connection_test')
+          .limit(1)
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 20));
+
+      if (!mounted) return;
+
+      setState(() {
+        _status = "✅ Firebase connected\nApp: ${app.name}\nProject: ${app.options.projectId}";
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _status = "❌ Firebase connection failed\n${e.runtimeType}: $e";
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
 
   Future<void> _testAI() async {
     setState(() {
       _loading = true;
+      _status = "Calling AI...";
     });
 
     try {
-      final result = await AIService.testAI();
-
-      if (!mounted) return;
-
-      debugPrint("AI RESULT: $result");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result ?? "No response from AI"),
+      final result = await AIService.testAI().timeout(
+        const Duration(seconds: 45),
+        onTimeout: () => throw Exception(
+          'Request timed out after 45s — this is usually App Check token/API propagation. Retry in 2-3 minutes.',
         ),
       );
-    } catch (e) {
-      if (!mounted) return;
 
-      debugPrint("AI ERROR: $e");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("AI error: $e"),
-        ),
-      );
-    } finally {
       if (!mounted) return;
 
       setState(() {
-        _loading = false;
+        _status = result?.trim().isNotEmpty == true
+            ? result!
+            : "AI returned no text";
       });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _status = "AI error type: ${e.runtimeType}\n$e";
+      });
+
+      debugPrint("AI ERROR TYPE: ${e.runtimeType}");
+      debugPrint("AI ERROR: $e");
+      debugPrintStack();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -170,69 +183,46 @@ class _DashboardTabState extends State<DashboardTab> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class JobsTab extends StatelessWidget {
-  const JobsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Job Opportunities',
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.work_outline,
-                size: 80,
-                color: Colors.white,
-              ),
-              SizedBox(height: 24),
-              Text(
-                'Job Listings',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 12),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  'Browse and apply to opportunities matched to your skills',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF1565C0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                  ),
+                    onPressed: (!_loading && widget.firebaseEnabled)
+                      ? _testFirebaseConnection
+                      : null,
+                  child: const Text(
+                    "Test Firebase",
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _status,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
