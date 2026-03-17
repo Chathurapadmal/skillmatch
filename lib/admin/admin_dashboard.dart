@@ -6,8 +6,15 @@ import '../services/auth_service.dart';
 
 class AdminDashboard extends StatefulWidget {
   final UserModel user;
+  final bool showInternalNavigation;
+  final int initialTabIndex;
 
-  const AdminDashboard({super.key, required this.user});
+  const AdminDashboard({
+    super.key,
+    required this.user,
+    this.showInternalNavigation = true,
+    this.initialTabIndex = 0,
+  });
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
@@ -22,6 +29,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final maxIndex = _navItems.length - 1;
+    _selectedIndex = widget.initialTabIndex.clamp(0, maxIndex);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -30,8 +44,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
         elevation: 0,
         title: Row(
           children: [
-            const Icon(Icons.admin_panel_settings_rounded,
-                color: Colors.amber, size: 22),
+            const Icon(
+              Icons.admin_panel_settings_rounded,
+              color: Colors.amber,
+              size: 22,
+            ),
             const SizedBox(width: 8),
             const Text(
               'Admin Panel',
@@ -66,53 +83,67 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.user.displayName,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Text(widget.user.email,
-                        style: const TextStyle(
-                            color: Colors.grey, fontSize: 12)),
-                    const Text('Administrator',
-                        style: TextStyle(
-                            color: Colors.amber,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold)),
+                    Text(
+                      widget.user.displayName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      widget.user.email,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    const Text(
+                      'Administrator',
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const PopupMenuDivider(),
               const PopupMenuItem(
                 value: 'profile',
-                child: Row(children: [
-                  Icon(Icons.person_outline),
-                  SizedBox(width: 8),
-                  Text('My Profile'),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(Icons.person_outline),
+                    SizedBox(width: 8),
+                    Text('My Profile'),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'signout',
-                child: Row(children: [
-                  Icon(Icons.logout, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Sign Out', style: TextStyle(color: Colors.red)),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Sign Out', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
               ),
             ],
           ),
           const SizedBox(width: 8),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFF1A237E).withValues(alpha: 0.12),
-        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
-        destinations: _navItems
-            .map((n) => NavigationDestination(
-                  icon: Icon(n.icon),
-                  label: n.label,
-                ))
-            .toList(),
-      ),
+      bottomNavigationBar: widget.showInternalNavigation
+          ? NavigationBar(
+              selectedIndex: _selectedIndex,
+              backgroundColor: Colors.white,
+              indicatorColor: const Color(0xFF1A237E).withValues(alpha: 0.12),
+              onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+              destinations: _navItems
+                  .map(
+                    (n) => NavigationDestination(
+                      icon: Icon(n.icon),
+                      label: n.label,
+                    ),
+                  )
+                  .toList(),
+            )
+          : null,
       body: IndexedStack(
         index: _selectedIndex,
         children: [
@@ -154,8 +185,11 @@ class _OverviewTab extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.admin_panel_settings_rounded,
-                        color: Colors.amber, size: 28),
+                    const Icon(
+                      Icons.admin_panel_settings_rounded,
+                      color: Colors.amber,
+                      size: 28,
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       'Welcome, ${adminUser.displayName}',
@@ -184,9 +218,7 @@ class _OverviewTab extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .snapshots(),
+            stream: FirebaseFirestore.instance.collection('users').snapshots(),
             builder: (context, snap) {
               int total = 0, applicants = 0, companies = 0, admins = 0;
 
@@ -302,8 +334,7 @@ class _UsersTabState extends State<_UsersTab> {
                 if (_search.isEmpty) return true;
                 final d = doc.data() as Map<String, dynamic>;
                 final email = (d['email'] as String? ?? '').toLowerCase();
-                final name =
-                    (d['displayName'] as String? ?? '').toLowerCase();
+                final name = (d['displayName'] as String? ?? '').toLowerCase();
                 return email.contains(_search) || name.contains(_search);
               }).toList();
 
@@ -313,9 +344,11 @@ class _UsersTabState extends State<_UsersTab> {
 
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 itemCount: docs.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, index) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
                   final doc = docs[i];
                   final d = doc.data() as Map<String, dynamic>;
@@ -330,8 +363,7 @@ class _UsersTabState extends State<_UsersTab> {
                     email: email,
                     role: role,
                     companyName: company,
-                    onRoleChange: (newRole) =>
-                        _changeRole(doc.id, newRole),
+                    onRoleChange: (newRole) => _changeRole(doc.id, newRole),
                   );
                 },
               );
@@ -343,10 +375,9 @@ class _UsersTabState extends State<_UsersTab> {
   }
 
   Future<void> _changeRole(String uid, String newRole) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .update({'role': newRole});
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'role': newRole,
+    });
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -417,38 +448,72 @@ class _UserTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar
           CircleAvatar(
             backgroundColor: _roleColor.withValues(alpha: 0.15),
             child: Icon(_roleIcon, color: _roleColor, size: 20),
           ),
           const SizedBox(width: 12),
-
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
-                Text(email,
-                    style: const TextStyle(
-                        color: Colors.grey, fontSize: 12)),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  email,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
                 if (companyName != null)
-                  Text(companyName!,
-                      style: TextStyle(
-                          color: Colors.blue.shade600, fontSize: 11)),
+                  Text(
+                    companyName!,
+                    style: TextStyle(color: Colors.blue.shade600, fontSize: 11),
+                  ),
               ],
             ),
           ),
-
-          // Role dropdown
           PopupMenuButton<String>(
             tooltip: 'Change role',
+            onSelected: onRoleChange,
+            itemBuilder: (_) => _roles
+                .map(
+                  (r) => PopupMenuItem<String>(
+                    value: r,
+                    child: Row(
+                      children: [
+                        Icon(
+                          r == 'admin'
+                              ? Icons.shield_rounded
+                              : r == 'company'
+                              ? Icons.business_rounded
+                              : Icons.person_rounded,
+                          size: 18,
+                          color: r == 'admin'
+                              ? Colors.amber.shade700
+                              : r == 'company'
+                              ? Colors.blue
+                              : Colors.teal,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          r,
+                          style: TextStyle(
+                            fontWeight: role == r
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: _roleColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
@@ -459,45 +524,16 @@ class _UserTile extends StatelessWidget {
                   Text(
                     role,
                     style: TextStyle(
-                        color: _roleColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12),
+                      color: _roleColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.arrow_drop_down,
-                      color: _roleColor, size: 16),
+                  Icon(Icons.arrow_drop_down, color: _roleColor, size: 16),
                 ],
               ),
             ),
-            onSelected: onRoleChange,
-            itemBuilder: (_) => _roles
-                .map(
-                  (r) => PopupMenuItem(
-                    value: r,
-                    child: Row(children: [
-                      Icon(
-                        r == 'admin'
-                            ? Icons.shield_rounded
-                            : r == 'company'
-                                ? Icons.business_rounded
-                                : Icons.person_rounded,
-                        size: 18,
-                        color: r == 'admin'
-                            ? Colors.amber.shade700
-                            : r == 'company'
-                                ? Colors.blue
-                                : Colors.teal,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(r,
-                          style: TextStyle(
-                              fontWeight: role == r
-                                  ? FontWeight.bold
-                                  : FontWeight.normal)),
-                    ]),
-                  ),
-                )
-                .toList(),
           ),
         ],
       ),
@@ -553,13 +589,15 @@ class _CountCard extends StatelessWidget {
               Text(
                 '$count',
                 style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: color),
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-              Text(label,
-                  style: const TextStyle(
-                      color: Colors.grey, fontSize: 12)),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
             ],
           ),
         ],

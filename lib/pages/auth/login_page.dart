@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import 'forgot_password_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -31,10 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _loading = true);
 
     try {
-      await AuthService.login(
-        email: _emailCtrl.text,
-        password: _passCtrl.text,
-      );
+      await AuthService.login(email: _emailCtrl.text, password: _passCtrl.text);
       // Navigation is handled by AuthWrapper via stream
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -73,7 +71,11 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   children: [
                     // ── Logo / Header ──────────────────────────────────────
-                    const Icon(Icons.work_rounded, size: 72, color: Colors.white),
+                    const Icon(
+                      Icons.work_rounded,
+                      size: 72,
+                      color: Colors.white,
+                    ),
                     const SizedBox(height: 12),
                     const Text(
                       'SkillMatch',
@@ -145,20 +147,22 @@ class _LoginPageState extends State<LoginPage> {
                                 obscureText: _obscurePass,
                                 textInputAction: TextInputAction.done,
                                 onFieldSubmitted: (_) => _login(),
-                                decoration: _inputDecoration(
-                                  label: 'Password',
-                                  icon: Icons.lock_outline,
-                                ).copyWith(
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePass
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
+                                decoration:
+                                    _inputDecoration(
+                                      label: 'Password',
+                                      icon: Icons.lock_outline,
+                                    ).copyWith(
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePass
+                                              ? Icons.visibility_outlined
+                                              : Icons.visibility_off_outlined,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => _obscurePass = !_obscurePass,
+                                        ),
+                                      ),
                                     ),
-                                    onPressed: () => setState(
-                                        () => _obscurePass = !_obscurePass),
-                                  ),
-                                ),
                                 validator: (v) {
                                   if ((v?.length ?? 0) < 6) {
                                     return 'Password must be at least 6 characters.';
@@ -167,6 +171,31 @@ class _LoginPageState extends State<LoginPage> {
                                 },
                               ),
                               const SizedBox(height: 24),
+
+                              // Login button
+                              // "Forgot password?" link
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const ForgotPasswordPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Forgot Password?',
+                                    style: TextStyle(
+                                      color: Color(0xFF1565C0),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
 
                               // Login button
                               SizedBox(
