@@ -26,7 +26,6 @@ Thumbs.db
 **/package_config.json
 **/.packages
 **/generated/
-**/pubspec.lock
 **/ios/Flutter/.last_build_id
 
 # Android specific
