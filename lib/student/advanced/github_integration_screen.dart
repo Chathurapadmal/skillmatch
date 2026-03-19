@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../theme/app_theme.dart';
-import '../../../services/firestore_service.dart';
-import '../../../widgets/common_widgets.dart';
+import '../../theme/app_theme.dart';
+import '../../services/firestore_service.dart';
+import '../../widgets/common_widgets.dart';
 
 class GitHubIntegrationScreen extends StatefulWidget {
   const GitHubIntegrationScreen({super.key});

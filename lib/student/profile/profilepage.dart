@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
 
-import 'pages/applicant/upload_cv_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

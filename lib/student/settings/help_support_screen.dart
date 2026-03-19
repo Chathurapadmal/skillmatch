@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'live_chat_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
-import '../../../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});

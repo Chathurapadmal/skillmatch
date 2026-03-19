@@ -6,10 +6,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../services/firestore_service.dart';
-import '../../../services/ai_service.dart';
-import '../../../services/notification_service.dart';
-import '../../../theme/app_theme.dart';
+import '../../services/firestore_service.dart';
+import '../../services/ai_service.dart';
+import '../../services/notification_service.dart';
+import '../../theme/app_theme.dart';
 import '../../shared/notifications_center_screen.dart';
 import '../advanced/roadmap_screen.dart';
 import '../advanced/skill_verification_screen.dart';
@@ -323,8 +323,6 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
           (data['stipend'] as String?) ??
           'Negotiable';
       final tags = ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
-      final internshipIndustry =
-          _normalizeIndustry(data['industry'] as String?);
       return {
         'id': doc.id,
         'company': company,

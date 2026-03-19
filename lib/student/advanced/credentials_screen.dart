@@ -6,8 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../../theme/app_theme.dart';
-import '../../../services/ai_service.dart';
+import '../../theme/app_theme.dart';
+import '../../services/ai_service.dart';
 
 class CredentialsScreen extends StatefulWidget {
   const CredentialsScreen({super.key});

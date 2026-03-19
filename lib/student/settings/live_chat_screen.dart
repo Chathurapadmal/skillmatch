@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../services/ai_service.dart';
-import '../../../theme/app_theme.dart';
+import '../../services/ai_service.dart';
+import '../../theme/app_theme.dart';
 
 class LiveChatScreen extends StatefulWidget {
   const LiveChatScreen({super.key});

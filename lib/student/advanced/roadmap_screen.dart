@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../theme/app_theme.dart';
-import '../../../services/ai_service.dart';
-import '../../../widgets/common_widgets.dart';
+import '../../theme/app_theme.dart';
+import '../../services/ai_service.dart';
+import '../../widgets/common_widgets.dart';
 
 class RoadmapScreen extends StatefulWidget {
   final String field;

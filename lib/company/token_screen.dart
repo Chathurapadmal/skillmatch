@@ -9,8 +9,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../auth/login_screen.dart';
 import '../shared/notifications_center_screen.dart';
-import '../../services/notification_service.dart';
-import '../../theme/app_theme.dart';
+import '../services/notification_service.dart';
+import '../theme/app_theme.dart';
 
 class TokenScreen extends StatefulWidget {
   const TokenScreen({super.key});
@@ -1234,7 +1234,7 @@ class _TokenScreenState extends State<TokenScreen> {
     }
   }
 
-  void _openPostModal() {
+  void openPostModal() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -2209,7 +2209,7 @@ class _TokenScreenState extends State<TokenScreen> {
     }).toList();
   }
 
-  Widget _buildCandidatesList(
+  Widget buildCandidatesList(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
