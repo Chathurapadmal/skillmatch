@@ -4,6 +4,7 @@ import 'package:skillmatch/student/profile/profilepage.dart';
 
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../shared/chat_overlay.dart';
 
 class AdminDashboard extends StatefulWidget {
   final UserModel user;
@@ -38,9 +39,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
+    return ChatOverlay(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
+        appBar: AppBar(
         backgroundColor: const Color(0xFF1A237E),
         elevation: 0,
         title: Row(
@@ -145,12 +147,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   .toList(),
             )
           : null,
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          _OverviewTab(adminUser: widget.user),
-          const _UsersTab(),
-        ],
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _OverviewTab(adminUser: widget.user),
+            const _UsersTab(),
+          ],
+        ),
       ),
     );
   }

@@ -11,6 +11,7 @@ import '../../services/ai_service.dart';
 import '../../services/notification_service.dart';
 import '../../theme/app_theme.dart';
 import '../../shared/notifications_center_screen.dart';
+import '../../shared/chat_overlay.dart';
 import '../advanced/roadmap_screen.dart';
 import '../advanced/skill_verification_screen.dart';
 import '../profile/profile_screen.dart';
@@ -35,10 +36,11 @@ class _HomeScreenState extends State<HomeScreen> {
       const ProfileScreen(),
     ];
 
-    return Scaffold(
-      backgroundColor: AppTheme.bgDark,
-      body: IndexedStack(index: _selectedIndex, children: tabs),
-      bottomNavigationBar: Container(
+    return ChatOverlay(
+      child: Scaffold(
+        backgroundColor: AppTheme.bgDark,
+        body: IndexedStack(index: _selectedIndex, children: tabs),
+        bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Color(0xFF121230),
           border: Border(top: BorderSide(color: Color(0xFF23234E))),
@@ -80,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

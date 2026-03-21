@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/aiserv.dart';
+import 'shared/chat_overlay.dart';
 
 class DashboardTab extends StatefulWidget {
   final bool firebaseEnabled;
@@ -112,16 +113,17 @@ class _DashboardTabState extends State<DashboardTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(color: Colors.black),
+    return ChatOverlay(
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          title: const Text(
+            'Dashboard',
+            style: TextStyle(color: Colors.black),
+          ),
         ),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -225,6 +227,7 @@ class _DashboardTabState extends State<DashboardTab> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

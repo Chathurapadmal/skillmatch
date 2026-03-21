@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
+import '../../shared/chat_overlay.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -499,8 +500,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final avatarUrl = _avatarUrlCtrl.text.trim();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFDDE5F1),
+    return ChatOverlay(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFDDE5F1),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -812,6 +814,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:skillmatch/student/profile/profilepage.dart';
 
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../shared/chat_overlay.dart';
 
 class CompanyDashboard extends StatelessWidget {
   final UserModel user;
@@ -13,8 +14,9 @@ class CompanyDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+    return ChatOverlay(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -226,6 +228,7 @@ class CompanyDashboard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

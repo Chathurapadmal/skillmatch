@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/aiserv.dart';
+import '../../shared/chat_overlay.dart';
 
 class UploadCvPage extends StatefulWidget {
   final String initialCvText;
@@ -140,8 +141,9 @@ class _UploadCvPageState extends State<UploadCvPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Upload CV')),
+    return ChatOverlay(
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Upload CV')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -199,6 +201,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
