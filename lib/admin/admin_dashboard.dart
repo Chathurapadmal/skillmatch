@@ -43,18 +43,29 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
 
+        /// 🔥 PREMIUM APPBAR
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           elevation: 0,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF5F2EEA), Color(0xFF7B61FF)],
+              ),
+            ),
+          ),
           title: const Text(
             "Admin Panel",
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           actions: [
             PopupMenuButton<String>(
               icon: const CircleAvatar(
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, color: Colors.white),
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Color(0xFF7B61FF)),
               ),
               onSelected: (value) async {
                 if (value == 'profile') {
@@ -73,17 +84,22 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ],
         ),
 
+        /// ✨ FAB
         floatingActionButton: FloatingActionButton(
           backgroundColor: const Color(0xFF7B61FF),
+          elevation: 8,
           child: const Icon(Icons.auto_awesome),
           onPressed: () {},
         ),
 
+        /// 🧭 NAVBAR
         bottomNavigationBar: widget.showInternalNavigation
             ? NavigationBar(
                 selectedIndex: _selectedIndex,
                 indicatorColor:
-                    const Color(0xFF7B61FF).withOpacity(0.15),
+                    const Color(0xFF7B61FF).withOpacity(0.2),
+                labelBehavior:
+                    NavigationDestinationLabelBehavior.alwaysShow,
                 onDestinationSelected: (i) =>
                     setState(() => _selectedIndex = i),
                 destinations: const [
@@ -111,9 +127,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 }
 
-
+////////////////////////////////////////////////////////////
 /// OVERVIEW TAB
-
+////////////////////////////////////////////////////////////
 
 class _OverviewTab extends StatelessWidget {
   final UserModel adminUser;
@@ -127,29 +143,36 @@ class _OverviewTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// Banner
+          /// 🎉 PREMIUM BANNER
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF5F2EEA), Color(0xFF7B61FF)],
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.deepPurple.withOpacity(0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                )
+              ],
             ),
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Welcome, Admin",
+                  "Welcome, Admin 👋",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 6),
                 Text(
-                  "Full access — manage users, roles, and platform data",
+                  "Manage users, roles, and system analytics",
                   style: TextStyle(color: Colors.white70),
                 ),
               ],
@@ -165,6 +188,7 @@ class _OverviewTab extends StatelessWidget {
 
           const SizedBox(height: 12),
 
+          /// 📊 COUNTS
           StreamBuilder<QuerySnapshot>(
             stream:
                 FirebaseFirestore.instance.collection('users').snapshots(),
@@ -195,10 +219,10 @@ class _OverviewTab extends StatelessWidget {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 children: [
-                  _CountCard(label: "Total Users", count: total, icon: Icons.people),
-                  _CountCard(label: "Applicants", count: applicants, icon: Icons.person),
-                  _CountCard(label: "Companies", count: companies, icon: Icons.business),
-                  _CountCard(label: "Admins", count: admins, icon: Icons.admin_panel_settings),
+                  _CountCard("Total Users", total, Icons.people, Colors.deepPurple),
+                  _CountCard("Applicants", applicants, Icons.person, Colors.teal),
+                  _CountCard("Companies", companies, Icons.business, Colors.blue),
+                  _CountCard("Admins", admins, Icons.admin_panel_settings, Colors.orange),
                 ],
               );
             },
@@ -209,9 +233,9 @@ class _OverviewTab extends StatelessWidget {
   }
 }
 
-
+////////////////////////////////////////////////////////////
 /// USERS TAB
-
+////////////////////////////////////////////////////////////
 
 class _UsersTab extends StatefulWidget {
   const _UsersTab();
@@ -227,26 +251,27 @@ class _UsersTabState extends State<_UsersTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        /// Search
+        /// 🔍 SEARCH
         Padding(
           padding: const EdgeInsets.all(16),
           child: TextField(
             decoration: InputDecoration(
-              hintText: "Search by name, email or role...",
+              hintText: "Search users...",
               prefixIcon: const Icon(Icons.search),
               filled: true,
-              fillColor: const Color(0xFFF3F4F6),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide.none,
               ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
             onChanged: (v) =>
                 setState(() => _search = v.toLowerCase()),
           ),
         ),
 
-        /// List
+        /// 👥 USER LIST
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
@@ -287,9 +312,9 @@ class _UsersTabState extends State<_UsersTab> {
   }
 }
 
-
+////////////////////////////////////////////////////////////
 /// USER TILE
-
+////////////////////////////////////////////////////////////
 
 class _UserTile extends StatelessWidget {
   final String name;
@@ -310,6 +335,13 @@ class _UserTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
+        ],
       ),
       child: Row(
         children: [
@@ -333,7 +365,7 @@ class _UserTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: role == 'admin'
-                  ? Colors.purple.shade100
+                  ? Colors.deepPurple.shade100
                   : role == 'company'
                       ? Colors.blue.shade100
                       : Colors.green.shade100,
@@ -345,7 +377,7 @@ class _UserTile extends StatelessWidget {
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
                 color: role == 'admin'
-                    ? Colors.purple
+                    ? Colors.deepPurple
                     : role == 'company'
                         ? Colors.blue
                         : Colors.green,
@@ -358,44 +390,55 @@ class _UserTile extends StatelessWidget {
   }
 }
 
-
+////////////////////////////////////////////////////////////
 /// COUNT CARD
-
+////////////////////////////////////////////////////////////
 
 class _CountCard extends StatelessWidget {
   final String label;
   final int count;
   final IconData icon;
+  final Color color;
 
-  const _CountCard({
-    required this.label,
-    required this.count,
-    required this.icon,
-  });
+  const _CountCard(this.label, this.count, this.icon, this.color);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.15), color.withOpacity(0.05)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
+        ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Icon(icon, color: Colors.grey),
-          const SizedBox(height: 8),
-          Text(
-            "$count",
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+          CircleAvatar(
+            backgroundColor: color.withOpacity(0.2),
+            child: Icon(icon, color: color),
           ),
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(fontSize: 11, color: Colors.grey),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "$count",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(label, style: const TextStyle(color: Colors.grey)),
+            ],
           ),
         ],
       ),
@@ -403,9 +446,9 @@ class _CountCard extends StatelessWidget {
   }
 }
 
-
+////////////////////////////////////////////////////////////
 /// NAV ITEM
-
+////////////////////////////////////////////////////////////
 
 class _NavItem {
   final IconData icon;
