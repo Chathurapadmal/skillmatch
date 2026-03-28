@@ -1,12 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import 'auth/login_page.dart';
-import 'auth/email_verification_page.dart';
-import 'auth/two_fa_setup_page.dart';
-import 'auth/two_fa_verify_page.dart';
 import 'main_navigation_page.dart';
 
 /// Root widget that listens to auth-state AND Firestore role changes.
@@ -49,26 +45,8 @@ class AuthWrapper extends StatelessWidget {
               return const _LoadingScreen(message: 'Setting up your account…');
             }
 
-            // ── Route by role ──────────────────────────────────────────────
-            return ValueListenableBuilder<bool>(
-              valueListenable: AuthService.totpSessionVerified,
-              builder: (context, totpVerified, _) {
-                // 1. Email must be verified first (release only)
-                if (kReleaseMode && !userModel.emailVerified) {
-                  return const EmailVerificationPage();
-                }
-                // 2. 2FA must be set up
-                if (!userModel.twoFactorEnabled) {
-                  return TwoFASetupPage(user: userModel);
-                }
-                // 3. Must pass 2FA verification for this session
-                if (!totpVerified) {
-                  return TwoFAVerifyPage(user: userModel);
-                }
-                // 4. Fully authenticated — route to main app
-                return MainNavigationPage(user: userModel);
-              },
-            );
+            // 2FA/email-verification gates are disabled temporarily.
+            return MainNavigationPage(user: userModel);
           },
         );
       },

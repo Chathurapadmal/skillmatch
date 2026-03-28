@@ -14,7 +14,7 @@ class AuthService {
 
   // Development-only switch to bypass authentication gates.
   // Keep this false for production behavior.
-  static const bool bypassAllAuthInDevelopment = true;
+  static const bool bypassAllAuthInDevelopment = false;
 
   static bool get isDevelopmentAuthBypassEnabled =>
       kDebugMode && bypassAllAuthInDevelopment;
@@ -68,7 +68,6 @@ class AuthService {
     );
 
     await cred.user!.updateDisplayName(displayName.trim());
-    await cred.user!.sendEmailVerification();
 
     final model = UserModel(
       uid: cred.user!.uid,
@@ -76,7 +75,7 @@ class AuthService {
       displayName: displayName.trim(),
       role: role,
       companyName: role == UserRole.company ? companyName?.trim() : null,
-      emailVerified: false,
+      emailVerified: true,
       twoFactorEnabled: false,
       profileCompleted: false,
       createdAt: DateTime.now(),
@@ -92,21 +91,10 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final cred = await _auth.signInWithEmailAndPassword(
+    await _auth.signInWithEmailAndPassword(
       email: email.trim(),
       password: password.trim(),
     );
-
-    // Reload to get latest emailVerified status
-    await cred.user!.reload();
-
-    // Sync Firebase emailVerified → Firestore if newly verified
-    if (_auth.currentUser!.emailVerified) {
-      final model = await FirestoreUserService.getUser(cred.user!.uid);
-      if (model != null && !model.emailVerified) {
-        await FirestoreUserService.setEmailVerified(cred.user!.uid);
-      }
-    }
 
     // Always require TOTP challenge on fresh login
     totpSessionVerified.value = false;
