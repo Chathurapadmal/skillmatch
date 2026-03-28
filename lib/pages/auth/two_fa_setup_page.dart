@@ -1,34 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/backup_code_service.dart';
 import '../../services/firestore_user_service.dart';
 import '../../services/totp_service.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TwoFASetupPage
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// Shown after email verification for accounts that have not yet set up 2FA.
-//
-// Flow:
-//  1. Generate a TOTP secret (once per session; reuse if already in Firestore).
-//  2. Display an otpauth:// QR code the user scans in their authenticator app.
-//  3. User enters the 6-digit code to prove they scanned correctly.
-//  4. On success:
-//     - Save twoFactorEnabled = true + secret hash + backup codes to Firestore.
-//     - Save secret to Flutter Secure Storage.
-//     - Show backup codes for the user to write down.
-//     - Set AuthService.totpSessionVerified = true.
-//     - AuthWrapper stream routes to MainNavigationPage.
-//
-// ⚠ PRODUCTION NOTE:
-//   The TOTP secret is generated on the client here for demo purposes.
-//   In production, generate it on a backend and never send the raw secret to
-//   Firestore. See TotpService comments.
 
 class TwoFASetupPage extends StatefulWidget {
   final UserModel user;
@@ -55,9 +33,6 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
   @override
   void initState() {
     super.initState();
-    // Reuse the existing secret from Firestore if already generated,
-    // otherwise generate a fresh one.
-    // TODO (production): Request the secret from a backend endpoint.
     _secret = widget.user.totpSecret?.isNotEmpty == true
         ? widget.user.totpSecret!
         : TotpService.generateSecret();
@@ -74,14 +49,12 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
     super.dispose();
   }
 
-  // ── Verify the entered 6-digit code ──────────────────────────────────────
   Future<void> _verify() async {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     setState(() => _verifying = true);
 
     try {
-      // TODO (production): Call backend to verify — never expose secret here.
       final valid = TotpService.verifyCode(_secret, _codeCtrl.text.trim());
 
       if (!valid) {

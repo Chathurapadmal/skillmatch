@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:skillmatch/student/profile/profilepage.dart';
+import 'package:skillmatch/student/home/home_screen.dart';
 
 import '../admin/admin_dashboard.dart';
-import './dashboard_tab.dart';
+import '../home_page.dart';
 import '../models/user_model.dart';
 import 'applicant/applicant_dashboard.dart';
 import 'applicant/upload_cv_page.dart';
@@ -27,7 +28,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       _NavPage(
         label: 'Home',
         icon: Icons.home_rounded,
-        page: const DashboardTab(),
+        page: const HomeScreen(),
       ),
       _NavPage(
         label: 'Profile',
