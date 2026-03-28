@@ -13,8 +13,7 @@ import '../../theme/app_theme.dart';
 import '../../shared/notifications_center_screen.dart';
 import '../../shared/chat_overlay.dart';
 import '../advanced/roadmap_screen.dart';
-import '../advanced/skill_verification_screen.dart';
-import '../profile/profile_screen.dart';
+import '../profile/profilepage.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -41,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const _InternshipsTab(),
       const _MyCvTab(),
       const _AppliedTab(),
-      const ProfileScreen(),
+      const ProfilePage(),
     ];
 
     return ChatOverlay(
@@ -443,7 +442,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                         Icons.person_outline_rounded,
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const ProfileScreen(),
+                            builder: (_) => const ProfilePage(),
                           ),
                         ),
                       ),
@@ -600,21 +599,6 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                   const SizedBox(height: 14),
                   Row(
                     children: [
-                      Expanded(
-                        child: _actionCard(
-                          icon: Icons.track_changes,
-                          title: 'Skill Test',
-                          subtitle: 'Verify skills',
-                          border: const Color(0xFF2E2BB6),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  SkillVerificationScreen(field: field),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
                       Expanded(
                         child: _actionCard(
                           icon: Icons.map_outlined,
@@ -2222,9 +2206,12 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: Text('$industry Forecast'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
       ),
       body: _loading
           ? const Center(
@@ -2236,11 +2223,9 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF06264B), Color(0xFF12345A)],
-                    ),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF185C9D)),
+                    border: Border.all(color: const Color(0xFFDCE3F0)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2254,14 +2239,13 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
                           children: [
                             Text('AI Market Intelligence: $industry',
                                 style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                    color: Colors.black87,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 18)),
                             const SizedBox(height: 6),
                             Text(overview,
                                 style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 16)),
+                                    color: Colors.black54, fontSize: 16)),
                           ],
                         ),
                       ),
@@ -2271,13 +2255,13 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
                 const SizedBox(height: 24),
                 const Text('Forecasted Skills',
                     style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: Colors.black87,
                         fontSize: 20,
                         fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 if (trendItems.isEmpty)
                   const Text('No trend data generated right now.',
-                      style: TextStyle(color: AppTheme.textMuted))
+                      style: TextStyle(color: Colors.grey))
                 else
                   ...trendItems.map(
                     (item) {
@@ -2298,7 +2282,7 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.08),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: color.withOpacity(0.35)),
                         ),
@@ -2309,7 +2293,7 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
                             Expanded(
                               child: Text(item['skill'] as String,
                                   style: const TextStyle(
-                                      color: AppTheme.textPrimary,
+                                      color: Colors.black87,
                                       fontSize: 17,
                                       fontWeight: FontWeight.w600)),
                             ),
@@ -2323,8 +2307,7 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
                                         fontWeight: FontWeight.w700)),
                                 Text(item['yoy'] as String,
                                     style: const TextStyle(
-                                        color: AppTheme.textMuted,
-                                        fontSize: 15)),
+                                        color: Colors.grey, fontSize: 15)),
                               ],
                             ),
                           ],

@@ -48,18 +48,23 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
     final missing = (roadmap['missingSkills'] as List?)?.cast<String>() ?? [];
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-          title: Text('${widget.field} Roadmap'),
-          backgroundColor: AppTheme.bgDark),
+        title: Text('${widget.field} Roadmap'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+      ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primary))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: roadmap.isEmpty
-                  ? const Text('Could not generate roadmap.',
-                      style: TextStyle(color: AppTheme.textMuted))
+                  ? const Text(
+                      'Could not generate roadmap.',
+                      style: TextStyle(color: Colors.grey),
+                    )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -67,13 +72,11 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                         Container(
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                                colors: [Color(0xFF1A0B35), Color(0xFF2D1B69)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(
-                                color: AppTheme.accent.withOpacity(0.3)),
+                              color: const Color(0xFFDCE3F0),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +87,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                                 const SizedBox(width: 8),
                                 const Text('RECOMMENDED TARGET ROLE',
                                     style: TextStyle(
-                                        color: AppTheme.accentLight,
+                                        color: Color(0xFF1565C0),
                                         fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 1.2)),
@@ -94,12 +97,12 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                                   roadmap['targetRole']?.toString() ??
                                       'Learning Path',
                                   style: const TextStyle(
-                                      color: Colors.white,
+                                      color: Colors.black87,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700)),
                               Text(roadmap['targetCompany']?.toString() ?? '',
                                   style: const TextStyle(
-                                      color: Colors.white60, fontSize: 13)),
+                                      color: Colors.grey, fontSize: 13)),
                               const SizedBox(height: 14),
                               Row(children: [
                                 _matchPill(
@@ -108,7 +111,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                                     AppTheme.warning),
                                 const SizedBox(width: 10),
                                 const Icon(Icons.arrow_forward,
-                                    color: Colors.white38, size: 18),
+                                    color: Colors.black38, size: 18),
                                 const SizedBox(width: 10),
                                 _matchPill(
                                     'Target',
@@ -124,7 +127,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                         if (missing.isNotEmpty) ...[
                           const Text('Focus Areas',
                               style: TextStyle(
-                                  color: AppTheme.textPrimary,
+                                  color: Colors.black87,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600)),
                           const SizedBox(height: 10),
@@ -136,11 +139,11 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 10, vertical: 6),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.info.withOpacity(0.1),
+                                        color: const Color(0xFFEAF2FF),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
-                                            color:
-                                                AppTheme.info.withOpacity(0.3)),
+                                          color: const Color(0xFFCDE1FF),
+                                        ),
                                       ),
                                       child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -150,7 +153,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                                             const SizedBox(width: 4),
                                             Text(s,
                                                 style: const TextStyle(
-                                                    color: AppTheme.info,
+                                                    color: Color(0xFF1565C0),
                                                     fontSize: 12,
                                                     fontWeight:
                                                         FontWeight.w500)),
@@ -164,7 +167,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                         // Roadmap steps
                         const Text('Your Learning Path',
                             style: TextStyle(
-                                color: AppTheme.textPrimary,
+                                color: Colors.black87,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600)),
                         const SizedBox(height: 14),
@@ -199,12 +202,12 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
   Widget _matchPill(String label, String value, Color color) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withOpacity(0.12),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: color.withOpacity(0.3))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label,
-              style: const TextStyle(color: Colors.white54, fontSize: 10)),
+              style: const TextStyle(color: Colors.black54, fontSize: 10)),
           Text(value,
               style: TextStyle(
                   color: color, fontSize: 18, fontWeight: FontWeight.w700)),
@@ -256,14 +259,13 @@ class _StepCard extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isProject
-                  ? AppTheme.primary.withOpacity(0.08)
-                  : AppTheme.bgCard,
+              color:
+                  isProject ? AppTheme.primary.withOpacity(0.08) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                   color: isProject
                       ? AppTheme.primary.withOpacity(0.2)
-                      : const Color(0xFF2D2D5E)),
+                      : const Color(0xFFDCE3F0)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,24 +292,21 @@ class _StepCard extends StatelessWidget {
                   ),
                 Text(step['title']?.toString() ?? 'Step',
                     style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: Colors.black87,
                         fontSize: 14,
                         fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 Text(step['description']?.toString() ?? 'Details...',
                     style: const TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                        height: 1.5)),
+                        color: Colors.black54, fontSize: 12, height: 1.5)),
                 if (step['duration'] != null) ...[
                   const SizedBox(height: 8),
                   Row(children: [
-                    const Icon(Icons.access_time,
-                        color: AppTheme.textMuted, size: 13),
+                    const Icon(Icons.access_time, color: Colors.grey, size: 13),
                     const SizedBox(width: 4),
                     Text(step['duration'] as String,
-                        style: const TextStyle(
-                            color: AppTheme.textMuted, fontSize: 12)),
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 12)),
                   ]),
                 ]
               ],

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:skillmatch/student/advanced/roadmap_screen.dart';
 import 'package:skillmatch/student/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/student/home/home_screen.dart';
 import 'package:skillmatch/student/profile/profilepage.dart';
+import 'package:skillmatch/student/settings/help_support_screen.dart';
+import 'package:skillmatch/student/settings/privacy_security_screen.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';
@@ -55,6 +58,23 @@ class ApplicantDashboard extends StatelessWidget {
                   );
                   return;
                 }
+                if (value == 'help') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const HelpSupportScreen()),
+                  );
+                  return;
+                }
+                if (value == 'privacy') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PrivacySecurityScreen(),
+                    ),
+                  );
+                  return;
+                }
                 if (value == 'signout') {
                   await AuthService.signOut();
                 }
@@ -80,6 +100,22 @@ class ApplicantDashboard extends StatelessWidget {
                     Icon(Icons.person_outline),
                     SizedBox(width: 8),
                     Text('My Profile'),
+                  ]),
+                ),
+                const PopupMenuItem(
+                  value: 'help',
+                  child: Row(children: [
+                    Icon(Icons.support_agent_outlined),
+                    SizedBox(width: 8),
+                    Text('Help & Support'),
+                  ]),
+                ),
+                const PopupMenuItem(
+                  value: 'privacy',
+                  child: Row(children: [
+                    Icon(Icons.privacy_tip_outlined),
+                    SizedBox(width: 8),
+                    Text('Privacy & Security'),
                   ]),
                 ),
                 const PopupMenuItem(
@@ -175,6 +211,36 @@ class ApplicantDashboard extends StatelessWidget {
                 childAspectRatio: 1.5,
                 children: [
                   _ActionCard(
+                    icon: Icons.map_outlined,
+                    label: 'Roadmap',
+                    color: const Color(0xFF1565C0),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RoadmapScreen(
+                            field: 'IT & Software',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  _ActionCard(
+                    icon: Icons.trending_up,
+                    label: 'Trends',
+                    color: const Color(0xFF2B6CB0),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const IndustryForecastScreen(
+                            field: 'IT & Software',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  _ActionCard(
                     icon: Icons.search_rounded,
                     label: 'Browse Jobs',
                     color: const Color(0xFF1565C0),
@@ -184,17 +250,6 @@ class ApplicantDashboard extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => const HomeScreen(initialTabIndex: 1),
                         ),
-                      );
-                    },
-                  ),
-                  _ActionCard(
-                    icon: Icons.person_outline,
-                    label: 'My Profile',
-                    color: Colors.purple,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const ProfilePage()),
                       );
                     },
                   ),

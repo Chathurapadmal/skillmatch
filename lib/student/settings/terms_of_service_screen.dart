@@ -8,9 +8,11 @@ class TermsOfServiceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
         title: const Text('Terms of Service'),
       ),
       body: ListView(
@@ -68,9 +70,9 @@ class _TermsSection extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF191940),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2D2D5E)),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +80,7 @@ class _TermsSection extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Colors.white,
+              color: Colors.black87,
               fontWeight: FontWeight.w700,
               fontSize: 14,
             ),

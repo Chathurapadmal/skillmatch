@@ -3,12 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../services/auth_service.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ForgotPasswordPage
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// Sends a Firebase Auth password-reset email.
-
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
 

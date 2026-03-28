@@ -113,10 +113,12 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
           title: const Text('Privacy & Security'),
-          backgroundColor: AppTheme.bgDark),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          elevation: 0),
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primary))
@@ -233,9 +235,9 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
   Widget _card(List<Widget> tiles) => Container(
         margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF2D2D5E)),
+          border: Border.all(color: const Color(0xFFDCE3F0)),
         ),
         child: Column(
             children: tiles
@@ -245,7 +247,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                       if (e.key > 0)
                         Divider(
                             height: 1,
-                            color: const Color(0xFF2D2D5E).withOpacity(0.5)),
+                            color: const Color(0xFFDCE3F0).withOpacity(0.8)),
                       e.value,
                     ]))
                 .toList()),
@@ -256,7 +258,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryLight, size: 22),
       title: Text(title,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14)),
+          style: const TextStyle(color: Colors.black87, fontSize: 14)),
       subtitle: Text(sub,
           style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
       trailing: Switch(
@@ -274,9 +276,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
       leading: Icon(icon, color: color, size: 22),
       title: Text(title,
           style: TextStyle(
-              color: color == AppTheme.error
-                  ? AppTheme.error
-                  : AppTheme.textPrimary,
+              color: color == AppTheme.error ? AppTheme.error : Colors.black87,
               fontSize: 14)),
       subtitle: Text(sub,
           style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),

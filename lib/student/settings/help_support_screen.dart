@@ -81,10 +81,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
           title: const Text('Help & Support'),
-          backgroundColor: AppTheme.bgDark),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          elevation: 0),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -146,12 +148,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 decoration: BoxDecoration(
                   color: isOpen
                       ? AppTheme.primary.withOpacity(0.08)
-                      : AppTheme.bgCard,
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isOpen
                         ? AppTheme.primary.withOpacity(0.3)
-                        : const Color(0xFF2D2D5E),
+                        : const Color(0xFFDCE3F0),
                   ),
                 ),
                 child: Column(children: [
@@ -164,7 +166,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             style: TextStyle(
                                 color: isOpen
                                     ? AppTheme.primaryLight
-                                    : AppTheme.textPrimary,
+                                    : Colors.black87,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600)),
                       ),
@@ -191,9 +193,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           _sectionTitle('Legal'),
           Container(
             decoration: BoxDecoration(
-              color: AppTheme.bgCard,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF2D2D5E)),
+              border: Border.all(color: const Color(0xFFDCE3F0)),
             ),
             child: Column(children: [
               _resourceTile(
@@ -206,7 +208,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   ),
                 ),
               ),
-              const Divider(height: 1, color: Color(0xFF2D2D5E)),
+              const Divider(height: 1, color: Color(0xFFDCE3F0)),
               _resourceTile(
                 Icons.description_outlined,
                 'Terms of Service',
@@ -272,7 +274,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryLight, size: 20),
       title: Text(title,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
+          style: const TextStyle(color: Colors.black87, fontSize: 13)),
       subtitle: Text(sub,
           style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
       trailing:
