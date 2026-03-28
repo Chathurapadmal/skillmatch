@@ -182,11 +182,13 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('GitHub Integration'),
         centerTitle: false,
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
         actions: [
           if (_connected)
             TextButton(
@@ -228,9 +230,9 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF111528),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFF1E8A7D)),
+                  border: Border.all(color: const Color(0xFFDCE3F0)),
                 ),
                 child: Row(children: [
                   const Text('🐙', style: TextStyle(fontSize: 40)),
@@ -239,7 +241,7 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
                     child: Text(
                       'Connect your GitHub profile to auto-detect skills from your public repositories.',
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: Colors.black54,
                         fontSize: 14,
                         height: 1.5,
                       ),
@@ -250,14 +252,13 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
               const SizedBox(height: 20),
               const Text('Your GitHub Username',
                   style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: Colors.black54,
                       fontSize: 13,
                       fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               TextField(
                 controller: _usernameCtrl,
-                style:
-                    const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                style: const TextStyle(color: Colors.black87, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'e.g. rasindu-perera',
                   hintStyle:
@@ -265,10 +266,10 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
                   prefixIcon: const Icon(Icons.alternate_email,
                       color: AppTheme.textMuted, size: 18),
                   filled: true,
-                  fillColor: const Color(0xFF111237),
+                  fillColor: Colors.white,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Color(0xFF2D2D5E)),
+                    borderSide: const BorderSide(color: Color(0xFFDCE3F0)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -292,9 +293,9 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF111528),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: const Color(0xFF0C8A78)),
+                  border: Border.all(color: const Color(0xFFDCE3F0)),
                 ),
                 child: Row(
                   children: [
@@ -307,7 +308,7 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
                           Text(
                             '@${_githubData?['username'] ?? ''}',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: Colors.black87,
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                             ),
@@ -366,7 +367,7 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
               const Text(
                 'Language Analysis',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.black87,
                   fontSize: 42 / 2,
                   fontWeight: FontWeight.w700,
                 ),
@@ -403,16 +404,16 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A42),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFF34358A)),
+            border: Border.all(color: const Color(0xFFDCE3F0)),
           ),
           child: Column(children: [
             Icon(icon, color: AppTheme.textMuted, size: 20),
             const SizedBox(height: 6),
             Text(value,
                 style: TextStyle(
-                  color: highlight ?? Colors.white,
+                  color: highlight ?? Colors.black87,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 )),
@@ -435,9 +436,9 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A42),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF353687)),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,7 +451,7 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
                 child: Text(
                   name,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black87,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
@@ -471,7 +472,7 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
             child: LinearProgressIndicator(
               value: percent / 100,
               minHeight: 8,
-              backgroundColor: const Color(0xFF2D2D5E),
+              backgroundColor: const Color(0xFFE6EAF2),
               valueColor: const AlwaysStoppedAnimation(AppTheme.primaryLight),
             ),
           ),

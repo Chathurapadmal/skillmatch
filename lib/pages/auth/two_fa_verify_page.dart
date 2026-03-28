@@ -155,7 +155,8 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                           width: 70,
                           height: 70,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1A237E).withValues(alpha: 0.1),
+                            color:
+                                const Color(0xFF1A237E).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -265,7 +266,9 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                             ),
                             onPressed: _loading
                                 ? null
-                                : (_useBackup ? _verifyBackupCode : _verifyTotp),
+                                : (_useBackup
+                                    ? _verifyBackupCode
+                                    : _verifyTotp),
                             child: _loading
                                 ? const SizedBox(
                                     height: 22,
