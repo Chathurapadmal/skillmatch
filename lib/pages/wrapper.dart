@@ -16,6 +16,10 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (AuthService.isDevelopmentAuthBypassEnabled) {
+      return const _DevBypassWrapper();
+    }
+
     return StreamBuilder<User?>(
       stream: AuthService.authStateChanges,
       builder: (context, authSnap) {
@@ -67,6 +71,59 @@ class AuthWrapper extends StatelessWidget {
             );
           },
         );
+      },
+    );
+  }
+}
+
+class _DevBypassWrapper extends StatefulWidget {
+  const _DevBypassWrapper();
+
+  @override
+  State<_DevBypassWrapper> createState() => _DevBypassWrapperState();
+}
+
+class _DevBypassWrapperState extends State<_DevBypassWrapper> {
+  late final Future<UserModel> _bootstrapFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _bootstrapFuture = _buildDevUser();
+  }
+
+  Future<UserModel> _buildDevUser() async {
+    final firebaseUser = await AuthService.ensureDevSession();
+    AuthService.totpSessionVerified.value = true;
+
+    return UserModel(
+      uid: firebaseUser?.uid ?? 'dev-user',
+      email: firebaseUser?.email ?? 'dev@skillmatch.local',
+      displayName: firebaseUser?.displayName ?? 'Developer',
+      role: UserRole.admin,
+      emailVerified: true,
+      twoFactorEnabled: true,
+      profileCompleted: true,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<UserModel>(
+      future: _bootstrapFuture,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const _LoadingScreen(message: 'Starting developer mode…');
+        }
+
+        if (snap.hasError || snap.data == null) {
+          return const _LoadingScreen(
+            message: 'Developer mode failed to initialize.',
+          );
+        }
+
+        return MainNavigationPage(user: snap.data!);
       },
     );
   }

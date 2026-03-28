@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../auth/login_screen.dart';
 import '../shared/notifications_center_screen.dart';
 import '../services/notification_service.dart';
