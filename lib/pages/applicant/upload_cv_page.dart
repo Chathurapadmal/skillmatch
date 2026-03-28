@@ -1,10 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import '../../services/aiserv.dart';
+import '../../services/firestore_service.dart';
 import '../../shared/chat_overlay.dart';
+import '../../theme/app_theme.dart';
 
 class UploadCvPage extends StatefulWidget {
   final String initialCvText;
@@ -21,518 +23,501 @@ class UploadCvPage extends StatefulWidget {
 }
 
 class _UploadCvPageState extends State<UploadCvPage> {
-  late final TextEditingController _cvTextCtrl;
+  String? _fileName;
+  String? _cvStoragePath;
+  String? _cvStorageUrl;
+  bool _uploadingCv = false;
+  bool _loadingCv = true;
+  bool _savingManual = false;
 
-  bool _uploading = false;
-  bool _extracting = false;
-  double _analysisProgress = 0.45;
-  String? _selectedFileName;
+  final _ageCtrl = TextEditingController();
+  final _experienceCtrl = TextEditingController();
+  Map<String, dynamic> _cvData = <String, dynamic>{};
 
   @override
   void initState() {
     super.initState();
-    _cvTextCtrl = TextEditingController(text: widget.initialCvText);
+    _loadCvData();
   }
 
   @override
   void dispose() {
-    _cvTextCtrl.dispose();
+    _ageCtrl.dispose();
+    _experienceCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _pickCvFile() async {
-    setState(() {
-      _uploading = true;
-      _analysisProgress = 0.10;
-    });
-
-    try {
-      final picked = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
-        withData: true,
-        type: FileType.custom,
-        // UI is designed like PDF/DOCX upload.
-        // Current reading logic works best for text-based files.
-        allowedExtensions: const ['txt', 'md', 'pdf', 'docx'],
-      );
-
-      if (picked == null || picked.files.isEmpty) {
-        if (mounted) {
-          setState(() {
-            _uploading = false;
-            _analysisProgress = 0.0;
-          });
-        }
-        return;
-      }
-
-      final file = picked.files.single;
-      final extension = (file.extension ?? '').toLowerCase();
-
-      setState(() {
-        _selectedFileName = file.name;
-        _analysisProgress = 0.30;
-      });
-
-      String content = '';
-
-      // Current implementation can directly read text files.
-      if (extension == 'txt' || extension == 'md') {
-        if (file.bytes != null) {
-          content = utf8.decode(file.bytes!, allowMalformed: true);
-        } else if (!kIsWeb && file.path != null) {
-          content = await File(file.path!).readAsString();
-        }
-      } else {
-        // Honest fallback for binary files until PDF/DOCX parsing is added.
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'UI supports PDF/DOCX, but actual PDF/DOCX text extraction needs an extra parser package.',
-            ),
-          ),
-        );
-      }
-
-      if (!mounted) return;
-
-      if (content.trim().isNotEmpty) {
-        setState(() {
-          _cvTextCtrl.text = content;
-          _analysisProgress = 0.45;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Loaded ${file.name} successfully.')),
-        );
-      } else {
-        setState(() {
-          _analysisProgress = 0.20;
-        });
-      }
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to upload CV file.')),
-      );
-      setState(() {
-        _analysisProgress = 0.0;
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _uploading = false);
-      }
+  Future<void> _loadCvData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      if (mounted) setState(() => _loadingCv = false);
+      return;
     }
+
+    final profile = await FirestoreService.getUserProfile(uid);
+    if (!mounted) return;
+
+    setState(() {
+      _fileName = profile?['cvFileName'] as String?;
+      _cvStoragePath = profile?['cvStoragePath'] as String?;
+      _cvStorageUrl = profile?['cvStorageSignedUrl'] as String?;
+      _ageCtrl.text = (profile?['age']?.toString() ?? '').trim();
+      _experienceCtrl.text = ((profile?['experience'] as String?) ??
+              (profile?['cvExperience'] as String?) ??
+              '')
+          .trim();
+      _cvData = {
+        'detected_skills':
+            ((profile?['cvSkills'] as List?) ?? []).map((e) => '$e').toList(),
+        'experience': (profile?['cvExperience'] as String?) ?? '',
+        'summary': (profile?['cvSummary'] as String?) ?? '',
+        'recommendations': ((profile?['cvRecommendations'] as List?) ?? [])
+            .map((e) => '$e')
+            .toList(),
+      };
+      _loadingCv = false;
+    });
   }
 
-  Future<void> _extractAndReturn() async {
-    final cvText = _cvTextCtrl.text.trim();
+  Future<void> _pickCv() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'txt', 'docx'],
+      withData: true,
+    );
+    if (!mounted || result == null || result.files.isEmpty) return;
 
-    if (cvText.isEmpty) {
+    final file = result.files.first;
+    final bytes = file.bytes;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null || bytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please upload or paste your CV text first.'),
+          content: Text('Unable to read this file. Try a PDF or TXT CV.'),
+          backgroundColor: AppTheme.error,
         ),
       );
       return;
     }
 
-    setState(() {
-      _extracting = true;
-      _analysisProgress = 0.65;
-    });
+    setState(() => _uploadingCv = true);
 
-    try {
-      final parsed = await AIService.extractCvProfile(cvText);
+    final storageUpload = await AiService.uploadCvToStorage(
+      bytes: bytes,
+      fileName: file.name,
+      userId: uid,
+    );
 
+    final hasStorageError = storageUpload.containsKey('_error');
+    final storageError = (storageUpload['_error'] as String?) ?? '';
+    if (hasStorageError) {
       if (!mounted) return;
-
-      setState(() {
-        _analysisProgress = 1.0;
-      });
-
-      final result = {
-        'cvText': cvText,
-        'aiSkills': parsed['skills'] ?? <String>[],
-        'certifications': parsed['certifications'] ?? <Map<String, dynamic>>[],
-      };
-
-      if (widget.returnResultOnExtract) {
-        Navigator.pop(context, result);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Extracted ${(result['aiSkills'] as List).length} skills and '
-              '${(result['certifications'] as List).length} certifications.',
-            ),
-          ),
-        );
-      }
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _analysisProgress = 0.45;
-      });
+      setState(() => _uploadingCv = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to extract skills and certifications from CV.'),
+        SnackBar(
+          content: Text(
+            storageError.isNotEmpty
+                ? 'CV upload failed: $storageError'
+                : 'CV upload failed. Please try again.',
+          ),
+          backgroundColor: AppTheme.error,
         ),
       );
-    } finally {
-      if (mounted) {
-        setState(() => _extracting = false);
-      }
+      return;
     }
+
+    final analysis =
+        await AiService.analyzeCv(bytes: bytes, fileName: file.name);
+    final hasAnalysisError = analysis.containsKey('_error');
+    final analysisError = (analysis['_error'] as String?) ?? '';
+
+    final detectedSkills = ((analysis['detected_skills'] as List?) ?? [])
+        .map((e) => '$e')
+        .toList();
+    final recommendations = ((analysis['recommendations'] as List?) ?? [])
+        .map((e) => '$e')
+        .toList();
+
+    final profile = await FirestoreService.getUserProfile(uid);
+    final existingSkills =
+        ((profile?['skills'] as List?) ?? []).map((e) => '$e').toList();
+    final mergedSkills =
+        <String>{...existingSkills, ...detectedSkills}.toList();
+
+    await FirestoreService.updateUserProfile(uid, {
+      'cvFileName': file.name,
+      'cvStorageBucket': storageUpload['bucket'] as String?,
+      'cvStoragePath': storageUpload['path'] as String?,
+      'cvStorageSignedUrl': storageUpload['signed_url'] as String?,
+      'cvAnalyzed': analysis.isNotEmpty && !hasAnalysisError,
+      'cvSkills': detectedSkills,
+      'cvExperience': (analysis['experience'] as String?) ?? '',
+      'cvSummary': (analysis['summary'] as String?) ?? '',
+      'cvRecommendations': recommendations,
+      'cvAnalyzeError': analysisError,
+      'cvUploadedAt': FieldValue.serverTimestamp(),
+      'skills': mergedSkills,
+      if ((analysis['experience'] as String?)?.trim().isNotEmpty == true)
+        'experience': analysis['experience'],
+    });
+
+    if (!mounted) return;
+
+    setState(() {
+      _fileName = file.name;
+      _cvStoragePath = storageUpload['path'] as String?;
+      _cvStorageUrl = storageUpload['signed_url'] as String?;
+      _cvData = analysis;
+      if ((analysis['experience'] as String?)?.trim().isNotEmpty == true &&
+          (analysis['experience'] as String).toLowerCase() != 'unknown') {
+        _experienceCtrl.text = (analysis['experience'] as String).trim();
+      }
+      _uploadingCv = false;
+    });
+
+    final analyzed = analysis.isNotEmpty;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          !hasAnalysisError && analyzed
+              ? 'CV uploaded and saved. AI extracted details updated.'
+              : (analysisError.isNotEmpty
+                  ? 'CV uploaded, but analysis failed: $analysisError'
+                  : 'CV uploaded and saved. AI extraction was not available for this file.'),
+        ),
+        backgroundColor: (!hasAnalysisError && analyzed)
+            ? AppTheme.success
+            : AppTheme.warning,
+      ),
+    );
+
+    if (widget.returnResultOnExtract) {
+      Navigator.of(context).pop({
+        'cvText': widget.initialCvText,
+        'aiSkills': detectedSkills,
+        'certifications': const <Map<String, dynamic>>[],
+      });
+    }
+  }
+
+  Future<void> _saveManualDetails() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final ageText = _ageCtrl.text.trim();
+    final experienceText = _experienceCtrl.text.trim();
+    final parsedAge = int.tryParse(ageText);
+
+    if (ageText.isNotEmpty &&
+        (parsedAge == null || parsedAge < 15 || parsedAge > 80)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid age between 15 and 80.'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _savingManual = true);
+    await FirestoreService.updateUserProfile(uid, {
+      'age': parsedAge,
+      'experience': experienceText,
+      if (experienceText.isNotEmpty) 'cvExperience': experienceText,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    if (!mounted) return;
+    setState(() => _savingManual = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Manual details saved successfully.'),
+        backgroundColor: AppTheme.success,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color primary = Color(0xFF5A5FF0);
-    const Color softBg = Color(0xFFF5F6FB);
-    const Color uploadBg = Color(0xFFECEEFF);
-    const Color borderColor = Color(0xFF8C98FF);
-    const Color textDark = Color(0xFF111111);
-    const Color textMuted = Color(0xFF6B7280);
+    final detectedSkills =
+        ((_cvData['detected_skills'] as List?) ?? []).map((e) => '$e').toList();
+    final recommendations =
+        ((_cvData['recommendations'] as List?) ?? []).map((e) => '$e').toList();
+    final summary = (_cvData['summary'] as String?) ?? '';
+    final experience = (_cvData['experience'] as String?) ?? '';
+    final hasDetectedExperience =
+        experience.trim().isNotEmpty && experience.toLowerCase() != 'unknown';
 
-    final busy = _uploading || _extracting;
+    if (_loadingCv) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0F1026),
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryLight),
+        ),
+      );
+    }
 
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F7F8),
+        backgroundColor: const Color(0xFF0F1026),
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF7F7F8),
-          elevation: 0,
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'Upload CV',
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
-              fontSize: 22,
-            ),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.menu, color: primary, size: 30),
-            ),
-          ],
+          backgroundColor: const Color(0xFF0F1026),
+          foregroundColor: Colors.white,
+          title: const Text('My CV'),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                const Text(
-                  'Start your journey',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: textDark,
-                  ),
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              const Text(
+                'Upload CV',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Upload your resume - AI will extract your skills and experience.',
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(26),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF121236),
+                  borderRadius: BorderRadius.circular(28),
+                  border:
+                      Border.all(color: const Color(0xFF3A34B8), width: 1.2),
                 ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Upload your resume to get matched with top internships and personalized roadmaps.',
-                  style: TextStyle(
-                    fontSize: 15.5,
-                    height: 1.6,
-                    color: Color(0xFF4B5563),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                // Upload card
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: uploadBg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: CustomPaint(
-                    painter: DashedBorderPainter(
-                      color: borderColor,
-                      radius: 20,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 26,
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 82,
-                            height: 82,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: primary.withOpacity(0.18),
-                            ),
-                            child: const Icon(
-                              Icons.upload_file_outlined,
-                              color: primary,
-                              size: 34,
-                            ),
-                          ),
-                          const SizedBox(height: 26),
-                          const Text(
-                            'Drag and drop your file',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16.5,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Supported: PDF, DOCX (Max 5MB)',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14.5,
-                              color: Color(0xFF92A0B8),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          if (_selectedFileName != null) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              _selectedFileName!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                color: primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton.icon(
-                              onPressed: busy ? null : _pickCvFile,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primary,
-                                disabledBackgroundColor: primary.withOpacity(0.6),
-                                elevation: 8,
-                                shadowColor: primary.withOpacity(0.28),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              icon: _uploading
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.add, color: Colors.white),
-                              label: Text(
-                                _uploading ? 'Uploading...' : 'Upload PDF / DOCX',
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 22),
-
-                // Status row
-                Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.autorenew, color: primary, size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _extracting
-                            ? 'Analyzing your CV...'
-                            : _uploading
-                                ? 'Uploading your CV...'
-                                : 'Analyzing your CV...',
-                        style: const TextStyle(
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.w700,
-                          color: textDark,
-                        ),
+                    Container(
+                      width: 140,
+                      height: 140,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF24245C),
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(Icons.upload_file_rounded,
+                          color: AppTheme.primaryLight, size: 58),
                     ),
+                    const SizedBox(height: 22),
                     Text(
-                      '${(_analysisProgress * 100).toInt()}%',
+                      _fileName == null ? 'Tap to choose your CV' : _fileName!,
                       style: const TextStyle(
-                        color: primary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Supported: PDF, TXT, DOCX (Max 10MB)',
+                      style: TextStyle(color: AppTheme.textMuted, fontSize: 16),
+                    ),
+                    if ((_cvStoragePath ?? '').trim().isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Stored path: ${_cvStoragePath!}',
+                        style: const TextStyle(
+                            color: AppTheme.textSecondary, fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    if ((_cvStorageUrl ?? '').trim().isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Signed access URL generated (7 days)',
+                        style:
+                            TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    GestureDetector(
+                      onTap: _uploadingCv ? null : _pickCv,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 26, vertical: 16),
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primary.withOpacity(0.35),
+                              blurRadius: 18,
+                            )
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: _uploadingCv
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Text(
+                                '+ Upload PDF / TXT / DOCX',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 20),
+                              ),
                       ),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 12),
-
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: _analysisProgress.clamp(0.0, 1.0),
-                    minHeight: 12,
-                    backgroundColor: const Color(0xFF2E3445),
-                    valueColor: const AlwaysStoppedAnimation<Color>(primary),
-                  ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF18183C),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF2D2D5E)),
                 ),
-
-                const SizedBox(height: 18),
-
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Manual Student Details',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _ageCtrl,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        labelText: 'Age',
+                        labelStyle: TextStyle(color: AppTheme.textSecondary),
+                        hintText: 'Enter your age',
+                        hintStyle: TextStyle(color: AppTheme.textMuted),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _experienceCtrl,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: hasDetectedExperience
+                            ? 'Experience (editable)'
+                            : 'Experience (manual entry)',
+                        labelStyle:
+                            const TextStyle(color: AppTheme.textSecondary),
+                        hintText: 'e.g. 2 years mobile development',
+                        hintStyle: const TextStyle(color: AppTheme.textMuted),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _savingManual ? null : _saveManualDetails,
+                        icon: _savingManual
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: const Text('Save Manual Details'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (summary.trim().isNotEmpty ||
+                  experience.trim().isNotEmpty ||
+                  detectedSkills.isNotEmpty) ...[
+                const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF9CA3AF),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: const Color(0xFF6B7280).withOpacity(0.35),
-                    ),
+                    color: const Color(0xFF18183C),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF2D2D5E)),
                   ),
-                  child: const Text(
-                    '"Our AI is identifying your key skills and potential career paths based on your academic background and project experience..."',
-                    style: TextStyle(
-                      fontSize: 15.5,
-                      height: 1.55,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                // Hidden text area kept for current extraction flow
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: softBg,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.all(12),
-                    child: TextField(
-                      controller: _cvTextCtrl,
-                      maxLines: null,
-                      expands: true,
-                      textAlignVertical: TextAlignVertical.top,
-                      style: const TextStyle(fontSize: 14.5),
-                      decoration: const InputDecoration(
-                        hintText: 'CV extracted text will appear here...',
-                        border: InputBorder.none,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'AI CV Insights',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton.icon(
-                    onPressed: busy ? null : _extractAndReturn,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primary,
-                      disabledBackgroundColor: primary.withOpacity(0.6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    icon: _extracting
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.2,
-                              color: Colors.white,
+                      const SizedBox(height: 10),
+                      if (experience.trim().isNotEmpty)
+                        Text('Experience: $experience',
+                            style:
+                                const TextStyle(color: AppTheme.textSecondary)),
+                      if (summary.trim().isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(summary,
+                            style: const TextStyle(color: AppTheme.textMuted)),
+                      ],
+                      if (detectedSkills.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: detectedSkills
+                              .map(
+                                (skill) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF23235A),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    skill,
+                                    style: const TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 12),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+                      if (recommendations.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        ...recommendations.take(3).map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: Text(
+                                  '• $item',
+                                  style: const TextStyle(
+                                      color: AppTheme.textMuted, fontSize: 12),
+                                ),
+                              ),
                             ),
-                          )
-                        : const Icon(Icons.auto_awesome, color: Colors.white),
-                    label: Text(
-                      _extracting ? 'Extracting...' : 'Continue',
-                      style: const TextStyle(
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
+                      ],
+                    ],
                   ),
                 ),
               ],
-            ),
+            ],
           ),
         ),
       ),
     );
-  }
-}
-
-class DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-  final double strokeWidth;
-  final double dashWidth;
-  final double dashSpace;
-
-  DashedBorderPainter({
-    required this.color,
-    this.radius = 12,
-    this.strokeWidth = 1.4,
-    this.dashWidth = 7,
-    this.dashSpace = 5,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
-    final path = Path()..addRRect(rrect);
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    for (final metric in path.computeMetrics()) {
-      double distance = 0;
-      while (distance < metric.length) {
-        final next = distance + dashWidth;
-        canvas.drawPath(metric.extractPath(distance, next), paint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant DashedBorderPainter oldDelegate) {
-    return oldDelegate.color != color ||
-        oldDelegate.radius != radius ||
-        oldDelegate.strokeWidth != strokeWidth ||
-        oldDelegate.dashWidth != dashWidth ||
-        oldDelegate.dashSpace != dashSpace;
   }
 }
