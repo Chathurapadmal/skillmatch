@@ -17,14 +17,22 @@ import '../advanced/skill_verification_screen.dart';
 import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final int initialTabIndex;
+
+  const HomeScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialTabIndex.clamp(0, 4);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,51 +46,55 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: const Color(0xFFF5F7FA),
         body: IndexedStack(index: _selectedIndex, children: tabs),
-        bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF121230),
-          border: Border(top: BorderSide(color: Color(0xFF23234E))),
-        ),
-        child: NavigationBar(
-          height: 74,
-          selectedIndex: _selectedIndex,
-          backgroundColor: Colors.transparent,
-          indicatorColor: AppTheme.primary.withOpacity(0.12),
-          onDestinationSelected: (value) =>
-              setState(() => _selectedIndex = value),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home, color: AppTheme.primaryLight),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.search_outlined),
-              selectedIcon: Icon(Icons.search, color: AppTheme.primaryLight),
-              label: 'Internships',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.upload_file_outlined),
-              selectedIcon:
-                  Icon(Icons.upload_file_rounded, color: AppTheme.primaryLight),
-              label: 'My CV',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.assignment_outlined),
-              selectedIcon:
-                  Icon(Icons.assignment, color: AppTheme.primaryLight),
-              label: 'Applied',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person, color: AppTheme.primaryLight),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      ),
+        bottomNavigationBar: (_selectedIndex == 1 || _selectedIndex == 3)
+            ? null
+            : Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
+                ),
+                child: NavigationBar(
+                  height: 74,
+                  selectedIndex: _selectedIndex,
+                  backgroundColor: Colors.transparent,
+                  indicatorColor: const Color(0xFF1565C0).withOpacity(0.12),
+                  onDestinationSelected: (value) =>
+                      setState(() => _selectedIndex = value),
+                  destinations: const [
+                    NavigationDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home, color: Color(0xFF1565C0)),
+                      label: 'Home',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.search_outlined),
+                      selectedIcon:
+                          Icon(Icons.search, color: Color(0xFF1565C0)),
+                      label: 'Internships',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.upload_file_outlined),
+                      selectedIcon: Icon(Icons.upload_file_rounded,
+                          color: Color(0xFF1565C0)),
+                      label: 'My CV',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.assignment_outlined),
+                      selectedIcon:
+                          Icon(Icons.assignment, color: Color(0xFF1565C0)),
+                      label: 'Applied',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.person_outline),
+                      selectedIcon:
+                          Icon(Icons.person, color: Color(0xFF1565C0)),
+                      label: 'Profile',
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -391,7 +403,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Center(
-          child: CircularProgressIndicator(color: AppTheme.primary));
+          child: CircularProgressIndicator(color: Color(0xFF1565C0)));
     }
 
     final name = (_profile?['name'] as String?) ??
@@ -401,7 +413,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
     final topMatch = _internships.isNotEmpty ? _internships.first : null;
 
     return RefreshIndicator(
-      color: AppTheme.primary,
+      color: const Color(0xFF1565C0),
       onRefresh: _loadProfile,
       child: CustomScrollView(
         slivers: [
@@ -411,7 +423,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                   24, MediaQuery.of(context).padding.top + 18, 24, 24),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF151548), AppTheme.bgDark],
+                  colors: [Color(0xFFF5F7FA), Colors.white],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -423,8 +435,8 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                     children: [
                       Text(
                         '$field ',
-                        style: const TextStyle(
-                            color: AppTheme.textMuted, fontSize: 18),
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 18),
                       ),
                       const Spacer(),
                       _iconBtn(
@@ -469,7 +481,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                   Text(
                     name,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontWeight: FontWeight.w700,
                       fontSize: 48 / 2,
                     ),
@@ -478,12 +490,12 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF28235E),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFF4038A0)),
+                      border: Border.all(color: const Color(0xFFE0E0E0)),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primary.withOpacity(0.2),
+                          color: const Color(0xFF1565C0).withOpacity(0.1),
                           blurRadius: 24,
                           spreadRadius: 2,
                         ),
@@ -492,8 +504,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                     child: topMatch == null
                         ? const Text(
                             'No internships found for your selected industry yet.',
-                            style: TextStyle(
-                                color: AppTheme.textMuted, fontSize: 16),
+                            style: TextStyle(color: Colors.grey, fontSize: 16),
                           )
                         : Row(
                             children: [
@@ -532,7 +543,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20, vertical: 12),
                                         decoration: BoxDecoration(
-                                          gradient: AppTheme.primaryGradient,
+                                          color: const Color(0xFF1565C0),
                                           borderRadius:
                                               BorderRadius.circular(14),
                                         ),
@@ -1174,13 +1185,13 @@ class _InternshipsTabState extends State<_InternshipsTab> {
             children: [
               const Text('Internships',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontSize: 34,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text('${filteredInternships.length} opportunities found',
                   style: const TextStyle(
-                      color: AppTheme.textMuted,
+                      color: Colors.grey,
                       fontSize: 18,
                       fontWeight: FontWeight.w500)),
               const SizedBox(height: 20),
@@ -1190,18 +1201,18 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                   hintText: studentIndustry.isEmpty
                       ? 'Set your industry in Profile for better matches'
                       : 'Showing internships for $studentIndustry',
-                  hintStyle: const TextStyle(color: AppTheme.textMuted),
-                  prefixIcon: const Icon(Icons.filter_alt_outlined,
-                      color: AppTheme.textMuted),
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  prefixIcon:
+                      const Icon(Icons.filter_alt_outlined, color: Colors.grey),
                   filled: true,
-                  fillColor: const Color(0xFF16163A),
+                  fillColor: Colors.white,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
-                    borderSide: const BorderSide(color: Color(0xFF2D2D5E)),
+                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
                   ),
                   disabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
-                    borderSide: const BorderSide(color: Color(0xFF2D2D5E)),
+                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
                   ),
                 ),
               ),
@@ -1221,14 +1232,13 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 18, vertical: 10),
                         decoration: BoxDecoration(
-                          color: selected
-                              ? const Color(0xFF1D1E4F)
-                              : const Color(0xFF16173D),
+                          color:
+                              selected ? const Color(0xFFE8F0FF) : Colors.white,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: selected
-                                ? AppTheme.primaryLight
-                                : const Color(0xFF2F3069),
+                                ? const Color(0xFF1565C0)
+                                : Colors.grey[300]!,
                           ),
                         ),
                         child: Center(
@@ -1236,8 +1246,8 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                             label,
                             style: TextStyle(
                               color: selected
-                                  ? AppTheme.primaryLight
-                                  : AppTheme.textSecondary,
+                                  ? const Color(0xFF1565C0)
+                                  : Colors.black87,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -2022,13 +2032,12 @@ class _AppliedTabState extends State<_AppliedTab> {
             children: [
               const Text('Applied Internships',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontSize: 34,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               Text('Track progress of your applications (${docs.length})',
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 16)),
+                  style: const TextStyle(color: Colors.grey, fontSize: 16)),
               const SizedBox(height: 24),
               if (snapshot.connectionState == ConnectionState.waiting)
                 const Center(
@@ -2039,25 +2048,23 @@ class _AppliedTabState extends State<_AppliedTab> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF18183C),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFF2D2D5E)),
+                    border: Border.all(color: Colors.grey[300]!),
                   ),
                   child: const Column(
                     children: [
-                      Icon(Icons.inbox_rounded,
-                          color: AppTheme.textMuted, size: 44),
+                      Icon(Icons.inbox_rounded, color: Colors.grey, size: 44),
                       SizedBox(height: 12),
                       Text('No applications yet',
                           style: TextStyle(
-                              color: AppTheme.textPrimary,
+                              color: Colors.black87,
                               fontSize: 19,
                               fontWeight: FontWeight.w700)),
                       SizedBox(height: 6),
                       Text('Apply to internships from the Internships tab.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: AppTheme.textMuted, fontSize: 15)),
+                          style: TextStyle(color: Colors.grey, fontSize: 15)),
                     ],
                   ),
                 )
@@ -2080,9 +2087,9 @@ class _AppliedTabState extends State<_AppliedTab> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF18183C),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFF2D2D5E)),
+                      border: Border.all(color: Colors.grey[300]!),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2118,19 +2125,18 @@ class _AppliedTabState extends State<_AppliedTab> {
                         const SizedBox(height: 6),
                         Text(
                           data['company'] as String? ?? 'Company',
-                          style: const TextStyle(color: AppTheme.textSecondary),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Applied: ${_formatAppliedDate(data['appliedAt'] as Timestamp?)}',
-                          style: const TextStyle(color: AppTheme.textMuted),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                         if (status == 'interview_scheduled') ...[
                           const SizedBox(height: 8),
                           Text(
                             'Interview (${interviewType.toUpperCase()}): ${_formatDateTime(interviewAt)}',
-                            style:
-                                const TextStyle(color: AppTheme.primaryLight),
+                            style: const TextStyle(color: Color(0xFF1565C0)),
                           ),
                           if (interviewType == 'online' &&
                               interviewLink.isNotEmpty)
@@ -2138,19 +2144,17 @@ class _AppliedTabState extends State<_AppliedTab> {
                               onTap: () => _openInterviewLink(interviewLink),
                               child: Text('Link: $interviewLink',
                                   style: const TextStyle(
-                                      color: AppTheme.primaryLight,
+                                      color: Color(0xFF1565C0),
                                       decoration: TextDecoration.underline,
-                                      decorationColor: AppTheme.primaryLight)),
+                                      decorationColor: Color(0xFF1565C0))),
                             ),
                           if (interviewType == 'physical' &&
                               interviewLocation.isNotEmpty)
                             Text('Location: $interviewLocation',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary)),
+                                style: const TextStyle(color: Colors.grey)),
                           if (interviewToken.isNotEmpty)
                             Text('Token: $interviewToken',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary)),
+                                style: const TextStyle(color: Colors.grey)),
                         ],
                         const SizedBox(height: 10),
                         Align(
