@@ -39,14 +39,14 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Use debug provider during development so App Check doesn't block
-    // auth/AI calls when not yet configured in Firebase console.
-    await FirebaseAppCheck.instance.activate(
-      androidProvider:
-          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      appleProvider:
-          kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
-    );
+    // Enable App Check only for release builds.
+    // In debug/dev, skip attestation to avoid 403 failures.
+    if (kReleaseMode) {
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.playIntegrity,
+        appleProvider: AppleProvider.deviceCheck,
+      );
+    }
 
     runApp(const SkillMatchApp());
   } catch (e) {

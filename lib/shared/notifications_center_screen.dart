@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../services/notification_service.dart';
-import '../theme/app_theme.dart';
 
 class NotificationsCenterScreen extends StatelessWidget {
   const NotificationsCenterScreen({super.key});
@@ -37,16 +36,23 @@ class NotificationsCenterScreen extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        backgroundColor: AppTheme.bgDark,
-        title: const Text('Notifications'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Notifications',
+          style: TextStyle(
+            color: Color(0xFF1565C0),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: uid == null
           ? const Center(
               child: Text(
                 'Please login again.',
-                style: TextStyle(color: AppTheme.textMuted),
+                style: TextStyle(color: Colors.grey),
               ),
             )
           : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -72,7 +78,9 @@ class NotificationsCenterScreen extends StatelessWidget {
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF1565C0),
+                    ),
                   );
                 }
 
@@ -80,7 +88,7 @@ class NotificationsCenterScreen extends StatelessWidget {
                   return const Center(
                     child: Text(
                       'No notifications yet.',
-                      style: TextStyle(color: AppTheme.textMuted),
+                      style: TextStyle(color: Colors.grey),
                     ),
                   );
                 }
@@ -95,7 +103,7 @@ class NotificationsCenterScreen extends StatelessWidget {
                             Text(
                               '$unreadCount unread',
                               style: const TextStyle(
-                                  color: AppTheme.primaryLight,
+                                  color: Color(0xFF1565C0),
                                   fontWeight: FontWeight.w700),
                             ),
                             const Spacer(),
@@ -136,14 +144,13 @@ class NotificationsCenterScreen extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: read
-                                    ? const Color(0xFF17173A)
-                                    : const Color(0xFF1E1E4A),
+                                color: read ? Colors.white : Colors.grey[50],
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: read
-                                      ? const Color(0xFF303069)
-                                      : AppTheme.primaryLight.withOpacity(0.6),
+                                      ? Colors.grey[300]!
+                                      : const Color(0xFF1565C0)
+                                          .withOpacity(0.3),
                                 ),
                               ),
                               child: Row(
@@ -153,11 +160,13 @@ class NotificationsCenterScreen extends StatelessWidget {
                                     width: 36,
                                     height: 36,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primary.withOpacity(0.2),
+                                      color: const Color(0xFF1565C0)
+                                          .withOpacity(0.12),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Icon(_iconForType(type),
-                                        size: 20, color: AppTheme.primaryLight),
+                                        size: 20,
+                                        color: const Color(0xFF1565C0)),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -171,7 +180,7 @@ class NotificationsCenterScreen extends StatelessWidget {
                                               child: Text(
                                                 title,
                                                 style: TextStyle(
-                                                  color: Colors.white,
+                                                  color: Colors.black87,
                                                   fontWeight: read
                                                       ? FontWeight.w600
                                                       : FontWeight.w700,
@@ -184,7 +193,7 @@ class NotificationsCenterScreen extends StatelessWidget {
                                                 width: 8,
                                                 height: 8,
                                                 decoration: const BoxDecoration(
-                                                  color: AppTheme.primaryLight,
+                                                  color: Color(0xFF1565C0),
                                                   shape: BoxShape.circle,
                                                 ),
                                               ),
@@ -194,7 +203,7 @@ class NotificationsCenterScreen extends StatelessWidget {
                                         Text(
                                           body,
                                           style: const TextStyle(
-                                              color: AppTheme.textSecondary,
+                                              color: Colors.black54,
                                               fontSize: 12,
                                               height: 1.35),
                                         ),
@@ -202,8 +211,7 @@ class NotificationsCenterScreen extends StatelessWidget {
                                         Text(
                                           _formatDateTime(createdAt),
                                           style: const TextStyle(
-                                              color: AppTheme.textMuted,
-                                              fontSize: 11),
+                                              color: Colors.grey, fontSize: 11),
                                         ),
                                       ],
                                     ),

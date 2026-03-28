@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -48,8 +49,8 @@ class AuthWrapper extends StatelessWidget {
             return ValueListenableBuilder<bool>(
               valueListenable: AuthService.totpSessionVerified,
               builder: (context, totpVerified, _) {
-                // 1. Email must be verified first
-                if (!userModel.emailVerified) {
+                // 1. Email must be verified first (release only)
+                if (kReleaseMode && !userModel.emailVerified) {
                   return const EmailVerificationPage();
                 }
                 // 2. 2FA must be set up

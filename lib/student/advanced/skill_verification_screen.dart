@@ -261,10 +261,18 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Skill Verification'),
-        backgroundColor: AppTheme.bgDark,
+        title: const Text(
+          'Skill Verification',
+          style: TextStyle(
+            color: Color(0xFF1565C0),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
         leading: _activeSkill != null
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -277,12 +285,14 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary))
+              child: CircularProgressIndicator(color: Color(0xFF1565C0)))
           : _activeSkill == null
               ? _buildSkillPicker()
               : _generatingQuiz
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppTheme.primary),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF1565C0),
+                      ),
                     )
                   : _quizDone
                       ? _buildResult()
@@ -298,24 +308,24 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
         children: [
           const Text('Verify Your Skills',
               style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: Colors.black87,
                   fontSize: 22,
                   fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           const Text(
               'Pass an AI-generated industry-based quiz to add a verified skill badge to your profile.',
-              style: TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+              style: TextStyle(color: Colors.grey, fontSize: 13)),
           const SizedBox(height: 4),
           Text('Industry: $_industry',
               style: const TextStyle(
-                  color: AppTheme.primaryLight,
+                  color: Color(0xFF1565C0),
                   fontSize: 12,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 20),
           if (_verifiedSkills.isNotEmpty) ...[
             const Text('Verified Skills',
                 style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: Colors.black87,
                     fontSize: 15,
                     fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
@@ -349,7 +359,7 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
           ],
           const Text('Available Tests',
               style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: Colors.black87,
                   fontSize: 15,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
@@ -365,41 +375,28 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
                 decoration: BoxDecoration(
                   color: alreadyVerified
                       ? AppTheme.success.withOpacity(0.07)
-                      : AppTheme.bgCard,
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: alreadyVerified
                         ? AppTheme.success.withOpacity(0.25)
-                        : const Color(0xFF2D2D5E),
+                        : Colors.grey[300]!,
                   ),
                 ),
                 child: Row(children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: Text(_skillEmoji(skill),
-                          style: const TextStyle(fontSize: 22)),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(skill,
                             style: const TextStyle(
-                                color: AppTheme.textPrimary,
+                                color: Colors.black87,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600)),
                         const SizedBox(height: 2),
                         Text('${questions.length} questions · ~3 min',
                             style: const TextStyle(
-                                color: AppTheme.textMuted, fontSize: 12)),
+                                color: Colors.grey, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -450,19 +447,18 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
           Row(children: [
             Text('$skill Quiz',
                 style: const TextStyle(
-                    color: AppTheme.primaryLight,
+                    color: Color(0xFF1565C0),
                     fontSize: 13,
                     fontWeight: FontWeight.w600)),
             const Spacer(),
             Text('${_currentQ + 1} / ${questions.length}',
-                style:
-                    const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
+                style: const TextStyle(color: Colors.grey, fontSize: 12)),
           ]),
           const SizedBox(height: 8),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: const Color(0xFF2D2D5E),
-            valueColor: const AlwaysStoppedAnimation(AppTheme.primary),
+            backgroundColor: Colors.grey[300],
+            valueColor: const AlwaysStoppedAnimation(Color(0xFF1565C0)),
             minHeight: 6,
             borderRadius: BorderRadius.circular(3),
           ),
@@ -471,13 +467,13 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
           // Question
           Text('Q${_currentQ + 1}.',
               style: const TextStyle(
-                  color: AppTheme.textMuted,
+                  color: Colors.grey,
                   fontSize: 12,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Text(q.q,
               style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: Colors.black87,
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                   height: 1.4)),
@@ -489,8 +485,8 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
             final opt = entry.value;
             final isSelected = _selectedAnswer == idx;
             final isCorrect = idx == q.correct;
-            Color borderColor = const Color(0xFF2D2D5E);
-            Color bgColor = AppTheme.bgCard;
+            Color borderColor = Colors.grey[300]!;
+            Color bgColor = Colors.white;
             if (_answered) {
               if (isCorrect) {
                 borderColor = AppTheme.success;
@@ -500,8 +496,8 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
                 bgColor = AppTheme.error.withOpacity(0.1);
               }
             } else if (isSelected) {
-              borderColor = AppTheme.primary;
-              bgColor = AppTheme.primary.withOpacity(0.1);
+              borderColor = const Color(0xFF1565C0);
+              bgColor = const Color(0xFF1565C0).withOpacity(0.1);
             }
             return GestureDetector(
               onTap: () => _selectAnswer(idx),
@@ -519,20 +515,20 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
                     height: 28,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppTheme.primary.withOpacity(0.2)
-                          : AppTheme.bgDark,
+                          ? const Color(0xFF1565C0).withOpacity(0.2)
+                          : Colors.grey[200],
                       shape: BoxShape.circle,
                       border: Border.all(
                           color: isSelected
-                              ? AppTheme.primary
-                              : const Color(0xFF2D2D5E)),
+                              ? const Color(0xFF1565C0)
+                              : Colors.grey[300]!),
                     ),
                     child: Center(
                       child: Text(String.fromCharCode(65 + idx),
                           style: TextStyle(
                               color: isSelected
-                                  ? AppTheme.primaryLight
-                                  : AppTheme.textMuted,
+                                  ? const Color(0xFF1565C0)
+                                  : Colors.grey[600],
                               fontSize: 12,
                               fontWeight: FontWeight.w600)),
                     ),
@@ -543,7 +539,7 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
                         style: TextStyle(
                             color: _answered && isCorrect
                                 ? AppTheme.success
-                                : AppTheme.textPrimary,
+                                : Colors.black87,
                             fontSize: 13)),
                   ),
                   if (_answered && isCorrect)
@@ -591,13 +587,11 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text('You scored $pct% on the $skill quiz',
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 14),
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
                 textAlign: TextAlign.center),
             const SizedBox(height: 4),
             Text('$_score out of ${questions.length} correct',
-                style:
-                    const TextStyle(color: AppTheme.textMuted, fontSize: 13)),
+                style: const TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 24),
             if (passed)
               Container(
@@ -630,23 +624,6 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
         ).animate().fade().scale(begin: const Offset(0.9, 0.9)),
       ),
     );
-  }
-
-  String _skillEmoji(String skill) {
-    switch (skill) {
-      case 'Flutter':
-        return '🦋';
-      case 'Dart':
-        return '🎯';
-      case 'Python':
-        return '🐍';
-      case 'JavaScript':
-        return '🌐';
-      case 'SQL':
-        return '🗄️';
-      default:
-        return '💡';
-    }
   }
 }
 
