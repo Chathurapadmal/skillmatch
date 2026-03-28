@@ -42,111 +42,79 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return ChatOverlay(
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
+
+        /// 🔥 PREMIUM APPBAR
         appBar: AppBar(
-        backgroundColor: const Color(0xFF1A237E),
-        elevation: 0,
-        title: Row(
-          children: [
-            const Icon(
-              Icons.admin_panel_settings_rounded,
-              color: Colors.amber,
-              size: 22,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Admin Panel',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF5F2EEA), Color(0xFF7B61FF)],
               ),
             ),
+          ),
+          title: const Text(
+            "Admin Panel",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: [
+            PopupMenuButton<String>(
+              icon: const CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Color(0xFF7B61FF)),
+              ),
+              onSelected: (value) async {
+                if (value == 'profile') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfilePage()),
+                  );
+                }
+                if (value == 'signout') await AuthService.signOut();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'profile', child: Text("My Profile")),
+                PopupMenuItem(value: 'signout', child: Text("Sign Out")),
+              ],
+            )
           ],
         ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.amber,
-              child: Icon(Icons.person, color: Color(0xFF1A237E), size: 18),
-            ),
-            onSelected: (value) async {
-              if (value == 'profile') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfilePage()),
-                );
-                return;
-              }
-              if (value == 'signout') await AuthService.signOut();
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                enabled: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.user.displayName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      widget.user.email,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    const Text(
-                      'Administrator',
-                      style: TextStyle(
-                        color: Colors.amber,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(
-                value: 'profile',
-                child: Row(
-                  children: [
-                    Icon(Icons.person_outline),
-                    SizedBox(width: 8),
-                    Text('My Profile'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'signout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Sign Out', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      bottomNavigationBar: widget.showInternalNavigation
-          ? NavigationBar(
-              selectedIndex: _selectedIndex,
-              backgroundColor: Colors.white,
-              indicatorColor: const Color(0xFF1A237E).withValues(alpha: 0.12),
-              onDestinationSelected: (i) => setState(() => _selectedIndex = i),
-              destinations: _navItems
-                  .map(
-                    (n) => NavigationDestination(
-                      icon: Icon(n.icon),
-                      label: n.label,
-                    ),
-                  )
-                  .toList(),
-            )
-          : null,
+
+        /// ✨ FAB
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xFF7B61FF),
+          elevation: 8,
+          child: const Icon(Icons.auto_awesome),
+          onPressed: () {},
+        ),
+
+        /// 🧭 NAVBAR
+        bottomNavigationBar: widget.showInternalNavigation
+            ? NavigationBar(
+                selectedIndex: _selectedIndex,
+                indicatorColor:
+                    const Color(0xFF7B61FF).withOpacity(0.2),
+                labelBehavior:
+                    NavigationDestinationLabelBehavior.alwaysShow,
+                onDestinationSelected: (i) =>
+                    setState(() => _selectedIndex = i),
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.dashboard_rounded),
+                    label: "Overview",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.people_rounded),
+                    label: "Users",
+                  ),
+                ],
+              )
+            : null,
+
         body: IndexedStack(
           index: _selectedIndex,
           children: [
@@ -159,7 +127,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 }
 
-// ── Overview Tab ──────────────────────────────────────────────────────────────
+////////////////////////////////////////////////////////////
+/// OVERVIEW TAB
+////////////////////////////////////////////////////////////
+
 class _OverviewTab extends StatelessWidget {
   final UserModel adminUser;
 
@@ -168,61 +139,59 @@ class _OverviewTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Banner
+          /// 🎉 PREMIUM BANNER
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                colors: [Color(0xFF5F2EEA), Color(0xFF7B61FF)],
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.deepPurple.withOpacity(0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                )
+              ],
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.admin_panel_settings_rounded,
-                      color: Colors.amber,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Welcome, ${adminUser.displayName}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                Text(
+                  "Welcome, Admin 👋",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Full access — manage users, roles, and platform data.',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                SizedBox(height: 6),
+                Text(
+                  "Manage users, roles, and system analytics",
+                  style: TextStyle(color: Colors.white70),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
 
-          // Live user counts from Firestore
+          const SizedBox(height: 20),
+
           const Text(
-            'Platform Overview',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            "Platform Overview",
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 14),
+
+          const SizedBox(height: 12),
+
+          /// 📊 COUNTS
           StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('users').snapshots(),
+            stream:
+                FirebaseFirestore.instance.collection('users').snapshots(),
             builder: (context, snap) {
               int total = 0, applicants = 0, companies = 0, admins = 0;
 
@@ -230,7 +199,7 @@ class _OverviewTab extends StatelessWidget {
                 for (final doc in snap.data!.docs) {
                   final d = doc.data() as Map<String, dynamic>;
                   total++;
-                  switch (d['role'] as String?) {
+                  switch (d['role']) {
                     case 'company':
                       companies++;
                       break;
@@ -249,32 +218,11 @@ class _OverviewTab extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1.6,
                 children: [
-                  _CountCard(
-                    label: 'Total Users',
-                    count: total,
-                    icon: Icons.people_rounded,
-                    color: const Color(0xFF1A237E),
-                  ),
-                  _CountCard(
-                    label: 'Applicants',
-                    count: applicants,
-                    icon: Icons.person_search_rounded,
-                    color: Colors.teal,
-                  ),
-                  _CountCard(
-                    label: 'Companies',
-                    count: companies,
-                    icon: Icons.business_rounded,
-                    color: Colors.blue,
-                  ),
-                  _CountCard(
-                    label: 'Admins',
-                    count: admins,
-                    icon: Icons.shield_rounded,
-                    color: Colors.amber.shade700,
-                  ),
+                  _CountCard("Total Users", total, Icons.people, Colors.deepPurple),
+                  _CountCard("Applicants", applicants, Icons.person, Colors.teal),
+                  _CountCard("Companies", companies, Icons.business, Colors.blue),
+                  _CountCard("Admins", admins, Icons.admin_panel_settings, Colors.orange),
                 ],
               );
             },
@@ -285,7 +233,10 @@ class _OverviewTab extends StatelessWidget {
   }
 }
 
-// ── Users Tab ─────────────────────────────────────────────────────────────────
+////////////////////////////////////////////////////////////
+/// USERS TAB
+////////////////////////////////////////////////////////////
+
 class _UsersTab extends StatefulWidget {
   const _UsersTab();
 
@@ -294,80 +245,62 @@ class _UsersTab extends StatefulWidget {
 }
 
 class _UsersTabState extends State<_UsersTab> {
-  String _search = '';
+  String _search = "";
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Search bar
+        /// 🔍 SEARCH
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: const EdgeInsets.all(16),
           child: TextField(
             decoration: InputDecoration(
-              hintText: 'Search users…',
+              hintText: "Search users...",
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
               filled: true,
               fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            onChanged: (v) => setState(() => _search = v.toLowerCase().trim()),
+            onChanged: (v) =>
+                setState(() => _search = v.toLowerCase()),
           ),
         ),
 
-        // User list
+        /// 👥 USER LIST
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('users')
-                .orderBy('createdAt', descending: true)
                 .snapshots(),
             builder: (context, snap) {
-              if (snap.connectionState == ConnectionState.waiting) {
+              if (!snap.hasData) {
                 return const Center(child: CircularProgressIndicator());
-              }
-              if (!snap.hasData || snap.data!.docs.isEmpty) {
-                return const Center(child: Text('No users found.'));
               }
 
               final docs = snap.data!.docs.where((doc) {
                 if (_search.isEmpty) return true;
                 final d = doc.data() as Map<String, dynamic>;
-                final email = (d['email'] as String? ?? '').toLowerCase();
-                final name = (d['displayName'] as String? ?? '').toLowerCase();
-                return email.contains(_search) || name.contains(_search);
+                final name = (d['displayName'] ?? "").toLowerCase();
+                final email = (d['email'] ?? "").toLowerCase();
+                return name.contains(_search) ||
+                    email.contains(_search);
               }).toList();
 
-              if (docs.isEmpty) {
-                return const Center(child: Text('No matching users.'));
-              }
-
-              return ListView.separated(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+              return ListView.builder(
                 itemCount: docs.length,
-                separatorBuilder: (_, index) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
-                  final doc = docs[i];
-                  final d = doc.data() as Map<String, dynamic>;
-                  final role = d['role'] as String? ?? 'applicant';
-                  final name = d['displayName'] as String? ?? 'Unknown';
-                  final email = d['email'] as String? ?? '';
-                  final company = d['companyName'] as String?;
+                  final d =
+                      docs[i].data() as Map<String, dynamic>;
 
                   return _UserTile(
-                    uid: doc.id,
-                    name: name,
-                    email: email,
-                    role: role,
-                    companyName: company,
-                    onRoleChange: (newRole) => _changeRole(doc.id, newRole),
+                    name: d['displayName'] ?? "",
+                    email: d['email'] ?? "",
+                    role: d['role'] ?? "applicant",
                   );
                 },
               );
@@ -377,165 +310,77 @@ class _UsersTabState extends State<_UsersTab> {
       ],
     );
   }
-
-  Future<void> _changeRole(String uid, String newRole) async {
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'role': newRole,
-    });
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Role updated to "$newRole"'),
-        backgroundColor: Colors.green.shade600,
-      ),
-    );
-  }
 }
 
-// ── User Tile ─────────────────────────────────────────────────────────────────
+////////////////////////////////////////////////////////////
+/// USER TILE
+////////////////////////////////////////////////////////////
+
 class _UserTile extends StatelessWidget {
-  final String uid;
   final String name;
   final String email;
   final String role;
-  final String? companyName;
-  final void Function(String) onRoleChange;
 
   const _UserTile({
-    required this.uid,
     required this.name,
     required this.email,
     required this.role,
-    this.companyName,
-    required this.onRoleChange,
   });
-
-  static const _roles = ['applicant', 'company', 'admin'];
-
-  Color get _roleColor {
-    switch (role) {
-      case 'admin':
-        return Colors.amber.shade700;
-      case 'company':
-        return Colors.blue;
-      default:
-        return Colors.teal;
-    }
-  }
-
-  IconData get _roleIcon {
-    switch (role) {
-      case 'admin':
-        return Icons.shield_rounded;
-      case 'company':
-        return Icons.business_rounded;
-      default:
-        return Icons.person_rounded;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
         ],
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: _roleColor.withValues(alpha: 0.15),
-            child: Icon(_roleIcon, color: _roleColor, size: 20),
+            backgroundColor: Colors.grey.shade200,
+            child: Text(name.isNotEmpty ? name[0] : "?"),
           ),
           const SizedBox(width: 12),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  email,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                if (companyName != null)
-                  Text(
-                    companyName!,
-                    style: TextStyle(color: Colors.blue.shade600, fontSize: 11),
-                  ),
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ),
-          PopupMenuButton<String>(
-            tooltip: 'Change role',
-            onSelected: onRoleChange,
-            itemBuilder: (_) => _roles
-                .map(
-                  (r) => PopupMenuItem<String>(
-                    value: r,
-                    child: Row(
-                      children: [
-                        Icon(
-                          r == 'admin'
-                              ? Icons.shield_rounded
-                              : r == 'company'
-                              ? Icons.business_rounded
-                              : Icons.person_rounded,
-                          size: 18,
-                          color: r == 'admin'
-                              ? Colors.amber.shade700
-                              : r == 'company'
-                              ? Colors.blue
-                              : Colors.teal,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          r,
-                          style: TextStyle(
-                            fontWeight: role == r
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: _roleColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    role,
-                    style: TextStyle(
-                      color: _roleColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.arrow_drop_down, color: _roleColor, size: 16),
-                ],
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: role == 'admin'
+                  ? Colors.deepPurple.shade100
+                  : role == 'company'
+                      ? Colors.blue.shade100
+                      : Colors.green.shade100,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              role.toUpperCase(),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: role == 'admin'
+                    ? Colors.deepPurple
+                    : role == 'company'
+                        ? Colors.blue
+                        : Colors.green,
               ),
             ),
           ),
@@ -545,7 +390,9 @@ class _UserTile extends StatelessWidget {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+////////////////////////////////////////////////////////////
+/// COUNT CARD
+////////////////////////////////////////////////////////////
 
 class _CountCard extends StatelessWidget {
   final String label;
@@ -553,55 +400,44 @@ class _CountCard extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _CountCard({
-    required this.label,
-    required this.count,
-    required this.icon,
-    required this.color,
-  });
+  const _CountCard(this.label, this.count, this.icon, this.color);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.15), color.withOpacity(0.05)],
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+            color: color.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
         ],
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: color, size: 24),
+          CircleAvatar(
+            backgroundColor: color.withOpacity(0.2),
+            child: Icon(icon, color: color),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '$count',
+                "$count",
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: color,
                 ),
               ),
-              Text(
-                label,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
+              Text(label, style: const TextStyle(color: Colors.grey)),
             ],
           ),
         ],
@@ -609,6 +445,10 @@ class _CountCard extends StatelessWidget {
     );
   }
 }
+
+////////////////////////////////////////////////////////////
+/// NAV ITEM
+////////////////////////////////////////////////////////////
 
 class _NavItem {
   final IconData icon;
