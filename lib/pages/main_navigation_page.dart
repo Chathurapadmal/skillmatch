@@ -3,7 +3,6 @@ import 'package:skillmatch/student/profile/profilepage.dart';
 import 'package:skillmatch/student/home/home_screen.dart';
 
 import '../admin/admin_dashboard.dart';
-import '../home_page.dart';
 import '../models/user_model.dart';
 import 'applicant/applicant_dashboard.dart';
 import 'applicant/upload_cv_page.dart';
