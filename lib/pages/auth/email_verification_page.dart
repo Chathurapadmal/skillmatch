@@ -1,19 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-
 import '../../services/auth_service.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EmailVerificationPage
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// Shown immediately after registration (and after login if email is not yet
-// verified). Prompts the user to open their inbox and click the link.
-//
-// Navigation out of this page is handled automatically by AuthWrapper:
-// once FirestoreUserService.setEmailVerified() is called the Firestore
-// stream re-emits, AuthWrapper rebuilds, and routes to TwoFASetupPage.
 
 class EmailVerificationPage extends StatefulWidget {
   const EmailVerificationPage({super.key});
@@ -25,8 +13,6 @@ class EmailVerificationPage extends StatefulWidget {
 class _EmailVerificationPageState extends State<EmailVerificationPage> {
   bool _checking = false;
   bool _resending = false;
-
-  /// Cooldown seconds remaining before resend is allowed again.
   int _resendCooldown = 0;
   Timer? _cooldownTimer;
 
@@ -36,7 +22,6 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     super.dispose();
   }
 
-  // ── Resend verification email with cooldown ───────────────────────────────
   Future<void> _resendEmail() async {
     if (_resendCooldown > 0) return;
     setState(() => _resending = true);
@@ -65,15 +50,13 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     });
   }
 
-  // ── Check if email is now verified ───────────────────────────────────────
   Future<void> _checkVerification() async {
     setState(() => _checking = true);
     try {
       final verified = await AuthService.reloadAndCheckEmailVerified();
       if (!mounted) return;
       if (verified) {
-        // Firestore stream will fire → AuthWrapper routes to 2FA setup.
-        // Show brief confirmation.
+
         _showSnack('Email verified! Setting up 2FA…', isError: false);
       } else {
         _showSnack('Email not verified yet. Please check your inbox.');

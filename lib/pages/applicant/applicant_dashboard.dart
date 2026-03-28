@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:skillmatch/student/profile/profilepage.dart';
-
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';

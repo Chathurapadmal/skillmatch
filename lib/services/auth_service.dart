@@ -12,6 +12,13 @@ import 'totp_service.dart';
 class AuthService {
   static final _auth = FirebaseAuth.instance;
 
+  // Development-only switch to bypass authentication gates.
+  // Keep this false for production behavior.
+  static const bool bypassAllAuthInDevelopment = true;
+
+  static bool get isDevelopmentAuthBypassEnabled =>
+      kDebugMode && bypassAllAuthInDevelopment;
+
   // ── TOTP session flag ─────────────────────────────────────────────────────
   //
   // ValueNotifier so AuthWrapper can rebuild reactively when TOTP is verified
@@ -25,6 +32,19 @@ class AuthService {
 
   // ── Current Firebase user ─────────────────────────────────────────────────
   static User? get currentUser => _auth.currentUser;
+
+  // ── Dev helper: ensure there is at least an anonymous session ────────────
+  static Future<User?> ensureDevSession() async {
+    if (!isDevelopmentAuthBypassEnabled) {
+      return _auth.currentUser;
+    }
+
+    final existing = _auth.currentUser;
+    if (existing != null) return existing;
+
+    final credential = await _auth.signInAnonymously();
+    return credential.user;
+  }
 
   // ── Forward UserModel stream ──────────────────────────────────────────────
   static Stream<UserModel?> userModelStream(String uid) =>
