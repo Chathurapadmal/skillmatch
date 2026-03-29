@@ -224,7 +224,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF161637),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -237,14 +237,14 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
               Text(
                 internship['title'] as String? ?? 'Internship',
                 style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black87,
                     fontSize: 22,
                     fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(
                 '${internship['company'] ?? ''} • ${internship['mode'] ?? ''}',
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: const TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 8),
               Text(
@@ -258,18 +258,18 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                         true
                     ? internship['description'] as String
                     : 'No additional description provided.',
-                style: const TextStyle(color: AppTheme.textMuted, height: 1.4),
+                style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
               const SizedBox(height: 14),
               const Text('Required Skills',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontSize: 16,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               if (tags.isEmpty)
                 const Text('No skills listed yet.',
-                    style: TextStyle(color: AppTheme.textMuted))
+                    style: TextStyle(color: Colors.black45))
               else
                 Wrap(
                   spacing: 8,
@@ -280,12 +280,12 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF23235A),
+                            color: const Color(0xFFE8F0FF),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(tag,
                               style: const TextStyle(
-                                  color: AppTheme.textSecondary, fontSize: 12)),
+                                  color: Color(0xFF1565C0), fontSize: 12)),
                         ),
                       )
                       .toList(),
@@ -967,7 +967,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF161637),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -980,14 +980,14 @@ class _InternshipsTabState extends State<_InternshipsTab> {
               Text(
                 internship['title'] as String? ?? 'Internship',
                 style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black87,
                     fontSize: 22,
                     fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(
                 '${internship['company'] ?? ''} • ${internship['mode'] ?? ''}',
-                style: const TextStyle(color: AppTheme.textSecondary),
+                style: const TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 8),
               Text(
@@ -1001,18 +1001,18 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                         true
                     ? internship['description'] as String
                     : 'No additional description provided.',
-                style: const TextStyle(color: AppTheme.textMuted, height: 1.4),
+                style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
               const SizedBox(height: 14),
               const Text('Required Skills',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontSize: 16,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               if (tags.isEmpty)
                 const Text('No skills listed yet.',
-                    style: TextStyle(color: AppTheme.textMuted))
+                    style: TextStyle(color: Colors.black45))
               else
                 Wrap(
                   spacing: 8,
@@ -1023,12 +1023,12 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF23235A),
+                            color: const Color(0xFFE8F0FF),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(tag,
                               style: const TextStyle(
-                                  color: AppTheme.textSecondary, fontSize: 12)),
+                                  color: Color(0xFF1565C0), fontSize: 12)),
                         ),
                       )
                       .toList(),
@@ -1884,6 +1884,22 @@ class _AppliedTab extends StatefulWidget {
 }
 
 class _AppliedTabState extends State<_AppliedTab> {
+  Timestamp? _getInterviewTimestamp(Map<String, dynamic> data) {
+    final direct = data['interviewDate'];
+    if (direct is Timestamp) return direct;
+    final legacy = data['interviewAt'];
+    if (legacy is Timestamp) return legacy;
+    return null;
+  }
+
+  bool _isInPersonInterview(String type) {
+    final normalized = type.trim().toLowerCase();
+    return normalized == 'physical' ||
+        normalized == 'inperson' ||
+        normalized == 'in_person' ||
+        normalized == 'onsite';
+  }
+
   String _formatAppliedDate(Timestamp? ts) {
     if (ts == null) return 'Recently applied';
     final date = ts.toDate();
@@ -1951,19 +1967,18 @@ class _AppliedTabState extends State<_AppliedTab> {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A42),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Application',
-            style: TextStyle(color: Colors.white)),
+            style: TextStyle(color: Colors.black87)),
         content: const Text(
           'Are you sure you want to remove this application?',
-          style: TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppTheme.textMuted)),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -2058,7 +2073,7 @@ class _AppliedTabState extends State<_AppliedTab> {
                   final status = (data['status'] as String?) ?? 'applied';
                   final interviewType =
                       (data['interviewType'] as String?) ?? '';
-                  final interviewAt = data['interviewAt'] as Timestamp?;
+                  final interviewAt = _getInterviewTimestamp(data);
                   final interviewLink =
                       (data['interviewLink'] as String?) ?? '';
                   final interviewLocation =
@@ -2132,7 +2147,7 @@ class _AppliedTabState extends State<_AppliedTab> {
                                       decoration: TextDecoration.underline,
                                       decorationColor: Color(0xFF1565C0))),
                             ),
-                          if (interviewType == 'physical' &&
+                          if (_isInPersonInterview(interviewType) &&
                               interviewLocation.isNotEmpty)
                             Text('Location: $interviewLocation',
                                 style: const TextStyle(color: Colors.grey)),
