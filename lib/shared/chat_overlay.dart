@@ -59,7 +59,8 @@ class _ChatPanel extends StatefulWidget {
   State<_ChatPanel> createState() => _ChatPanelState();
 }
 
-class _ChatPanelState extends State<_ChatPanel> with SingleTickerProviderStateMixin {
+class _ChatPanelState extends State<_ChatPanel>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _messageCtrl = TextEditingController();
   final List<_ChatMessage> _messages = <_ChatMessage>[
     const _ChatMessage(
@@ -82,7 +83,8 @@ class _ChatPanelState extends State<_ChatPanel> with SingleTickerProviderStateMi
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+    ).animate(
+        CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
     _animationController.forward();
   }
 
@@ -121,156 +123,164 @@ class _ChatPanelState extends State<_ChatPanel> with SingleTickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _slideAnimation,
-      child: Positioned(
-        bottom: 0,
-        right: 0,
-        left: 0,
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.75,
-          decoration: const BoxDecoration(
-            color: AppTheme.bgDark,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      left: 0,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            decoration: const BoxDecoration(
+              color: AppTheme.bgDark,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
             ),
-          ),
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Color(0xFF2D2D5E)),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFF2D2D5E)),
+                    ),
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'SkillMatch AI Support',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: widget.onClose,
-                    ),
-                  ],
-                ),
-              ),
-              // Messages
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final m = _messages[index];
-                    final bubbleColor =
-                        m.fromUser ? AppTheme.primary : const Color(0xFF1C1C44);
-
-                    return Align(
-                      alignment: m.fromUser ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 290),
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: bubbleColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: m.fromUser
-                                ? AppTheme.primaryLight
-                                : const Color(0xFF323273),
-                          ),
-                        ),
-                        child: Text(
-                          m.text,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              // Input
-              Container(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF131333),
-                  border: Border(top: BorderSide(color: Color(0xFF2D2D5E))),
-                ),
-                child: SafeArea(
-                  top: false,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _messageCtrl,
-                          style: const TextStyle(color: Colors.white),
-                          minLines: 1,
-                          maxLines: 4,
-                          onSubmitted: (_) => _sendMessage(),
-                          decoration: InputDecoration(
-                            hintText: 'Ask support... ',
-                            hintStyle: const TextStyle(color: AppTheme.textMuted),
-                            filled: true,
-                            fillColor: const Color(0xFF1D1D46),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFF313173)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  const BorderSide(color: Color(0xFF313173)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide:
-                                  const BorderSide(color: AppTheme.primaryLight),
-                            ),
-                          ),
+                      const Text(
+                        'SkillMatch AI Support',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        height: 48,
-                        width: 48,
-                        child: ElevatedButton(
-                          onPressed: _sending ? null : _sendMessage,
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: AppTheme.primary,
-                          ),
-                          child: _sending
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.send_rounded, color: Colors.white),
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: widget.onClose,
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                // Messages
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final m = _messages[index];
+                      final bubbleColor = m.fromUser
+                          ? AppTheme.primary
+                          : const Color(0xFF1C1C44);
+
+                      return Align(
+                        alignment: m.fromUser
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 290),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: bubbleColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: m.fromUser
+                                  ? AppTheme.primaryLight
+                                  : const Color(0xFF323273),
+                            ),
+                          ),
+                          child: Text(
+                            m.text,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // Input
+                Container(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF131333),
+                    border: Border(top: BorderSide(color: Color(0xFF2D2D5E))),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _messageCtrl,
+                            style: const TextStyle(color: Colors.white),
+                            minLines: 1,
+                            maxLines: 4,
+                            onSubmitted: (_) => _sendMessage(),
+                            decoration: InputDecoration(
+                              hintText: 'Ask support... ',
+                              hintStyle:
+                                  const TextStyle(color: AppTheme.textMuted),
+                              filled: true,
+                              fillColor: const Color(0xFF1D1D46),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF313173)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF313173)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: AppTheme.primaryLight),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 48,
+                          width: 48,
+                          child: ElevatedButton(
+                            onPressed: _sending ? null : _sendMessage,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              backgroundColor: AppTheme.primary,
+                            ),
+                            child: _sending
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.send_rounded,
+                                    color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

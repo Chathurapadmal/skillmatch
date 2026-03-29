@@ -135,11 +135,29 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
                 child: Icon(Icons.business, color: Colors.white, size: 18),
               ),
               onSelected: (value) async {
-                if (value == 'inbox') {
+                if (value == 'privacy') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const NotificationsCenterScreen(),
+                      builder: (_) => const _PrivacyPolicyPage(),
+                    ),
+                  );
+                  return;
+                }
+                if (value == 'security') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const _SecurityPage(),
+                    ),
+                  );
+                  return;
+                }
+                if (value == 'terms') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const _TermsOfServicePage(),
                     ),
                   );
                   return;
@@ -177,15 +195,36 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
                 ),
                 const PopupMenuDivider(),
                 const PopupMenuItem(
-                  value: 'inbox',
+                  value: 'privacy',
                   child: Row(
                     children: [
-                      Icon(Icons.inbox_outlined),
+                      Icon(Icons.privacy_tip_outlined),
                       SizedBox(width: 8),
-                      Text('Notification Inbox'),
+                      Text('Privacy Policy'),
                     ],
                   ),
                 ),
+                const PopupMenuItem(
+                  value: 'security',
+                  child: Row(
+                    children: [
+                      Icon(Icons.security_outlined),
+                      SizedBox(width: 8),
+                      Text('Security'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'terms',
+                  child: Row(
+                    children: [
+                      Icon(Icons.description_outlined),
+                      SizedBox(width: 8),
+                      Text('Terms of Service'),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(),
                 const PopupMenuItem(
                   value: 'signout',
                   child: Row(
@@ -293,6 +332,48 @@ class _CompanyOverviewTab extends StatelessWidget {
                     .compareTo(at?.millisecondsSinceEpoch ?? 0);
               });
 
+            void openApplicantsDetails() {
+              final items = topApplications
+                  .map((e) =>
+                      '${(e.data()['studentName'] as String? ?? 'Student')} • ${(e.data()['title'] as String? ?? 'Role')}')
+                  .toList();
+              _showMetricDetails(
+                context,
+                title: 'Applicants',
+                items: items,
+              );
+            }
+
+            void openShortlistedDetails() {
+              final items = topApplications.where((e) {
+                final status =
+                    (e.data()['status'] as String? ?? '').toLowerCase();
+                return status == 'approved' || status == 'interview_scheduled';
+              }).map((e) {
+                final status =
+                    (e.data()['status'] as String? ?? '').toUpperCase();
+                return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
+              }).toList();
+              _showMetricDetails(
+                context,
+                title: 'Shortlisted Candidates',
+                items: items,
+              );
+            }
+
+            void openActivePostsDetails() {
+              final items = internships
+                  .where((e) => e.data()['active'] != false)
+                  .map((e) =>
+                      '${(e.data()['title'] as String? ?? 'Internship')} • ${(e.data()['type'] as String? ?? 'Mode')}')
+                  .toList();
+              _showMetricDetails(
+                context,
+                title: 'Active Posts',
+                items: items,
+              );
+            }
+
             return ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -330,125 +411,41 @@ class _CompanyOverviewTab extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _MetricCard(
-                        icon: Icons.assignment_ind_outlined,
-                        label: 'Applicants',
-                        value: '${applications.length}',
-                        color: const Color(0xFF1565C0),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _MetricCard(
-                        icon: Icons.check_circle_outline,
-                        label: 'Shortlisted',
-                        value: '$shortlisted',
-                        color: AppTheme.success,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _MetricCard(
-                        icon: Icons.work_outline,
-                        label: 'Active Posts',
-                        value: '$activePosts',
-                        color: AppTheme.warning,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        final items = topApplications
-                            .map((e) =>
-                                '${(e.data()['studentName'] as String? ?? 'Student')} • ${(e.data()['title'] as String? ?? 'Role')}')
-                            .toList();
-                        _showMetricDetails(
-                          context,
-                          title: 'Applicants',
-                          items: items,
-                        );
-                      },
-                      icon: const Icon(Icons.assignment_ind_outlined),
-                      label: const Text('Applicants details'),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        final items = topApplications.where((e) {
-                          final status = (e.data()['status'] as String? ?? '')
-                              .toLowerCase();
-                          return status == 'approved' ||
-                              status == 'interview_scheduled';
-                        }).map((e) {
-                          final status = (e.data()['status'] as String? ?? '')
-                              .toUpperCase();
-                          return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
-                        }).toList();
-                        _showMetricDetails(
-                          context,
-                          title: 'Shortlisted Candidates',
-                          items: items,
-                        );
-                      },
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Shortlisted details'),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        final items = internships
-                            .where((e) => e.data()['active'] != false)
-                            .map((e) =>
-                                '${(e.data()['title'] as String? ?? 'Internship')} • ${(e.data()['type'] as String? ?? 'Mode')}')
-                            .toList();
-                        _showMetricDetails(
-                          context,
-                          title: 'Active Posts',
-                          items: items,
-                        );
-                      },
-                      icon: const Icon(Icons.work_outline),
-                      label: const Text('Active posts details'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFDCE3F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.notifications_active_outlined,
-                          color: Color(0xFF1565C0)),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Open notification center for unread updates and activity alerts.',
-                          style: TextStyle(color: Colors.black54),
+                      child: GestureDetector(
+                        onTap: openApplicantsDetails,
+                        child: _MetricCard(
+                          icon: Icons.assignment_ind_outlined,
+                          label: 'Applicants',
+                          value: '${applications.length}',
+                          color: const Color(0xFF1565C0),
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const NotificationsCenterScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text('Open'),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: openShortlistedDetails,
+                        child: _MetricCard(
+                          icon: Icons.check_circle_outline,
+                          label: 'Shortlisted',
+                          value: '$shortlisted',
+                          color: AppTheme.success,
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: openActivePostsDetails,
+                        child: _MetricCard(
+                          icon: Icons.work_outline,
+                          label: 'Active Posts',
+                          value: '$activePosts',
+                          color: AppTheme.warning,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 18),
                 const Text(
@@ -2284,6 +2281,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
               const SizedBox(height: 8),
               TextField(
                 controller: _logoCtrl,
+                onChanged: (_) => setState(() {}),
                 decoration:
                     const InputDecoration(labelText: 'Company Logo URL'),
               ),
@@ -2303,6 +2301,37 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                   label: const Text('Upload Company Logo (Supabase)'),
                 ),
               ),
+              if (_logoCtrl.text.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Logo Preview',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      width: 96,
+                      height: 96,
+                      color: const Color(0xFFF4F7FC),
+                      child: Image.network(
+                        _logoCtrl.text.trim(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.business,
+                          size: 42,
+                          color: Color(0xFF1565C0),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 8),
               TextField(
                 controller: _descriptionCtrl,
@@ -2403,7 +2432,60 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                         );
                       },
                       icon: const Icon(Icons.cloud_outlined),
-                      label: const Text('Open Supabase Storage Page'),
+                      label: const Text('Supabase Storage'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const _PrivacyPolicyPage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.privacy_tip_outlined),
+                      label: const Text('Privacy Policy'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const _SecurityPage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.security_outlined),
+                      label: const Text('Security'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const _TermsOfServicePage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.description_outlined),
+                      label: const Text('Terms of Service'),
                     ),
                   ),
                 ],
@@ -3178,6 +3260,286 @@ class _MetricCard extends StatelessWidget {
             style: const TextStyle(
               color: Colors.black54,
               fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// Privacy Policy Page
+// ============================================================================
+
+class _PrivacyPolicyPage extends StatelessWidget {
+  const _PrivacyPolicyPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Privacy Policy',
+          style: TextStyle(
+            color: Color(0xFF1E3A5F),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E3A5F)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFDCE3F0)),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Privacy Policy',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Last Updated: March 2026',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'At SkillMatch, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.\n\n'
+                  '1. Information We Collect\n'
+                  'We collect information you provide directly, such as your company details, contact information, and application data.\n\n'
+                  '2. How We Use Your Information\n'
+                  'We use your information to operate the platform, improve services, and communicate with you about your account.\n\n'
+                  '3. Data Security\n'
+                  'We implement appropriate security measures to protect your personal information against unauthorized access.\n\n'
+                  '4. Your Rights\n'
+                  'You have the right to access, correct, or delete your personal data.\n\n'
+                  'For more information, please contact our support team.',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.6,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// Security Page
+// ============================================================================
+
+class _SecurityPage extends StatelessWidget {
+  const _SecurityPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Security',
+          style: TextStyle(
+            color: Color(0xFF1E3A5F),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E3A5F)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFDCE3F0)),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Security Center',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Account Security',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '• Use a strong password with mix of characters\n'
+                  '• Enable two-factor authentication (coming soon)\n'
+                  '• Review active sessions regularly\n'
+                  '• Do not share your login credentials\n'
+                  '• Logout when using shared devices',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.6,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Data Protection',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '• All data is encrypted in transit and at rest\n'
+                  '• We use industry-standard security protocols\n'
+                  '• Regular security audits are conducted\n'
+                  '• Access logs are maintained for compliance',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.6,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Report a Security Issue',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'If you discover a security vulnerability, please email our security team at security@skillmatch.app',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.6,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// Terms of Service Page
+// ============================================================================
+
+class _TermsOfServicePage extends StatelessWidget {
+  const _TermsOfServicePage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Terms of Service',
+          style: TextStyle(
+            color: Color(0xFF1E3A5F),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E3A5F)),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFDCE3F0)),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Terms of Service',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Effective Date: March 2026',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'By using SkillMatch, you agree to these Terms of Service.\n\n'
+                  '1. Use License\n'
+                  'Permission is granted to temporarily download material from the SkillMatch platform for personal, non-commercial transitory viewing only.\n\n'
+                  '2. Disclaimer\n'
+                  'The materials on SkillMatch are provided on an "as is" basis. SkillMatch makes no warranties or representations regarding the accuracy or completeness of the information.\n\n'
+                  '3. Limitations\n'
+                  'In no event shall SkillMatch or its suppliers be liable for damages arising out of or related to your use of the platform.\n\n'
+                  '4. User Responsibilities\n'
+                  'You are responsible for maintaining confidentiality of your account and password. You agree to notify us immediately of any unauthorized use.\n\n'
+                  '5. Modification of Terms\n'
+                  'We may revise these terms at any time without notice. Your continued use constitutes acceptance of revised terms.\n\n'
+                  'For clarifications, contact support@skillmatch.app',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.6,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
