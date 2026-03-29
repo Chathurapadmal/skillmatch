@@ -1641,13 +1641,13 @@ class _MyCvTabState extends State<_MyCvTab> {
         children: [
           const Text('Upload CV',
               style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.black87,
                   fontSize: 48 / 2,
                   fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           const Text(
               'Upload your resume - our AI will extract your skills and match you with internships.',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 18)),
+              style: TextStyle(color: Colors.black54, fontSize: 16)),
           const SizedBox(height: 24),
           Container(
             width: double.infinity,
@@ -2084,7 +2084,7 @@ class _AppliedTabState extends State<_AppliedTab> {
                               child: Text(
                                 data['title'] as String? ?? 'Internship',
                                 style: const TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.black87,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 17),
                               ),

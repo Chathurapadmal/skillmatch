@@ -65,14 +65,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           ...commonPages,
         ];
       case UserRole.company:
-        return [
-          _NavPage(
-            label: 'Dashboard',
-            icon: Icons.business_center_rounded,
-            page: CompanyDashboard(user: widget.user),
-          ),
-          ...commonPages,
-        ];
+        // Company users use CompanyDashboard directly with no MainNavigationPage wrapper
+        return [];
       case UserRole.applicant:
         return [
           _NavPage(
@@ -87,6 +81,13 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final role = widget.user.role;
+
+    // Company users use CompanyDashboard directly
+    if (role == UserRole.company) {
+      return CompanyDashboard(user: widget.user);
+    }
+
     final pages = _pages;
 
     if (_selectedIndex >= pages.length) {
