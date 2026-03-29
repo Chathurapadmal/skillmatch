@@ -4,6 +4,7 @@ import 'package:skillmatch/student/profile/profilepage.dart';
 
 import '../admin/admin_dashboard.dart';
 import '../models/user_model.dart';
+import '../student/home/home_screen.dart';
 import 'applicant/applicant_dashboard.dart';
 import 'applicant/upload_cv_page.dart';
 import 'company/company_dashboard.dart';
@@ -24,11 +25,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     final role = widget.user.role;
 
     final commonPages = <_NavPage>[
-      _NavPage(
-        label: 'Home',
-        icon: Icons.home_rounded,
-        page: const DashboardTab(),
-      ),
       _NavPage(
         label: 'Profile',
         icon: Icons.person_rounded,
@@ -62,6 +58,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               initialTabIndex: 1,
             ),
           ),
+          _NavPage(
+            label: 'Home',
+            icon: Icons.home_rounded,
+            page: const DashboardTab(),
+          ),
           ...commonPages,
         ];
       case UserRole.company:
@@ -73,6 +74,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             label: 'Dashboard',
             icon: Icons.space_dashboard_rounded,
             page: ApplicantDashboard(user: widget.user),
+          ),
+          _NavPage(
+            label: 'Browse Jobs',
+            icon: Icons.search_rounded,
+            page: const HomeScreen(initialTabIndex: 0),
           ),
           ...commonPages,
         ];

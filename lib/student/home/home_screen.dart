@@ -30,13 +30,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialTabIndex.clamp(0, 4);
+    _selectedIndex = widget.initialTabIndex.clamp(0, 3);
   }
 
   @override
   Widget build(BuildContext context) {
     final tabs = [
-      const _StudentHomeTab(),
       const _InternshipsTab(),
       const _MyCvTab(),
       const _AppliedTab(),
@@ -47,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
         body: IndexedStack(index: _selectedIndex, children: tabs),
-        bottomNavigationBar: (_selectedIndex == 1 || _selectedIndex == 3)
+        bottomNavigationBar: (_selectedIndex == 0 || _selectedIndex == 2)
             ? null
             : Container(
                 decoration: const BoxDecoration(
@@ -63,15 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() => _selectedIndex = value),
                   destinations: const [
                     NavigationDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home, color: Color(0xFF1565C0)),
-                      label: 'Home',
-                    ),
-                    NavigationDestination(
                       icon: Icon(Icons.search_outlined),
                       selectedIcon:
                           Icon(Icons.search, color: Color(0xFF1565C0)),
-                      label: 'Internships',
+                      label: 'Browse Jobs',
                     ),
                     NavigationDestination(
                       icon: Icon(Icons.upload_file_outlined),
@@ -1167,11 +1161,22 @@ class _InternshipsTabState extends State<_InternshipsTab> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
             children: [
-              const Text('Internships',
-                  style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w700)),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.maybePop(context),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
+                  const SizedBox(width: 4),
+                  const Expanded(
+                    child: Text('Browse Jobs',
+                        style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               Text('${filteredInternships.length} opportunities found',
                   style: const TextStyle(
@@ -2029,11 +2034,22 @@ class _AppliedTabState extends State<_AppliedTab> {
           return ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              const Text('Applied Internships',
-                  style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w700)),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.maybePop(context),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
+                  const SizedBox(width: 4),
+                  const Expanded(
+                    child: Text('My Applications',
+                        style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
               const SizedBox(height: 10),
               Text('Track progress of your applications (${docs.length})',
                   style: const TextStyle(color: Colors.grey, fontSize: 16)),

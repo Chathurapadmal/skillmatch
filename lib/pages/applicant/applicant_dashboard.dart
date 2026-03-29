@@ -283,20 +283,6 @@ class ApplicantDashboard extends StatelessWidget {
                             },
                           ),
                           _ActionCard(
-                            icon: Icons.search_rounded,
-                            label: 'Browse Jobs',
-                            color: const Color(0xFF1565C0),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const HomeScreen(initialTabIndex: 1),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionCard(
                             icon: Icons.psychology_outlined,
                             label: 'Skill Match AI',
                             color: Colors.teal,
@@ -319,7 +305,7 @@ class ApplicantDashboard extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      const HomeScreen(initialTabIndex: 3),
+                                      const HomeScreen(initialTabIndex: 2),
                                 ),
                               );
                             },
