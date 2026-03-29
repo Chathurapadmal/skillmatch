@@ -1546,103 +1546,76 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
                 ),
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _postType,
-                      decoration: const InputDecoration(labelText: 'Post Type'),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'Internship', child: Text('Internship')),
-                        DropdownMenuItem(value: 'Job', child: Text('Job')),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _postType = value);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _locationCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Location',
-                        hintText: 'Colombo / Remote',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _mode,
-                      decoration: const InputDecoration(labelText: 'Work Mode'),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'Remote', child: Text('Remote')),
-                        DropdownMenuItem(
-                            value: 'Onsite', child: Text('Onsite')),
-                        DropdownMenuItem(
-                            value: 'Hybrid', child: Text('Hybrid')),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _mode = value);
-                      },
-                    ),
-                  ),
+              DropdownButtonFormField<String>(
+                value: _postType,
+                decoration: const InputDecoration(labelText: 'Post Type'),
+                items: const [
+                  DropdownMenuItem(
+                      value: 'Internship', child: Text('Internship')),
+                  DropdownMenuItem(value: 'Job', child: Text('Job')),
                 ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _postType = value);
+                },
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _duration,
-                      decoration: const InputDecoration(labelText: 'Duration'),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'Not specified',
-                            child: Text('Not specified')),
-                        DropdownMenuItem(
-                            value: '1 month', child: Text('1 month')),
-                        DropdownMenuItem(
-                            value: '3 months', child: Text('3 months')),
-                        DropdownMenuItem(
-                            value: '6 months', child: Text('6 months')),
-                        DropdownMenuItem(
-                            value: '12 months', child: Text('12 months')),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _duration = value);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _compensationCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Salary/Stipend',
-                        hintText: 'LKR 45,000 / month',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _minGpaCtrl,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Minimum GPA',
-                        hintText: '3.0',
-                      ),
-                    ),
-                  ),
+              TextField(
+                controller: _locationCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Location',
+                  hintText: 'Colombo / Remote',
+                ),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _mode,
+                decoration: const InputDecoration(labelText: 'Work Mode'),
+                items: const [
+                  DropdownMenuItem(value: 'Remote', child: Text('Remote')),
+                  DropdownMenuItem(value: 'Onsite', child: Text('Onsite')),
+                  DropdownMenuItem(value: 'Hybrid', child: Text('Hybrid')),
                 ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _mode = value);
+                },
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _duration,
+                decoration: const InputDecoration(labelText: 'Duration'),
+                items: const [
+                  DropdownMenuItem(
+                      value: 'Not specified', child: Text('Not specified')),
+                  DropdownMenuItem(value: '1 month', child: Text('1 month')),
+                  DropdownMenuItem(value: '3 months', child: Text('3 months')),
+                  DropdownMenuItem(value: '6 months', child: Text('6 months')),
+                  DropdownMenuItem(
+                      value: '12 months', child: Text('12 months')),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _duration = value);
+                },
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _compensationCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Salary/Stipend',
+                  hintText: 'LKR 45,000 / month',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _minGpaCtrl,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Minimum GPA',
+                  hintText: '3.0',
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -2053,6 +2026,8 @@ class _CompanySettingsTab extends StatefulWidget {
 }
 
 class _CompanySettingsTabState extends State<_CompanySettingsTab> {
+  static const String _profileBucket = 'profile';
+
   final _nameCtrl = TextEditingController();
   final _industryCtrl = TextEditingController();
   final _websiteCtrl = TextEditingController();
@@ -2198,7 +2173,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
 
     setState(() => _uploadingLogo = true);
     try {
-      final storage = Supabase.instance.client.storage.from('profile');
+      final storage = Supabase.instance.client.storage.from(_profileBucket);
       await storage.uploadBinary(
         path,
         bytes,
@@ -2210,7 +2185,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
           .doc(widget.companyId)
           .set({
         'logoUrl': signedUrl,
-        'logoStorageBucket': 'profile',
+        'logoStorageBucket': _profileBucket,
         'logoStoragePath': path,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
@@ -2218,14 +2193,36 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
       if (!mounted) return;
       setState(() => _logoCtrl.text = signedUrl);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Company logo uploaded to Supabase profile bucket.'),
+        content:
+            Text('Company logo uploaded to Supabase $_profileBucket bucket.'),
         backgroundColor: AppTheme.success,
       ));
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Logo upload failed: $e')),
-      );
+      final message = e.toString().toLowerCase();
+      if (message.contains('bucket not found') ||
+          message.contains('statuscode: 404')) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Supabase bucket "profile" not found. Please create it in Supabase Storage.'),
+          backgroundColor: AppTheme.warning,
+        ));
+      } else if (message.contains('statuscode: 403') ||
+          message.contains('row-level security') ||
+          message.contains('unauthorized') ||
+          message.contains('permission denied')) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Supabase policy denied upload (403). Allow INSERT/SELECT on bucket "profile" for anon and authenticated roles.'),
+          backgroundColor: AppTheme.warning,
+        ));
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logo upload failed: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _uploadingLogo = false);
     }

@@ -15,6 +15,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  static const String _profileBucket = 'profile';
+
   final _formKey = GlobalKey<FormState>();
 
   final _nameCtrl = TextEditingController();
@@ -193,7 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     setState(() => _uploadingAvatar = true);
     try {
-      final storage = Supabase.instance.client.storage.from('profile');
+      final storage = Supabase.instance.client.storage.from(_profileBucket);
       await storage.uploadBinary(
         path,
         bytes,
@@ -203,7 +205,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       await _docRef.set({
         'avatarUrl': signed,
-        'avatarStorageBucket': 'profile',
+        'avatarStorageBucket': _profileBucket,
         'avatarStoragePath': path,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
@@ -211,13 +213,33 @@ class _ProfilePageState extends State<ProfilePage> {
       if (!mounted) return;
       setState(() => _avatarUrlCtrl.text = signed);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Profile image uploaded to Supabase profile bucket.'),
+        content:
+            Text('Profile image uploaded to Supabase $_profileBucket bucket.'),
       ));
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Avatar upload failed: $e')),
-      );
+      final message = e.toString().toLowerCase();
+      if (message.contains('bucket not found') ||
+          message.contains('statuscode: 404')) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Supabase bucket "profile" not found. Please create it in Supabase Storage.'),
+        ));
+      } else if (message.contains('statuscode: 403') ||
+          message.contains('row-level security') ||
+          message.contains('unauthorized') ||
+          message.contains('permission denied')) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Supabase policy denied upload (403). Allow INSERT/SELECT on bucket "profile" for anon and authenticated roles.'),
+        ));
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Avatar upload failed: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _uploadingAvatar = false);
     }

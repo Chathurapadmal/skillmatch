@@ -39,7 +39,7 @@ class SupabaseStoragePage extends StatelessWidget {
           SizedBox(height: 10),
           _InfoCard(
             title: 'Buckets Used',
-            value: 'cv bucket\nprofile bucket',
+            value: 'cv\nprofile',
           ),
           SizedBox(height: 10),
           _InfoCard(

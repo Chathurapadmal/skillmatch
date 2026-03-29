@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'aiserv.dart';
 
 class AiService {
+  static const String _cvBucket = 'cv';
+
   static Future<Map<String, dynamic>> analyzeCredential({
     required String title,
     required String institution,
@@ -135,11 +137,12 @@ class AiService {
     required String fileName,
     required String userId,
   }) async {
+    final safeName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+    final path =
+        'users/$userId/cv/${DateTime.now().millisecondsSinceEpoch}_$safeName';
+
     try {
-      final safeName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
-      final path =
-          'users/$userId/cv/${DateTime.now().millisecondsSinceEpoch}_$safeName';
-      final storage = Supabase.instance.client.storage.from('cv');
+      final storage = Supabase.instance.client.storage.from(_cvBucket);
       await storage.uploadBinary(
         path,
         bytes,
@@ -148,11 +151,31 @@ class AiService {
       final signedUrl = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
 
       return {
-        'bucket': 'cv',
+        'bucket': _cvBucket,
         'path': path,
         'signed_url': signedUrl,
+        'storageProvider': 'supabase',
       };
     } catch (e) {
+      final message = e.toString().toLowerCase();
+      if (message.contains('bucket not found') ||
+          message.contains('statuscode: 404')) {
+        return {
+          '_error':
+              'Supabase bucket "$_cvBucket" was not found. Create bucket "$_cvBucket" in Supabase Storage.',
+        };
+      }
+
+      if (message.contains('statuscode: 403') ||
+          message.contains('row-level security') ||
+          message.contains('unauthorized') ||
+          message.contains('permission denied')) {
+        return {
+          '_error':
+              'Supabase policy denied upload to "$_cvBucket" (403). Add INSERT/SELECT policy for anon and authenticated roles.',
+        };
+      }
+
       return {
         '_error': e.toString(),
       };
