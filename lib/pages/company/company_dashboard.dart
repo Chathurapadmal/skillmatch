@@ -1,14 +1,17 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';
 import '../../shared/notifications_center_screen.dart';
+import '../../shared/supabase_storage_page.dart';
 import '../../theme/app_theme.dart';
 
 class CompanyDashboard extends StatefulWidget {
@@ -354,6 +357,65 @@ class _CompanyOverviewTab extends StatelessWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        final items = topApplications
+                            .map((e) =>
+                                '${(e.data()['studentName'] as String? ?? 'Student')} • ${(e.data()['title'] as String? ?? 'Role')}')
+                            .toList();
+                        _showMetricDetails(
+                          context,
+                          title: 'Applicants',
+                          items: items,
+                        );
+                      },
+                      icon: const Icon(Icons.assignment_ind_outlined),
+                      label: const Text('Applicants details'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        final items = topApplications.where((e) {
+                          final status = (e.data()['status'] as String? ?? '')
+                              .toLowerCase();
+                          return status == 'approved' ||
+                              status == 'interview_scheduled';
+                        }).map((e) {
+                          final status = (e.data()['status'] as String? ?? '')
+                              .toUpperCase();
+                          return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
+                        }).toList();
+                        _showMetricDetails(
+                          context,
+                          title: 'Shortlisted Candidates',
+                          items: items,
+                        );
+                      },
+                      icon: const Icon(Icons.check_circle_outline),
+                      label: const Text('Shortlisted details'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        final items = internships
+                            .where((e) => e.data()['active'] != false)
+                            .map((e) =>
+                                '${(e.data()['title'] as String? ?? 'Internship')} • ${(e.data()['type'] as String? ?? 'Mode')}')
+                            .toList();
+                        _showMetricDetails(
+                          context,
+                          title: 'Active Posts',
+                          items: items,
+                        );
+                      },
+                      icon: const Icon(Icons.work_outline),
+                      label: const Text('Active posts details'),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 18),
                 Container(
                   width: double.infinity,
@@ -504,6 +566,47 @@ class _CompanyOverviewTab extends StatelessWidget {
         return AppTheme.warning;
     }
   }
+
+  void _showMetricDetails(
+    BuildContext context, {
+    required String title,
+    required List<String> items,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              if (items.isEmpty)
+                const Text('No records found.',
+                    style: TextStyle(color: Colors.grey))
+              else
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (_, index) => ListTile(
+                      leading: const Icon(Icons.circle, size: 10),
+                      title: Text(items[index]),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _CandidateDiscoveryTab extends StatefulWidget {
@@ -522,6 +625,8 @@ class _CandidateDiscoveryTab extends StatefulWidget {
 class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
   String _companyIndustry = '';
   bool _loadingIndustry = true;
+  String _candidateScope = 'Applied';
+  bool _enforceIndustryFilter = true;
 
   @override
   void initState() {
@@ -546,6 +651,16 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
 
   String _normalize(String value) => value.trim().toLowerCase();
 
+  bool _industryMatches(String industry) {
+    if (!_enforceIndustryFilter || _companyIndustry.trim().isEmpty) return true;
+    final candidate = _normalize(industry);
+    final company = _normalize(_companyIndustry);
+    if (candidate.isEmpty || company.isEmpty) return true;
+    return candidate == company ||
+        candidate.contains(company) ||
+        company.contains(candidate);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -554,21 +669,66 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
           width: double.infinity,
           color: Colors.white,
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.filter_alt_outlined,
-                  size: 18, color: Color(0xFF1565C0)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  _loadingIndustry
-                      ? 'Loading company industry filter...'
-                      : _companyIndustry.isEmpty
-                          ? 'Industry filter: all candidates'
-                          : 'Industry filter: $_companyIndustry',
-                  style: const TextStyle(
-                      color: Colors.black54, fontWeight: FontWeight.w600),
-                ),
+              Row(
+                children: [
+                  const Icon(Icons.filter_alt_outlined,
+                      size: 18, color: Color(0xFF1565C0)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _loadingIndustry
+                          ? 'Loading company industry filter...'
+                          : _companyIndustry.isEmpty
+                              ? 'Industry filter: all candidates'
+                              : 'Industry filter: $_companyIndustry',
+                      style: const TextStyle(
+                          color: Colors.black54, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _candidateScope,
+                      decoration:
+                          const InputDecoration(labelText: 'Candidate Scope'),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'Applied', child: Text('Applied only')),
+                        DropdownMenuItem(
+                            value: 'All', child: Text('All profiles')),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _candidateScope = value);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: DropdownButtonFormField<bool>(
+                      value: _enforceIndustryFilter,
+                      decoration:
+                          const InputDecoration(labelText: 'Industry Filter'),
+                      items: const [
+                        DropdownMenuItem(
+                            value: true, child: Text('Company industry')),
+                        DropdownMenuItem(
+                            value: false, child: Text('All industries')),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _enforceIndustryFilter = value);
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -576,292 +736,405 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         Expanded(
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
-                .collection('users')
-                .where('role', isEqualTo: 'applicant')
-                .limit(300)
+                .collection('applications')
+                .where('companyId', isEqualTo: widget.companyId)
+                .limit(600)
                 .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppTheme.primary),
-                );
-              }
-
-              final docs = snapshot.data?.docs ?? const [];
-              final filtered = docs.where((doc) {
-                if (_companyIndustry.isEmpty) return true;
+            builder: (context, appSnapshot) {
+              final apps = appSnapshot.data?.docs ?? const [];
+              final appByStudent = <String, Map<String, dynamic>>{};
+              for (final doc in apps) {
                 final data = doc.data();
-                final industry =
-                    ((data['industry'] ?? data['field']) as String? ?? '')
-                        .trim();
-                if (industry.isEmpty) return true;
-                return _normalize(industry) == _normalize(_companyIndustry);
-              }).toList();
-
-              if (filtered.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: _EmptyPanel(
-                    icon: Icons.people_outline,
-                    message: 'No candidate profiles match this filter yet.',
-                  ),
-                );
+                final studentId = (data['studentId'] as String? ?? '').trim();
+                if (studentId.isEmpty) continue;
+                final existing = appByStudent[studentId];
+                final currentAt = data['updatedAt'] as Timestamp? ??
+                    data['appliedAt'] as Timestamp?;
+                if (existing == null) {
+                  appByStudent[studentId] = {...data, '_docId': doc.id};
+                  continue;
+                }
+                final existingAt = existing['updatedAt'] as Timestamp? ??
+                    existing['appliedAt'] as Timestamp?;
+                if ((currentAt?.millisecondsSinceEpoch ?? 0) >=
+                    (existingAt?.millisecondsSinceEpoch ?? 0)) {
+                  appByStudent[studentId] = {...data, '_docId': doc.id};
+                }
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(14),
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  final data = filtered[index].data();
-                  final skills = ((data['skills'] as List?) ?? [])
-                      .map((e) => '$e')
-                      .toList();
-                  final cvSkills = ((data['cvSkills'] as List?) ?? [])
-                      .map((e) => '$e')
-                      .toList();
-                  final verified = ((data['verifiedSkills'] as List?) ?? [])
-                      .map((e) => '$e')
-                      .toList();
-                  final allSkills = {...skills, ...cvSkills}.toList();
-                  final certifications =
-                      ((data['certifications'] as List?) ?? const <dynamic>[])
-                          .length;
-                  final githubConnected = data['githubConnected'] == true;
-                  final githubUsername =
-                      (data['githubUsername'] as String? ?? '').trim();
-                  final githubSkills = ((data['githubSkills'] as List?) ?? [])
-                      .map((e) => '$e')
-                      .toList();
-                  final cvFile = (data['cvFileName'] as String? ?? '').trim();
-                  final cvLink =
-                      (data['cvStorageSignedUrl'] as String? ?? '').trim();
+              return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .where('role', isEqualTo: 'applicant')
+                    .limit(300)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: AppTheme.primary),
+                    );
+                  }
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
+                  final docs = snapshot.data?.docs ?? const [];
+                  final filtered = docs.where((doc) {
+                    final data = doc.data();
+                    final industry =
+                        ((data['industry'] ?? data['field']) as String? ?? '')
+                            .trim();
+                    final hasApplication = appByStudent.containsKey(doc.id);
+
+                    if (_candidateScope == 'Applied' && !hasApplication) {
+                      return false;
+                    }
+
+                    return _industryMatches(industry);
+                  }).toList();
+
+                  if (filtered.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: _EmptyPanel(
+                        icon: Icons.people_outline,
+                        message: 'No candidate profiles match this filter yet.',
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
                     padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFDCE3F0)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const CircleAvatar(
-                              backgroundColor: Color(0xFF1565C0),
-                              child: Icon(Icons.person, color: Colors.white),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final doc = filtered[index];
+                      final data = doc.data();
+                      final application = appByStudent[doc.id];
+                      final appStatus =
+                          (application?['status'] as String? ?? 'none')
+                              .toLowerCase();
+                      final hasApplied = application != null;
+                      final canDecide = hasApplied && appStatus == 'applied';
+
+                      final skills = ((data['skills'] as List?) ?? [])
+                          .map((e) => '$e')
+                          .toList();
+                      final cvSkills = ((data['cvSkills'] as List?) ?? [])
+                          .map((e) => '$e')
+                          .toList();
+                      final verified = ((data['verifiedSkills'] as List?) ?? [])
+                          .map((e) => '$e')
+                          .toList();
+                      final allSkills = {...skills, ...cvSkills}.toList();
+                      final certifications =
+                          ((data['certifications'] as List?) ??
+                                  const <dynamic>[])
+                              .length;
+                      final githubConnected = data['githubConnected'] == true;
+                      final githubUsername =
+                          (data['githubUsername'] as String? ?? '').trim();
+                      final githubSkills =
+                          ((data['githubSkills'] as List?) ?? [])
+                              .map((e) => '$e')
+                              .toList();
+                      final cvFile =
+                          (data['cvFileName'] as String? ?? '').trim();
+                      final cvLink =
+                          (data['cvStorageSignedUrl'] as String? ?? '').trim();
+
+                      return GestureDetector(
+                        onTap: () => _showCandidateDetails(data),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFDCE3F0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  Text(
-                                    (data['displayName'] as String?)
+                                  CircleAvatar(
+                                    backgroundColor: const Color(0xFF1565C0),
+                                    backgroundImage:
+                                        (data['avatarUrl'] as String?)
+                                                    ?.trim()
+                                                    .isNotEmpty ==
+                                                true
+                                            ? NetworkImage(
+                                                data['avatarUrl'] as String)
+                                            : null,
+                                    child: (data['avatarUrl'] as String?)
                                                 ?.trim()
                                                 .isNotEmpty ==
                                             true
-                                        ? data['displayName'] as String
-                                        : 'Student Profile',
-                                    style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 15,
+                                        ? null
+                                        : const Icon(Icons.person,
+                                            color: Colors.white),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          (data['displayName'] as String?)
+                                                      ?.trim()
+                                                      .isNotEmpty ==
+                                                  true
+                                              ? data['displayName'] as String
+                                              : 'Student Profile',
+                                          style: const TextStyle(
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        Text(
+                                          (data['email'] as String?) ??
+                                              'No email',
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Text(
-                                    (data['email'] as String?) ?? 'No email',
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 12,
+                                  if (verified.isNotEmpty)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.success
+                                            .withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '${verified.length} verified',
+                                        style: const TextStyle(
+                                          color: AppTheme.success,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: hasApplied
+                                        ? _statusColor(appStatus)
+                                            .withValues(alpha: 0.12)
+                                        : Colors.grey.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    hasApplied
+                                        ? 'Application: ${appStatus.replaceAll('_', ' ').toUpperCase()}'
+                                        : 'No application submitted',
+                                    style: TextStyle(
+                                      color: hasApplied
+                                          ? _statusColor(appStatus)
+                                          : Colors.grey,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  _miniTag(
+                                    icon: Icons.apartment_outlined,
+                                    text: ((data['industry'] ?? data['field'])
+                                                as String? ??
+                                            'Industry not set')
+                                        .trim(),
+                                  ),
+                                  _miniTag(
+                                    icon: Icons.workspace_premium_outlined,
+                                    text: '$certifications credentials',
+                                  ),
+                                  _miniTag(
+                                    icon: Icons.description_outlined,
+                                    text: cvFile.isEmpty
+                                        ? 'No CV metadata'
+                                        : cvFile,
+                                  ),
+                                ],
+                              ),
+                              if (allSkills.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'Skills and CV-extracted skills',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: allSkills
+                                      .take(12)
+                                      .map((skill) => _skillPill(
+                                            skill,
+                                            color: const Color(0xFF1565C0),
+                                          ))
+                                      .toList(),
+                                ),
+                              ],
+                              if (verified.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'Verified badges',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: verified
+                                      .map((skill) => _skillPill(skill,
+                                          color: AppTheme.success))
+                                      .toList(),
+                                ),
+                              ],
+                              if (githubConnected) ...[
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.code_rounded,
+                                      size: 16,
+                                      color: Color(0xFF24292F),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      githubUsername.isEmpty
+                                          ? 'GitHub linked'
+                                          : 'GitHub: @$githubUsername',
+                                      style: const TextStyle(
+                                        color: Color(0xFF24292F),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (githubSkills.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: githubSkills
+                                        .map((skill) => _skillPill(
+                                              skill,
+                                              color: const Color(0xFF24292F),
+                                            ))
+                                        .toList(),
+                                  ),
+                                ],
+                              ],
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: cvLink.isEmpty
+                                          ? null
+                                          : () => _openExternal(cvLink),
+                                      icon: const Icon(Icons.download_outlined),
+                                      label: const Text('Open CV'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: hasApplied
+                                          ? () => _scheduleInterview(
+                                                doc.id,
+                                                data['displayName'] ??
+                                                    'Student',
+                                                data['email'] ?? '',
+                                              )
+                                          : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF8A5BFF),
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      icon: const Icon(
+                                          Icons.calendar_today_outlined),
+                                      label: const Text('Schedule'),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            if (verified.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color:
-                                      AppTheme.success.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 8),
+                              if (canDecide)
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _updateApplicationStatus(
+                                          doc.id,
+                                          'approved',
+                                          data,
+                                        ),
+                                        icon: const Icon(
+                                            Icons.check_circle_outline),
+                                        label: const Text('Approve'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: AppTheme.success,
+                                          side: const BorderSide(
+                                            color: AppTheme.success,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _updateApplicationStatus(
+                                          doc.id,
+                                          'rejected',
+                                          data,
+                                        ),
+                                        icon: const Icon(Icons.clear_outlined),
+                                        label: const Text('Reject'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: AppTheme.error,
+                                          side: const BorderSide(
+                                            color: AppTheme.error,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: Text(
-                                  '${verified.length} verified',
-                                  style: const TextStyle(
-                                    color: AppTheme.success,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _miniTag(
-                              icon: Icons.apartment_outlined,
-                              text: ((data['industry'] ?? data['field'])
-                                          as String? ??
-                                      'Industry not set')
-                                  .trim(),
-                            ),
-                            _miniTag(
-                              icon: Icons.workspace_premium_outlined,
-                              text: '$certifications credentials',
-                            ),
-                            _miniTag(
-                              icon: Icons.description_outlined,
-                              text: cvFile.isEmpty ? 'No CV metadata' : cvFile,
-                            ),
-                          ],
-                        ),
-                        if (allSkills.isNotEmpty) ...[
-                          const SizedBox(height: 10),
-                          const Text('Skills and CV-extracted skills',
-                              style: TextStyle(
-                                  color: Colors.black54,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12)),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: allSkills
-                                .take(12)
-                                .map((skill) => _skillPill(skill,
-                                    color: const Color(0xFF1565C0)))
-                                .toList(),
-                          ),
-                        ],
-                        if (verified.isNotEmpty) ...[
-                          const SizedBox(height: 10),
-                          const Text('Verified badges',
-                              style: TextStyle(
-                                  color: Colors.black54,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12)),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: verified
-                                .map((skill) =>
-                                    _skillPill(skill, color: AppTheme.success))
-                                .toList(),
-                          ),
-                        ],
-                        if (githubConnected) ...[
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              const Icon(Icons.code_rounded,
-                                  size: 16, color: Color(0xFF24292F)),
-                              const SizedBox(width: 6),
-                              Text(
-                                githubUsername.isEmpty
-                                    ? 'GitHub linked'
-                                    : 'GitHub: @$githubUsername',
-                                style: const TextStyle(
-                                  color: Color(0xFF24292F),
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
                             ],
                           ),
-                          if (githubSkills.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: githubSkills
-                                  .map((skill) => _skillPill(skill,
-                                      color: const Color(0xFF24292F)))
-                                  .toList(),
-                            ),
-                          ],
-                        ],
-                        const SizedBox(height: 12),
-                        // Action buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: cvLink.isEmpty
-                                    ? null
-                                    : () => _openExternal(cvLink),
-                                icon: const Icon(Icons.download_outlined),
-                                label: const Text('Open CV'),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _scheduleInterview(
-                                  filtered[index].id,
-                                  data['displayName'] ?? 'Student',
-                                  data['email'] ?? '',
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF8A5BFF),
-                                  foregroundColor: Colors.white,
-                                ),
-                                icon: const Icon(Icons.calendar_today_outlined),
-                                label: const Text('Schedule'),
-                              ),
-                            ),
-                          ],
                         ),
-                        const SizedBox(height: 8),
-                        // Application status buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _updateApplicationStatus(
-                                  filtered[index].id,
-                                  'approved',
-                                  data,
-                                ),
-                                icon: const Icon(Icons.check_circle_outline),
-                                label: const Text('Approve'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppTheme.success,
-                                  side: const BorderSide(
-                                    color: AppTheme.success,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => _updateApplicationStatus(
-                                  filtered[index].id,
-                                  'rejected',
-                                  data,
-                                ),
-                                icon: const Icon(Icons.clear_outlined),
-                                label: const Text('Reject'),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppTheme.error,
-                                  side: const BorderSide(
-                                    color: AppTheme.error,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               );
@@ -870,6 +1143,113 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         ),
       ],
     );
+  }
+
+  void _showCandidateDetails(Map<String, dynamic> data) {
+    final skills = ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
+    final cvSkills =
+        ((data['cvSkills'] as List?) ?? []).map((e) => '$e').toList();
+    final verified =
+        ((data['verifiedSkills'] as List?) ?? []).map((e) => '$e').toList();
+    final certs = ((data['certifications'] as List?) ?? const <dynamic>[])
+        .map((e) => '$e')
+        .toList();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Candidate Profile'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundImage:
+                        (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
+                                true
+                            ? NetworkImage(data['avatarUrl'] as String)
+                            : null,
+                    child: (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
+                            true
+                        ? null
+                        : const Icon(Icons.person),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text((data['displayName'] as String?) ?? 'Student'),
+                        Text((data['email'] as String?) ?? '',
+                            style: const TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text('Age: ${(data['age'] ?? 'Not set')}'),
+              const SizedBox(height: 6),
+              Text(
+                  'Industry: ${((data['industry'] ?? data['field']) as String? ?? 'Not set').trim()}'),
+              const SizedBox(height: 10),
+              const Text('Skills',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: {...skills, ...cvSkills}
+                    .take(20)
+                    .map((s) => _skillPill(s, color: const Color(0xFF1565C0)))
+                    .toList(),
+              ),
+              if (verified.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                const Text('Verified Skills',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: verified
+                      .map((s) => _skillPill(s, color: AppTheme.success))
+                      .toList(),
+                ),
+              ],
+              if (certs.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text('Credentials: ${certs.length}'),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'approved':
+        return AppTheme.success;
+      case 'rejected':
+        return AppTheme.error;
+      case 'interview_scheduled':
+        return const Color(0xFF1E88E5);
+      case 'applied':
+        return AppTheme.warning;
+      default:
+        return Colors.grey;
+    }
   }
 
   Future<void> _openExternal(String rawUrl) async {
@@ -910,23 +1290,19 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         .get();
 
     if (appQuery.docs.isEmpty) {
-      // Create new application record
-      await FirebaseFirestore.instance.collection('applications').add({
-        'studentId': studentId,
-        'companyId': widget.companyId,
-        'studentName': studentData['displayName'] ?? 'Student',
-        'studentEmail': studentData['email'] ?? '',
-        'status': newStatus,
-        'appliedAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-    } else {
-      // Update existing application
-      await appQuery.docs.first.reference.update({
-        'status': newStatus,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('No submitted application found for this candidate.'),
+        backgroundColor: AppTheme.warning,
+      ));
+      return;
     }
+
+    // Update existing application
+    await appQuery.docs.first.reference.update({
+      'status': newStatus,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
 
     // Send notification to student
     await FirebaseFirestore.instance.collection('notifications').add({
@@ -1018,6 +1394,8 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
 
   bool _publishing = false;
   String _mode = 'Remote';
+  String _postType = 'Internship';
+  String _duration = 'Not specified';
 
   @override
   void dispose() {
@@ -1062,10 +1440,12 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
     await FirebaseFirestore.instance.collection('internships').add({
       'companyId': widget.companyId,
       'company': widget.companyName,
+      'postType': _postType,
       'title': title,
       'description': description,
       'location': location.isEmpty ? _mode : location,
       'type': _mode,
+      'duration': _duration,
       'salary': compensation.isEmpty ? 'Negotiable' : compensation,
       'stipend': compensation.isEmpty ? 'Negotiable' : compensation,
       'skills': skills,
@@ -1169,6 +1549,22 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               Row(
                 children: [
                   Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _postType,
+                      decoration: const InputDecoration(labelText: 'Post Type'),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'Internship', child: Text('Internship')),
+                        DropdownMenuItem(value: 'Job', child: Text('Job')),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _postType = value);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
                     child: TextField(
                       controller: _locationCtrl,
                       decoration: const InputDecoration(
@@ -1201,6 +1597,30 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               const SizedBox(height: 8),
               Row(
                 children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _duration,
+                      decoration: const InputDecoration(labelText: 'Duration'),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'Not specified',
+                            child: Text('Not specified')),
+                        DropdownMenuItem(
+                            value: '1 month', child: Text('1 month')),
+                        DropdownMenuItem(
+                            value: '3 months', child: Text('3 months')),
+                        DropdownMenuItem(
+                            value: '6 months', child: Text('6 months')),
+                        DropdownMenuItem(
+                            value: '12 months', child: Text('12 months')),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => _duration = value);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _compensationCtrl,
@@ -1330,7 +1750,12 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${(data['type'] as String?) ?? 'Mode'} • ${(data['location'] as String?) ?? ''}',
+                        '${(data['postType'] as String?) ?? 'Internship'} • ${(data['type'] as String?) ?? 'Mode'} • ${(data['location'] as String?) ?? ''}',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Duration: ${(data['duration'] as String?) ?? 'Not specified'}',
                         style: const TextStyle(color: Colors.grey),
                       ),
                       const SizedBox(height: 4),
@@ -1639,6 +2064,16 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
   bool _darkMode = false;
   bool _loading = true;
   bool _saving = false;
+  bool _uploadingLogo = false;
+
+  static const List<String> _industryOptions = [
+    'IT & Software',
+    'Business & Management',
+    'Design & UX/UI',
+    'Engineering',
+    'Healthcare',
+    'Other',
+  ];
 
   @override
   void initState() {
@@ -1707,6 +2142,95 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     ));
   }
 
+  Future<void> _pickIndustry() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: const Color(0xFF161A3A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: _industryOptions
+              .map(
+                (option) => ListTile(
+                  leading: Icon(
+                    _industryCtrl.text.trim() == option
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: _industryCtrl.text.trim() == option
+                        ? AppTheme.primaryLight
+                        : AppTheme.textSecondary,
+                  ),
+                  title: Text(
+                    option,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  onTap: () => Navigator.pop(context, option),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+
+    if (selected == null || !mounted) return;
+    setState(() => _industryCtrl.text = selected);
+  }
+
+  Future<void> _uploadCompanyLogoToSupabase() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['png', 'jpg', 'jpeg', 'webp'],
+      withData: true,
+    );
+    if (!mounted || picked == null || picked.files.isEmpty) return;
+
+    final file = picked.files.first;
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    final ext = file.extension?.toLowerCase() ?? 'jpg';
+    final safeExt = ['png', 'jpg', 'jpeg', 'webp'].contains(ext) ? ext : 'jpg';
+    final path =
+        'companies/${widget.companyId}/logo_${DateTime.now().millisecondsSinceEpoch}.$safeExt';
+
+    setState(() => _uploadingLogo = true);
+    try {
+      final storage = Supabase.instance.client.storage.from('profile');
+      await storage.uploadBinary(
+        path,
+        bytes,
+        fileOptions: const FileOptions(upsert: true),
+      );
+      final signedUrl = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
+      await FirebaseFirestore.instance
+          .collection('companies')
+          .doc(widget.companyId)
+          .set({
+        'logoUrl': signedUrl,
+        'logoStorageBucket': 'profile',
+        'logoStoragePath': path,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      setState(() => _logoCtrl.text = signedUrl);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Company logo uploaded to Supabase profile bucket.'),
+        backgroundColor: AppTheme.success,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logo upload failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _uploadingLogo = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -1743,9 +2267,17 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                 decoration: const InputDecoration(labelText: 'Company Name'),
               ),
               const SizedBox(height: 8),
-              TextField(
-                controller: _industryCtrl,
-                decoration: const InputDecoration(labelText: 'Industry'),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Industry'),
+                subtitle: Text(
+                  _industryCtrl.text.trim().isEmpty
+                      ? 'Select industry'
+                      : _industryCtrl.text.trim(),
+                  style: const TextStyle(color: Color(0xFF1565C0)),
+                ),
+                trailing: const Icon(Icons.keyboard_arrow_down_rounded),
+                onTap: _pickIndustry,
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1757,6 +2289,22 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                 controller: _logoCtrl,
                 decoration:
                     const InputDecoration(labelText: 'Company Logo URL'),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed:
+                      _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
+                  icon: _uploadingLogo
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined),
+                  label: const Text('Upload Company Logo (Supabase)'),
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -1840,6 +2388,25 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                       },
                       icon: const Icon(Icons.inbox_outlined),
                       label: const Text('Open Notification Inbox'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SupabaseStoragePage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.cloud_outlined),
+                      label: const Text('Open Supabase Storage Page'),
                     ),
                   ),
                 ],

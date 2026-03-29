@@ -2,6 +2,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'firebase_options.dart';
 import 'pages/wrapper.dart';
@@ -35,6 +36,11 @@ Future<void> main() async {
   }
 
   try {
+    await Supabase.initialize(
+      url: 'https://bmliitwxgkgrdpeyeiqu.supabase.co',
+      anonKey: 'sb_publishable_zSJsdNSg9LaGimkRl9uzeg_5LCG8qns',
+    );
+
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );

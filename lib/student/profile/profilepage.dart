@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
+import 'package:skillmatch/shared/supabase_storage_page.dart';
 import '../../shared/chat_overlay.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -34,6 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _loading = true;
   bool _saving = false;
   bool _initialized = false;
+  bool _uploadingAvatar = false;
 
   String _email = '';
   String _role = 'applicant';
@@ -170,6 +174,55 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _uploadAvatarToSupabase() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['png', 'jpg', 'jpeg', 'webp'],
+      withData: true,
+    );
+
+    if (!mounted || picked == null || picked.files.isEmpty) return;
+    final file = picked.files.first;
+    final bytes = file.bytes;
+    if (bytes == null) return;
+
+    final ext = file.extension?.toLowerCase() ?? 'jpg';
+    final safeExt = ['png', 'jpg', 'jpeg', 'webp'].contains(ext) ? ext : 'jpg';
+    final path =
+        'users/${_user.uid}/avatar_${DateTime.now().millisecondsSinceEpoch}.$safeExt';
+
+    setState(() => _uploadingAvatar = true);
+    try {
+      final storage = Supabase.instance.client.storage.from('profile');
+      await storage.uploadBinary(
+        path,
+        bytes,
+        fileOptions: const FileOptions(upsert: true),
+      );
+      final signed = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
+
+      await _docRef.set({
+        'avatarUrl': signed,
+        'avatarStorageBucket': 'profile',
+        'avatarStoragePath': path,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      setState(() => _avatarUrlCtrl.text = signed);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Profile image uploaded to Supabase profile bucket.'),
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Avatar upload failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
+  }
+
   Future<void> _showEditProfileDialog() async {
     final nameCtrl = TextEditingController(text: _nameCtrl.text);
     final headlineCtrl = TextEditingController(text: _headlineCtrl.text);
@@ -235,6 +288,22 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextField(
                     controller: avatarUrlCtrl,
                     decoration: const InputDecoration(labelText: 'Avatar URL'),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed:
+                          _uploadingAvatar ? null : _uploadAvatarToSupabase,
+                      icon: _uploadingAvatar
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.cloud_upload_outlined),
+                      label: const Text('Upload Profile Icon (Supabase)'),
+                    ),
                   ),
                   TextField(
                     controller: bioCtrl,
@@ -562,6 +631,17 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           iconTheme: const IconThemeData(color: Colors.black),
           actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SupabaseStoragePage(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.cloud_outlined),
+            ),
             IconButton(
               onPressed: _showEditProfileDialog,
               icon: const Icon(Icons.settings),

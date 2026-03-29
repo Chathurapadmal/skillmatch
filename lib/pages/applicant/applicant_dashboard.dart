@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:skillmatch/student/advanced/roadmap_screen.dart';
 import 'package:skillmatch/student/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/student/home/home_screen.dart';
@@ -14,6 +15,20 @@ class ApplicantDashboard extends StatelessWidget {
   final UserModel user;
 
   const ApplicantDashboard({super.key, required this.user});
+
+  String _normalizeIndustry(String? value) =>
+      (value ?? '').trim().toLowerCase();
+
+  int _calculateMatch(
+      List<String> internshipSkills, List<String> studentSkills) {
+    if (internshipSkills.isEmpty || studentSkills.isEmpty) return 60;
+    final studentSet = studentSkills.map((e) => e.toLowerCase()).toSet();
+    final overlap = internshipSkills
+        .where((skill) => studentSet.contains(skill.toLowerCase()))
+        .length;
+    final ratio = overlap / internshipSkills.length;
+    return (60 + (ratio * 40)).round().clamp(60, 99);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,186 +146,274 @@ class ApplicantDashboard extends StatelessWidget {
             const SizedBox(width: 8),
           ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Welcome banner ─────────────────────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back, ${user.displayName.split(' ').first}! 👋',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+        body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .snapshots(),
+          builder: (context, profileSnapshot) {
+            final profile =
+                profileSnapshot.data?.data() ?? const <String, dynamic>{};
+            final savedCount =
+                ((profile['savedInternships'] as List?) ?? const []).length;
+            final profileViews =
+                (profile['profileViews'] as num?)?.toInt() ?? 0;
+            final industry =
+                ((profile['industry'] ?? profile['field']) as String?) ?? '';
+            final studentSkills = ((profile['skills'] as List?) ?? const [])
+                .map((e) => '$e')
+                .toList();
+
+            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('applications')
+                  .where('studentId', isEqualTo: user.uid)
+                  .snapshots(),
+              builder: (context, appSnapshot) {
+                final appliedCount = appSnapshot.data?.docs.length ?? 0;
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Welcome banner ─────────────────────────────────────────────
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Welcome back, ${user.displayName.split(' ').first}! 👋',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Your career journey continues here.',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Your career journey continues here.',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-              // ── Quick stats ────────────────────────────────────────────────
-              Row(
-                children: [
-                  _StatCard(
-                    icon: Icons.work_outline,
-                    label: 'Applied',
-                    value: '0',
-                    color: const Color(0xFF1565C0),
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.bookmark_outline,
-                    label: 'Saved',
-                    value: '0',
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.visibility_outlined,
-                    label: 'Profile Views',
-                    value: '0',
-                    color: Colors.green,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // ── Actions ────────────────────────────────────────────────────
-              const Text(
-                'Quick Actions',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 14),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.5,
-                children: [
-                  _ActionCard(
-                    icon: Icons.map_outlined,
-                    label: 'Roadmap',
-                    color: const Color(0xFF1565C0),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const RoadmapScreen(
-                            field: 'IT & Software',
+                      // ── Quick stats ────────────────────────────────────────────────
+                      Row(
+                        children: [
+                          _StatCard(
+                            icon: Icons.work_outline,
+                            label: 'Applied',
+                            value: '$appliedCount',
+                            color: const Color(0xFF1565C0),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  _ActionCard(
-                    icon: Icons.trending_up,
-                    label: 'Trends',
-                    color: const Color(0xFF2B6CB0),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const IndustryForecastScreen(
-                            field: 'IT & Software',
+                          const SizedBox(width: 12),
+                          _StatCard(
+                            icon: Icons.bookmark_outline,
+                            label: 'Saved',
+                            value: '$savedCount',
+                            color: Colors.orange,
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  _ActionCard(
-                    icon: Icons.search_rounded,
-                    label: 'Browse Jobs',
-                    color: const Color(0xFF1565C0),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const HomeScreen(initialTabIndex: 1),
-                        ),
-                      );
-                    },
-                  ),
-                  _ActionCard(
-                    icon: Icons.psychology_outlined,
-                    label: 'Skill Match AI',
-                    color: Colors.teal,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SkillVerificationScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _ActionCard(
-                    icon: Icons.description_outlined,
-                    label: 'My Applications',
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const HomeScreen(initialTabIndex: 3),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                          const SizedBox(width: 12),
+                          _StatCard(
+                            icon: Icons.visibility_outlined,
+                            label: 'Profile Views',
+                            value: '$profileViews',
+                            color: Colors.green,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
 
-              // ── Recommended jobs placeholder ───────────────────────────────
-              const Text(
-                'Recommended Jobs',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 14),
-              _JobCard(
-                title: 'Junior Data Analyst',
-                company: 'Nova Insights',
-                location: 'Remote',
-                matchRate: 87,
-              ),
-              const SizedBox(height: 10),
-              _JobCard(
-                title: 'Frontend Developer (React)',
-                company: 'PixelWorks',
-                location: 'Hybrid',
-                matchRate: 74,
-              ),
-              const SizedBox(height: 10),
-              _JobCard(
-                title: 'ML Intern',
-                company: 'DeepVision Labs',
-                location: 'On-site',
-                matchRate: 65,
-              ),
-            ],
-          ),
+                      // ── Actions ────────────────────────────────────────────────────
+                      const Text(
+                        'Quick Actions',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 14),
+                      GridView.count(
+                        crossAxisCount: 2,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.5,
+                        children: [
+                          _ActionCard(
+                            icon: Icons.map_outlined,
+                            label: 'Roadmap',
+                            color: const Color(0xFF1565C0),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const RoadmapScreen(
+                                    field: 'IT & Software',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionCard(
+                            icon: Icons.trending_up,
+                            label: 'Trends',
+                            color: const Color(0xFF2B6CB0),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const IndustryForecastScreen(
+                                    field: 'IT & Software',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionCard(
+                            icon: Icons.search_rounded,
+                            label: 'Browse Jobs',
+                            color: const Color(0xFF1565C0),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const HomeScreen(initialTabIndex: 1),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionCard(
+                            icon: Icons.psychology_outlined,
+                            label: 'Skill Match AI',
+                            color: Colors.teal,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const SkillVerificationScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          _ActionCard(
+                            icon: Icons.description_outlined,
+                            label: 'My Applications',
+                            color: Colors.orange,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const HomeScreen(initialTabIndex: 3),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ── Recommended jobs (real data only) ─────────────────────────
+                      const Text(
+                        'Recommended Jobs',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 14),
+                      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                        stream: FirebaseFirestore.instance
+                            .collection('internships')
+                            .where('active', isEqualTo: true)
+                            .limit(50)
+                            .snapshots(),
+                        builder: (context, internshipSnapshot) {
+                          if (internshipSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                    color: Color(0xFF1565C0)),
+                              ),
+                            );
+                          }
+
+                          final internships =
+                              internshipSnapshot.data?.docs ?? const [];
+                          final normalizedIndustry =
+                              _normalizeIndustry(industry);
+                          final mapped = internships.map((doc) {
+                            final data = doc.data();
+                            final tags = ((data['skills'] as List?) ?? const [])
+                                .map((e) => '$e')
+                                .toList();
+                            return {
+                              'title':
+                                  (data['title'] as String?) ?? 'Internship',
+                              'company':
+                                  (data['company'] as String?) ?? 'Company',
+                              'location': ((data['type'] as String?) ??
+                                      (data['location'] as String?) ??
+                                      'Remote')
+                                  .trim(),
+                              'industry':
+                                  ((data['industry'] as String?) ?? '').trim(),
+                              'match': _calculateMatch(tags, studentSkills),
+                            };
+                          }).where((item) {
+                            if (normalizedIndustry.isEmpty) return true;
+                            final jobIndustry =
+                                _normalizeIndustry(item['industry'] as String?);
+                            return jobIndustry.isEmpty ||
+                                jobIndustry == normalizedIndustry;
+                          }).toList();
+
+                          mapped.sort((a, b) =>
+                              (b['match'] as int).compareTo(a['match'] as int));
+
+                          if (mapped.isEmpty) {
+                            return const Text(
+                              'No active jobs found for your profile right now.',
+                              style: TextStyle(color: Colors.grey),
+                            );
+                          }
+
+                          return Column(
+                            children: mapped.take(5).map((item) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: _JobCard(
+                                  title: item['title'] as String,
+                                  company: item['company'] as String,
+                                  location: item['location'] as String,
+                                  matchRate: item['match'] as int,
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );

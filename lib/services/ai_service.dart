@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'aiserv.dart';
 
@@ -50,11 +50,13 @@ class AiService {
     };
   }
 
-  static Future<Map<String, dynamic>> generateLearningRoadmap(String field) async {
+  static Future<Map<String, dynamic>> generateLearningRoadmap(
+      String field) async {
     final baseSkills = _defaultSkillsForField(field);
 
     return {
-      'targetRole': 'Junior ${field.trim().isEmpty ? 'Professional' : field} Specialist',
+      'targetRole':
+          'Junior ${field.trim().isEmpty ? 'Professional' : field} Specialist',
       'targetCompany': 'Top internship-ready teams',
       'currentMatch': 58,
       'targetMatch': 90,
@@ -135,15 +137,20 @@ class AiService {
   }) async {
     try {
       final safeName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
-      final path = 'users/$userId/cv/${DateTime.now().millisecondsSinceEpoch}_$safeName';
-      final ref = FirebaseStorage.instance.ref(path);
-      await ref.putData(bytes);
-      final downloadUrl = await ref.getDownloadURL();
+      final path =
+          'users/$userId/cv/${DateTime.now().millisecondsSinceEpoch}_$safeName';
+      final storage = Supabase.instance.client.storage.from('cv');
+      await storage.uploadBinary(
+        path,
+        bytes,
+        fileOptions: const FileOptions(upsert: true),
+      );
+      final signedUrl = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
 
       return {
-        'bucket': ref.bucket,
+        'bucket': 'cv',
         'path': path,
-        'signed_url': downloadUrl,
+        'signed_url': signedUrl,
       };
     } catch (e) {
       return {
@@ -188,7 +195,8 @@ class AiService {
     }
   }
 
-  static Future<Map<String, dynamic>> generateIndustryTrends(String field) async {
+  static Future<Map<String, dynamic>> generateIndustryTrends(
+      String field) async {
     final skills = _defaultSkillsForField(field);
     final trends = <Map<String, dynamic>>[];
     for (var i = 0; i < skills.length && i < 6; i++) {
@@ -256,7 +264,8 @@ class AiService {
   static String _inferSummary(String text) {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return '';
-    final lines = trimmed.split(RegExp(r'\r?\n')).where((l) => l.trim().isNotEmpty);
+    final lines =
+        trimmed.split(RegExp(r'\r?\n')).where((l) => l.trim().isNotEmpty);
     final first = lines.isNotEmpty ? lines.first.trim() : '';
     if (first.length > 180) {
       return '${first.substring(0, 177)}...';
