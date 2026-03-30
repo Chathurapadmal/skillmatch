@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'firebase_options.dart';
 import 'pages/wrapper.dart';
+import 'package:skillmatch/pages/splash_screen.dart';
 
 bool get _supportsFirebaseOnCurrentPlatform {
   if (kIsWeb) return true;
@@ -76,7 +77,7 @@ class SkillMatchApp extends StatelessWidget {
       ),
       home: startupMessage != null
           ? _ErrorScreen(message: startupMessage!)
-          : const AuthWrapper(),
+          : const SplashScreen(),
     );
   }
 }
