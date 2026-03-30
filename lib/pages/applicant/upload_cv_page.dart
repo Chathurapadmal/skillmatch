@@ -151,7 +151,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
           child: Column(
             children: [
 
-              
+              /// HEADER
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
@@ -165,217 +165,115 @@ class _UploadCvPageState extends State<UploadCvPage> {
                     bottom: Radius.circular(28),
                   ),
                 ),
-                child: Stack(
-                  children: [
-
-                    Positioned(
-                      right: -20,
-                      top: -10,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
-                          shape: BoxShape.circle,
+                child: Center(
+                  child: Column(
+                    children: const [
+                      Icon(Icons.description_rounded, size: 40, color: Colors.white),
+                      SizedBox(height: 12),
+                      Text(
+                        'Seamless CV Upload',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-
-                    Positioned(
-                      left: -30,
-                      bottom: -20,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.06),
-                          shape: BoxShape.circle,
-                        ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Upload your CV and let AI extract\nskills instantly',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
                       ),
-                    ),
-
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-
-                          Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.18),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.35),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.description_rounded,
-                              size: 32,
-                              color: Colors.white,
-                            ),
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          const Text(
-                            'Seamless CV Upload',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 6),
-
-                          const Text(
-                            'Upload your CV and let AI extract\nskills instantly',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
-              
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    children: [
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      children: [
 
-                      GestureDetector(
-                        onTap: _uploading || _extracting ? null : _pickCvFile,
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(
-                              color: const Color(0xFF7C3AED).withOpacity(0.4),
+                        /// Upload Card
+                        GestureDetector(
+                          onTap: _uploading || _extracting ? null : _pickCvFile,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(
+                                color: const Color(0xFF7C3AED).withOpacity(0.4),
+                              ),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.deepPurple.withOpacity(0.15),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              _uploading
-                                  ? const CircularProgressIndicator()
-                                  : Container(
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Color(0xFF5B5FFF),
-                                            Color(0xFF7C3AED)
-                                          ],
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.cloud_upload_rounded,
-                                        color: Colors.white,
-                                        size: 28,
-                                      ),
-                                    ),
-                              const SizedBox(height: 14),
-                              const Text(
-                                "Upload your CV",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                "Supports TXT, MD (or paste below)",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.grey.shade300),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: TextField(
-                            controller: _cvTextCtrl,
-                            maxLines: null,
-                            expands: true,
-                            decoration: const InputDecoration(
-                              hintText: "Paste your CV text here...",
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      GestureDetector(
-                        onTap: _extracting || _uploading
-                            ? null
-                            : _extractAndReturn,
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF5B5FFF),
-                                Color(0xFF7C3AED)
+                            child: Column(
+                              children: [
+                                _uploading
+                                    ? const CircularProgressIndicator()
+                                    : const Icon(Icons.cloud_upload, size: 40),
+                                const SizedBox(height: 10),
+                                const Text("Upload your CV"),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Center(
-                            child: _extracting
-                                ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text(
-                                    "Extract to Profile",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
                           ),
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(height: 18),
+
+                        /// TEXT FIELD (FIXED HEIGHT)
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.3,
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: TextField(
+                              controller: _cvTextCtrl,
+                              maxLines: null,
+                              expands: true,
+                              decoration: const InputDecoration(
+                                hintText: "Paste your CV text here...",
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        /// BUTTON
+                        GestureDetector(
+                          onTap: _extracting || _uploading
+                              ? null
+                              : _extractAndReturn,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Center(
+                              child: _extracting
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text(
+                                      "Extract to Profile",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+
+                      ],
+                    ),
                   ),
                 ),
               ),
