@@ -357,6 +357,8 @@ class ApplicantDashboard extends StatelessWidget {
                                       (data['location'] as String?) ??
                                       'Remote')
                                   .trim(),
+                              'aboutRole':
+                                  ((data['aboutRole'] as String?) ?? '').trim(),
                               'industry':
                                   ((data['industry'] as String?) ?? '').trim(),
                               'match': _calculateMatch(tags, studentSkills),
@@ -387,6 +389,7 @@ class ApplicantDashboard extends StatelessWidget {
                                   title: item['title'] as String,
                                   company: item['company'] as String,
                                   location: item['location'] as String,
+                                  aboutRole: item['aboutRole'] as String,
                                   matchRate: item['match'] as int,
                                 ),
                               );
@@ -512,12 +515,14 @@ class _JobCard extends StatelessWidget {
   final String title;
   final String company;
   final String location;
+  final String aboutRole;
   final int matchRate;
 
   const _JobCard({
     required this.title,
     required this.company,
     required this.location,
+    required this.aboutRole,
     required this.matchRate,
   });
 
@@ -558,6 +563,15 @@ class _JobCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text('$company · $location',
                     style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                if (aboutRole.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    aboutRole.trim(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                  ),
+                ],
               ],
             ),
           ),

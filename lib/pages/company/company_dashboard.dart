@@ -1384,6 +1384,7 @@ class _InternshipManagementTab extends StatefulWidget {
 class _InternshipManagementTabState extends State<_InternshipManagementTab> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  final _aboutRoleCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
   final _compensationCtrl = TextEditingController();
   final _skillsCtrl = TextEditingController();
@@ -1398,6 +1399,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
+    _aboutRoleCtrl.dispose();
     _locationCtrl.dispose();
     _compensationCtrl.dispose();
     _skillsCtrl.dispose();
@@ -1408,6 +1410,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
   Future<void> _publishPost() async {
     final title = _titleCtrl.text.trim();
     final description = _descCtrl.text.trim();
+    final aboutRole = _aboutRoleCtrl.text.trim();
     final location = _locationCtrl.text.trim();
     final compensation = _compensationCtrl.text.trim();
     final minGpa = double.tryParse(_minGpaCtrl.text.trim());
@@ -1440,6 +1443,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
       'postType': _postType,
       'title': title,
       'description': description,
+      'aboutRole': aboutRole,
       'location': location.isEmpty ? _mode : location,
       'type': _mode,
       'duration': _duration,
@@ -1457,6 +1461,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
 
     _titleCtrl.clear();
     _descCtrl.clear();
+    _aboutRoleCtrl.clear();
     _locationCtrl.clear();
     _compensationCtrl.clear();
     _skillsCtrl.clear();
@@ -1540,6 +1545,15 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
                 decoration: const InputDecoration(
                   labelText: 'Description',
                   hintText: 'Role responsibilities and outcomes',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _aboutRoleCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'About the Role',
+                  hintText: 'Team, impact, and key expectations for this role',
                 ),
               ),
               const SizedBox(height: 8),
@@ -1686,6 +1700,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               children: docs.take(10).map((doc) {
                 final data = doc.data();
                 final active = data['active'] != false;
+                final aboutRole = (data['aboutRole'] as String? ?? '').trim();
                 final skills =
                     ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
                 return Container(
@@ -1733,6 +1748,15 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
                         'Compensation: ${(data['salary'] as String?) ?? (data['stipend'] as String?) ?? 'Negotiable'}',
                         style: const TextStyle(color: Color(0xFF1565C0)),
                       ),
+                      if (aboutRole.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          'About the Role: $aboutRole',
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ],
                       if (skills.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Wrap(
@@ -3040,7 +3064,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                         Text(
                           '${interviewRate.toStringAsFixed(1)}%',
                           style: const TextStyle(
-                            color: const Color(0xFF8A5BFF),
+                            color: Color(0xFF8A5BFF),
                             fontWeight: FontWeight.w700,
                             fontSize: 20,
                           ),
@@ -3071,7 +3095,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                         Text(
                           '${hireRate.toStringAsFixed(1)}%',
                           style: const TextStyle(
-                            color: const Color(0xFF18C17C),
+                            color: Color(0xFF18C17C),
                             fontWeight: FontWeight.w700,
                             fontSize: 20,
                           ),
@@ -3158,7 +3182,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                           );
                         },
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),
@@ -3334,7 +3358,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
                   '4. Your Rights\n'
                   'You have the right to access, correct, or delete your personal data.\n\n'
                   'For more information, please contact our support team.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 1.6,
                     color: Colors.black54,
@@ -3533,7 +3557,7 @@ class _TermsOfServicePage extends StatelessWidget {
                   '5. Modification of Terms\n'
                   'We may revise these terms at any time without notice. Your continued use constitutes acceptance of revised terms.\n\n'
                   'For clarifications, contact support@skillmatch.app',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 1.6,
                     color: Colors.black54,

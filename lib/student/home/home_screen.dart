@@ -215,6 +215,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
   Future<void> _openInternshipDetails(Map<String, dynamic> internship) async {
     final tags =
         ((internship['tags'] as List?) ?? []).map((e) => '$e').toList();
+    final aboutRole = (internship['aboutRole'] as String? ?? '').trim();
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -254,6 +255,19 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                     : 'No additional description provided.',
                 style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
+              if (aboutRole.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text('About the Role',
+                    style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Text(
+                  aboutRole,
+                  style: const TextStyle(color: Colors.black54, height: 1.4),
+                ),
+              ],
               const SizedBox(height: 14),
               const Text('Required Skills',
                   style: TextStyle(
@@ -340,6 +354,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
         'mode': mode,
         'salary': salary,
         'description': (data['description'] as String?) ?? '',
+        'aboutRole': (data['aboutRole'] as String?) ?? '',
         'tags': tags,
         'industry': (data['industry'] as String?) ?? '',
         'match': _calculateMatch(tags, studentSkills),
@@ -758,6 +773,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
 
   Widget _internshipCard(Map<String, dynamic> item) {
     final tags = (item['tags'] as List<dynamic>).cast<String>();
+    final aboutRole = (item['aboutRole'] as String? ?? '').trim();
     return GestureDetector(
       onTap: () => _openInternshipDetails(item),
       child: Container(
@@ -808,6 +824,19 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 35 / 2)),
+            if (aboutRole.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                aboutRole,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 13,
+                  height: 1.35,
+                ),
+              ),
+            ],
             const Spacer(),
             Text(item['salary'],
                 style: const TextStyle(
@@ -997,6 +1026,20 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                     : 'No additional description provided.',
                 style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
+              if ((internship['aboutRole'] as String?)?.trim().isNotEmpty ==
+                  true) ...[
+                const SizedBox(height: 12),
+                const Text('About the Role',
+                    style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Text(
+                  (internship['aboutRole'] as String).trim(),
+                  style: const TextStyle(color: Colors.black54, height: 1.4),
+                ),
+              ],
               const SizedBox(height: 14),
               const Text('Required Skills',
                   style: TextStyle(
@@ -1114,6 +1157,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                   (data['stipend'] as String?) ??
                   'Negotiable',
               'description': (data['description'] as String?) ?? '',
+              'aboutRole': (data['aboutRole'] as String?) ?? '',
               'tags':
                   ((data['skills'] as List?) ?? []).map((e) => '$e').toList(),
               'industry': (data['industry'] as String?) ?? '',
@@ -1361,6 +1405,22 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
+                          if ((item['aboutRole'] as String?)
+                                  ?.trim()
+                                  .isNotEmpty ==
+                              true) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              (item['aboutRole'] as String).trim(),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppTheme.textMuted,
+                                fontSize: 14,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 8,

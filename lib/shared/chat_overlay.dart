@@ -16,6 +16,15 @@ class _ChatOverlayState extends State<ChatOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    var fabBottom = 20.0 + media.viewPadding.bottom;
+    if (widget.child is Scaffold) {
+      final scaffold = widget.child as Scaffold;
+      if (scaffold.bottomNavigationBar != null) {
+        fabBottom += 80;
+      }
+    }
+
     return Stack(
       children: [
         widget.child,
@@ -34,17 +43,18 @@ class _ChatOverlayState extends State<ChatOverlay> {
               setState(() => _showChat = false);
             },
           ),
-        Positioned(
-          bottom: 20,
-          right: 20,
-          child: FloatingActionButton(
-            onPressed: () {
-              setState(() => _showChat = !_showChat);
-            },
-            backgroundColor: AppTheme.primary,
-            child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+        if (!_showChat)
+          Positioned(
+            bottom: fabBottom,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: () {
+                setState(() => _showChat = true);
+              },
+              backgroundColor: AppTheme.primary,
+              child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -134,7 +144,7 @@ class _ChatPanelState extends State<_ChatPanel>
           child: Container(
             height: MediaQuery.of(context).size.height * 0.75,
             decoration: const BoxDecoration(
-              color: AppTheme.bgDark,
+              color: Color(0xFFF5F7FA),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -146,8 +156,9 @@ class _ChatPanelState extends State<_ChatPanel>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
+                    color: Colors.white,
                     border: Border(
-                      bottom: BorderSide(color: Color(0xFF2D2D5E)),
+                      bottom: BorderSide(color: Color(0xFFDCE3F0)),
                     ),
                   ),
                   child: Row(
@@ -156,13 +167,13 @@ class _ChatPanelState extends State<_ChatPanel>
                       const Text(
                         'SkillMatch AI Support',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Color(0xFF1565C0),
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
+                        icon: const Icon(Icons.close, color: Color(0xFF1565C0)),
                         onPressed: widget.onClose,
                       ),
                     ],
@@ -175,9 +186,8 @@ class _ChatPanelState extends State<_ChatPanel>
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final m = _messages[index];
-                      final bubbleColor = m.fromUser
-                          ? AppTheme.primary
-                          : const Color(0xFF1C1C44);
+                      final bubbleColor =
+                          m.fromUser ? AppTheme.primary : Colors.white;
 
                       return Align(
                         alignment: m.fromUser
@@ -193,14 +203,16 @@ class _ChatPanelState extends State<_ChatPanel>
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: m.fromUser
-                                  ? AppTheme.primaryLight
-                                  : const Color(0xFF323273),
+                                  ? AppTheme.primary
+                                  : const Color(0xFFDCE3F0),
                             ),
                           ),
                           child: Text(
                             m.text,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: m.fromUser
+                                  ? Colors.white
+                                  : const Color(0xFF2B3A55),
                               fontSize: 13,
                               height: 1.4,
                             ),
@@ -214,8 +226,8 @@ class _ChatPanelState extends State<_ChatPanel>
                 Container(
                   padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF131333),
-                    border: Border(top: BorderSide(color: Color(0xFF2D2D5E))),
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Color(0xFFDCE3F0))),
                   ),
                   child: SafeArea(
                     top: false,
@@ -224,30 +236,31 @@ class _ChatPanelState extends State<_ChatPanel>
                         Expanded(
                           child: TextField(
                             controller: _messageCtrl,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Color(0xFF2B3A55)),
                             minLines: 1,
                             maxLines: 4,
                             onSubmitted: (_) => _sendMessage(),
                             decoration: InputDecoration(
                               hintText: 'Ask support... ',
-                              hintStyle:
-                                  const TextStyle(color: AppTheme.textMuted),
+                              hintStyle: const TextStyle(color: Colors.grey),
                               filled: true,
-                              fillColor: const Color(0xFF1D1D46),
+                              fillColor: const Color(0xFFF4F7FC),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFF313173)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFDCE3F0),
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFF313173)),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFDCE3F0),
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                    color: AppTheme.primaryLight),
+                                borderSide:
+                                    const BorderSide(color: AppTheme.primary),
                               ),
                             ),
                           ),

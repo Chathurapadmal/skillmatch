@@ -1,9 +1,14 @@
 ﻿import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/aiserv.dart';
+import '../../services/ai_service.dart';
+import '../../services/firestore_service.dart';
 import '../../shared/chat_overlay.dart';
 
 class UploadCvPage extends StatefulWidget {
@@ -45,12 +50,49 @@ class _UploadCvPageState extends State<UploadCvPage> {
         allowMultiple: false,
         withData: true,
         type: FileType.custom,
-        allowedExtensions: const ['txt', 'md'],
+        allowedExtensions: const ['pdf', 'txt', 'docx', 'md'],
       );
 
       if (picked == null || picked.files.isEmpty) return;
 
       final file = picked.files.single;
+      Uint8List? bytes = file.bytes;
+      if (bytes == null && !kIsWeb && file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null || bytes == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to read this CV file.')),
+        );
+        return;
+      }
+
+      final storageUpload = await AiService.uploadCvToStorage(
+        bytes: bytes,
+        fileName: file.name,
+        userId: uid,
+      );
+
+      final storageError = (storageUpload['_error'] as String?) ?? '';
+      if (storageError.isNotEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('CV upload failed: $storageError')),
+        );
+        return;
+      }
+
+      await FirestoreService.updateUserProfile(uid, {
+        'cvFileName': file.name,
+        'cvStorageBucket': storageUpload['bucket'] as String?,
+        'cvStoragePath': storageUpload['path'] as String?,
+        'cvStorageSignedUrl': storageUpload['signed_url'] as String?,
+        'cvUploadedAt': DateTime.now().toUtc().toIso8601String(),
+      });
+
       String content = '';
 
       if (file.bytes != null) {
@@ -63,7 +105,11 @@ class _UploadCvPageState extends State<UploadCvPage> {
 
       if (content.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not read text from the selected file.')),
+          SnackBar(
+            content: Text(
+              'CV uploaded to Supabase, but text could not be extracted from ${file.name}. Use TXT/MD for extraction.',
+            ),
+          ),
         );
         return;
       }
@@ -73,12 +119,14 @@ class _UploadCvPageState extends State<UploadCvPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Loaded ${file.name} successfully.')),
+        SnackBar(
+          content: Text('Uploaded and loaded ${file.name} successfully.'),
+        ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to upload CV file.')),
+        const SnackBar(content: Text('Failed to upload CV file to Supabase.')),
       );
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -89,7 +137,8 @@ class _UploadCvPageState extends State<UploadCvPage> {
     final cvText = _cvTextCtrl.text.trim();
     if (cvText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload or paste your CV text first.')),
+        const SnackBar(
+            content: Text('Please upload or paste your CV text first.')),
       );
       return;
     }
@@ -132,7 +181,6 @@ class _UploadCvPageState extends State<UploadCvPage> {
     return ChatOverlay(
       child: Scaffold(
         backgroundColor: const Color(0xFFF7F8FC),
-
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -146,11 +194,9 @@ class _UploadCvPageState extends State<UploadCvPage> {
             ),
           ),
         ),
-
         body: SafeArea(
           child: Column(
             children: [
-
               /// HEADER
               Container(
                 width: double.infinity,
@@ -168,7 +214,8 @@ class _UploadCvPageState extends State<UploadCvPage> {
                 child: Center(
                   child: Column(
                     children: const [
-                      Icon(Icons.description_rounded, size: 40, color: Colors.white),
+                      Icon(Icons.description_rounded,
+                          size: 40, color: Colors.white),
                       SizedBox(height: 12),
                       Text(
                         'Seamless CV Upload',
@@ -195,7 +242,6 @@ class _UploadCvPageState extends State<UploadCvPage> {
                     padding: const EdgeInsets.all(18),
                     child: Column(
                       children: [
-
                         /// Upload Card
                         GestureDetector(
                           onTap: _uploading || _extracting ? null : _pickCvFile,
@@ -260,7 +306,8 @@ class _UploadCvPageState extends State<UploadCvPage> {
                             ),
                             child: Center(
                               child: _extracting
-                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
                                   : const Text(
                                       "Extract to Profile",
                                       style: TextStyle(
@@ -271,7 +318,6 @@ class _UploadCvPageState extends State<UploadCvPage> {
                             ),
                           ),
                         ),
-
                       ],
                     ),
                   ),
