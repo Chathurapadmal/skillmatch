@@ -1,50 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:skillmatch/widgets/termofservice_card.dart';
-import '../../theme/app_theme.dart';
 
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
 
+  static const primary = Color(0xFF4052B6);
+  static const deepViolet = Color(0xFF5000D2);
+  static const electricPurple = Color(0xFF652FE7);
+
+  static const textPrimary = Color(0xFF2C2F30);
+  static const textSecondary = Color(0xFF595C5D);
+
+  static const bgMain = Color(0xFFF5F6F7);
+  static const cardBg = Colors.white;
+
+  static const border = Color(0xFFDCE3F0);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: bgMain,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.black87,
+        backgroundColor: cardBg,
+        foregroundColor: textPrimary,
         elevation: 0,
         title: const Text(
           'Terms of Service',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: const [
-            TermsOfServiceScreencard(
-              icon: Icons.check_circle_outline,
-              title: 'Acceptance',
-              body:
-                  'By using SkillMatch Pro, you agree to these terms and all applicable laws and policies. Please read carefully.',
+    );
+  }
+}
+
+class _TermsSection extends StatelessWidget {
+  final String title;
+  final String body;
+
+  const _TermsSection({required this.title, required this.body});
+
+  
+  static const textPrimary = Color(0xFF2C2F30);
+  static const textSecondary = Color(0xFF595C5D);
+  static const cardBg = Colors.white;
+  static const border = Color(0xFFDCE3F0);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
             ),
-            TermsOfServiceScreencard(
-              icon: Icons.lock_outline,
-              title: 'Account Responsibility',
-              body:
-                  'You are responsible for all activity on your account. Keep your login credentials secure and confidential.',
-            ),
-            TermsOfServiceScreencard(
-              icon: Icons.build_outlined,
-              title: 'Platform Use',
-              body:
-                  'Do not misuse the platform, submit false information, or attempt unauthorized access. Respect the community guidelines.',
-            ),
-            TermsOfServiceScreencard(
-              icon: Icons.work_outline,
-              title: 'Applications and Hiring',
-              body:
-                  'SkillMatch Pro provides tools for matching and communication but cannot guarantee employment or hiring outcomes.',
+          ),
+          const SizedBox(height: 8),
+          Text(
+            body,
+            style: const TextStyle(
+              color: textSecondary,
+              fontSize: 12,
+              height: 1.45,
             ),
             TermsOfServiceScreencard(
               icon: Icons.smart_toy_outlined,
@@ -69,4 +96,3 @@ class TermsOfServiceScreen extends StatelessWidget {
     );
   }
 }
-
