@@ -23,46 +23,10 @@ class TermsOfServiceScreen extends StatelessWidget {
         backgroundColor: cardBg,
         foregroundColor: textPrimary,
         elevation: 0,
-        title: const Text('Terms of Service'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(18),
-        children: const [
-          _TermsSection(
-            title: '1. Acceptance',
-            body:
-                'By using SkillMatch Pro, you agree to these terms and applicable laws and policies.',
-          ),
-          _TermsSection(
-            title: '2. Account Responsibility',
-            body:
-                'You are responsible for account activity and keeping your login credentials secure.',
-          ),
-          _TermsSection(
-            title: '3. Platform Use',
-            body:
-                'Do not misuse the platform, submit false information, or attempt unauthorized access.',
-          ),
-          _TermsSection(
-            title: '4. Applications and Hiring',
-            body:
-                'SkillMatch Pro provides matching and communication tools but does not guarantee hiring outcomes.',
-          ),
-          _TermsSection(
-            title: '5. AI Features',
-            body:
-                'AI-generated responses and suggestions are assistive and should be reviewed before final decisions.',
-          ),
-          _TermsSection(
-            title: '6. Changes',
-            body:
-                'We may update these terms and will reflect revisions inside the app.',
-          ),
-          _TermsSection(
-            title: '7. Contact',
-            body: 'For support contact support@skillmatch.pro.',
-          ),
-        ],
+        title: const Text(
+          'Terms of Service',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
       ),
     );
   }
@@ -109,8 +73,25 @@ class _TermsSection extends StatelessWidget {
               fontSize: 12,
               height: 1.45,
             ),
-          ),
-        ],
+            TermsOfServiceScreencard(
+              icon: Icons.smart_toy_outlined,
+              title: 'AI Features',
+              body:
+                  'AI-generated suggestions are meant to assist you. Always review content before making decisions.',
+            ),
+            TermsOfServiceScreencard(
+              icon: Icons.update_outlined,
+              title: 'Changes',
+              body:
+                  'We may update these terms occasionally. Revisions will be reflected in-app, and continued use means you accept changes.',
+            ),
+            TermsOfServiceScreencard(
+              icon: Icons.contact_mail_outlined,
+              title: 'Contact',
+              body: 'For support, contact us at support@skillmatch.pro.',
+            ),
+          ],
+        ),
       ),
     );
   }
