@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'live_chat_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
-import '../../theme/app_theme.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
@@ -16,6 +15,30 @@ class HelpSupportScreen extends StatefulWidget {
 
 class _HelpSupportScreenState extends State<HelpSupportScreen> {
   int? _openFaq;
+
+  // 🎨 New Color System
+  static const primary = Color(0xFF4052B6);
+  static const deepViolet = Color(0xFF5000D2);
+  static const electricPurple = Color(0xFF652FE7);
+
+  static const textPrimary = Color(0xFF2C2F30);
+  static const textSecondary = Color(0xFF595C5D);
+  static const textMuted = Color(0xFF595C5D);
+
+  static const bgMain = Color(0xFFF5F6F7);
+  static const cardBg = Colors.white;
+
+  static const border = Color(0xFFDCE3F0);
+
+  static const info = Color(0xFF4CB9FF);
+  static const link = Color(0xFF00618F);
+  static const error = Colors.red;
+
+  static const gradient = LinearGradient(
+    colors: [Color(0xFF4052B6), Color(0xFF652FE7)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   Future<void> _openSupportEmail() async {
     final gmailUri = Uri.parse(
@@ -36,7 +59,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Unable to open email app right now.'),
-        backgroundColor: AppTheme.error,
+        backgroundColor: error,
       ));
     }
   }
@@ -81,11 +104,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: bgMain,
       appBar: AppBar(
           title: const Text('Help & Support'),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
+          backgroundColor: cardBg,
+          foregroundColor: textPrimary,
           elevation: 0),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -94,7 +117,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+              gradient: gradient,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(children: [
@@ -124,12 +147,12 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           Row(children: [
             Expanded(
                 child: _actionCard(Icons.email_outlined, 'Email Us',
-                    'support@skillmatch.pro', AppTheme.primary,
+                    'support@skillmatch.pro', primary,
                     onTap: _openSupportEmail)),
             const SizedBox(width: 12),
             Expanded(
                 child: _actionCard(Icons.chat_outlined, 'Live Chat',
-                    'AI Support Assistant', AppTheme.info,
+                    'AI Support Assistant', info,
                     onTap: _openLiveChat)),
           ]).animate().fade(delay: 60.ms),
           const SizedBox(height: 24),
@@ -147,13 +170,13 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
                   color: isOpen
-                      ? AppTheme.primary.withOpacity(0.08)
-                      : Colors.white,
+                      ? primary.withOpacity(0.08)
+                      : cardBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isOpen
-                        ? AppTheme.primary.withOpacity(0.3)
-                        : const Color(0xFFDCE3F0),
+                        ? primary.withOpacity(0.3)
+                        : border,
                   ),
                 ),
                 child: Column(children: [
@@ -165,13 +188,13 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                         child: Text(faq.q,
                             style: TextStyle(
                                 color: isOpen
-                                    ? AppTheme.primaryLight
-                                    : Colors.black87,
+                                    ? deepViolet
+                                    : textPrimary,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600)),
                       ),
                       Icon(isOpen ? Icons.expand_less : Icons.expand_more,
-                          color: AppTheme.textMuted, size: 20),
+                          color: textMuted, size: 20),
                     ]),
                   ),
                   if (isOpen)
@@ -180,7 +203,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           left: 16, right: 16, bottom: 14),
                       child: Text(faq.a,
                           style: const TextStyle(
-                              color: AppTheme.textSecondary,
+                              color: textSecondary,
                               fontSize: 12,
                               height: 1.6)),
                     ),
@@ -193,9 +216,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           _sectionTitle('Legal'),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardBg,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFDCE3F0)),
+              border: Border.all(color: border),
             ),
             child: Column(children: [
               _resourceTile(
@@ -208,7 +231,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   ),
                 ),
               ),
-              const Divider(height: 1, color: Color(0xFFDCE3F0)),
+              Divider(height: 1, color: border),
               _resourceTile(
                 Icons.description_outlined,
                 'Terms of Service',
@@ -226,7 +249,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           Center(
             child: Text('SkillMatch Pro v1.0.0  •  © 2025 SkillMatch',
                 style:
-                    const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+                    const TextStyle(color: textMuted, fontSize: 11)),
           ),
         ],
       ),
@@ -237,7 +260,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         padding: const EdgeInsets.only(bottom: 10),
         child: Text(t,
             style: const TextStyle(
-                color: AppTheme.textMuted,
+                color: textMuted,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.8)),
@@ -263,7 +286,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   color: color, fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           Text(sub,
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+              style: const TextStyle(color: textMuted, fontSize: 11)),
         ]),
       ),
     );
@@ -272,13 +295,13 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   Widget _resourceTile(IconData icon, String title, String sub,
       {required VoidCallback onTap}) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryLight, size: 20),
+      leading: Icon(icon, color: deepViolet, size: 20),
       title: Text(title,
-          style: const TextStyle(color: Colors.black87, fontSize: 13)),
+          style: const TextStyle(color: textPrimary, fontSize: 13)),
       subtitle: Text(sub,
-          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+          style: const TextStyle(color: textMuted, fontSize: 11)),
       trailing:
-          const Icon(Icons.chevron_right, color: AppTheme.textMuted, size: 18),
+          const Icon(Icons.chevron_right, color: textMuted, size: 18),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
     );

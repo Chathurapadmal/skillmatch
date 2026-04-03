@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SupabaseStoragePage extends StatelessWidget {
   const SupabaseStoragePage({super.key});
@@ -12,12 +13,23 @@ class SupabaseStoragePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF5F6F7),
       appBar: AppBar(
         title: const Text('Supabase Storage Setup'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
         elevation: 0,
+        foregroundColor: const Color(0xFF2C2F30),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF4052B6),
+                Color(0xFF652FE7),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -40,6 +52,7 @@ class SupabaseStoragePage extends StatelessWidget {
           _InfoCard(
             title: 'Buckets Used',
             value: 'cv\nprofile',
+            enableCopy: false, 
           ),
           SizedBox(height: 10),
           _InfoCard(
@@ -56,8 +69,23 @@ class SupabaseStoragePage extends StatelessWidget {
 class _InfoCard extends StatelessWidget {
   final String title;
   final String value;
+  final bool enableCopy;
 
-  const _InfoCard({required this.title, required this.value});
+  const _InfoCard({
+    required this.title,
+    required this.value,
+    this.enableCopy = true, 
+  });
+
+  void _copyToClipboard(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: value));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Copied to clipboard'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,26 +93,49 @@ class _InfoCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+        border: Border.all(color: const Color(0xFFD8CAFF)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF4052B6),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              if (enableCopy) //
+                IconButton(
+                  onPressed: () => _copyToClipboard(context),
+                  icon: const Icon(
+                    Icons.copy,
+                    size: 18,
+                    color: Color(0xFF5000D2),
+                  ),
+                  tooltip: 'Copy',
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           SelectableText(
             value,
             style: const TextStyle(
-              color: Colors.black54,
+              color: Color(0xFF595C5D),
               fontSize: 13,
               height: 1.4,
             ),

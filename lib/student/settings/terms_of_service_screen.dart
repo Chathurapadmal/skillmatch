@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_theme.dart';
-
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
+
+  static const primary = Color(0xFF4052B6);
+  static const deepViolet = Color(0xFF5000D2);
+  static const electricPurple = Color(0xFF652FE7);
+
+  static const textPrimary = Color(0xFF2C2F30);
+  static const textSecondary = Color(0xFF595C5D);
+
+  static const bgMain = Color(0xFFF5F6F7);
+  static const cardBg = Colors.white;
+
+  static const border = Color(0xFFDCE3F0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: bgMain,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: cardBg,
+        foregroundColor: textPrimary,
         elevation: 0,
         title: const Text('Terms of Service'),
       ),
@@ -64,15 +74,21 @@ class _TermsSection extends StatelessWidget {
 
   const _TermsSection({required this.title, required this.body});
 
+  
+  static const textPrimary = Color(0xFF2C2F30);
+  static const textSecondary = Color(0xFF595C5D);
+  static const cardBg = Colors.white;
+  static const border = Color(0xFFDCE3F0);
+
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+        border: Border.all(color: border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +96,7 @@ class _TermsSection extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Colors.black87,
+              color: textPrimary,
               fontWeight: FontWeight.w700,
               fontSize: 14,
             ),
@@ -89,7 +105,7 @@ class _TermsSection extends StatelessWidget {
           Text(
             body,
             style: const TextStyle(
-              color: AppTheme.textSecondary,
+              color: textSecondary,
               fontSize: 12,
               height: 1.45,
             ),
