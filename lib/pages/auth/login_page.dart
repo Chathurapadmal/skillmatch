@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,6 +20,7 @@ class _LoginPageState extends State<LoginPage>
 
   bool _loading = false;
   bool _obscurePass = true;
+  bool _remember = false;
 
   late AnimationController _controller;
   late Animation<double> _fade;
@@ -85,21 +87,18 @@ class _LoginPageState extends State<LoginPage>
     return Scaffold(
       body: Stack(
         children: [
-          // 🌈 Background Gradient
+        
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF4052B6),
-                  Color(0xFF652FE7),
-                ],
+                colors: [Color(0xFF4052B6), Color(0xFF652FE7)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
           ),
 
-          // ✨ Glow Effect
+        
           Positioned(
             top: -80,
             right: -60,
@@ -108,12 +107,12 @@ class _LoginPageState extends State<LoginPage>
               width: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF652FE7).withOpacity(0.4),
+                color: const Color(0xFF652FE7).withOpacity(0.3),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0xFF652FE7),
-                    blurRadius: 120,
-                    spreadRadius: 20,
+                    blurRadius: 40,
+                    spreadRadius: 10,
                   )
                 ],
               ),
@@ -133,76 +132,73 @@ class _LoginPageState extends State<LoginPage>
                       constraints: const BoxConstraints(maxWidth: 420),
                       child: Column(
                         children: [
-                          // 🚀 Logo Animation
+                    
                           TweenAnimationBuilder(
                             tween: Tween(begin: 0.9, end: 1.0),
                             duration: const Duration(milliseconds: 800),
                             curve: Curves.easeOutBack,
                             builder: (context, scale, child) {
                               return Transform.scale(
-                                scale: scale,
-                                child: child,
-                              );
+                                  scale: scale, child: child);
                             },
                             child: Container(
-                              padding: const EdgeInsets.all(22),
+                              padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: const LinearGradient(
                                   colors: [
                                     Color(0xFF4052B6),
-                                    Color(0xFF652FE7),
+                                    Color(0xFF652FE7)
                                   ],
                                 ),
                                 boxShadow: const [
                                   BoxShadow(
                                     color: Color(0xFF652FE7),
-                                    blurRadius: 30,
-                                    spreadRadius: 2,
+                                    blurRadius: 20,
                                   )
                                 ],
                               ),
                               child: const Icon(Icons.work_rounded,
-                                  size: 50, color: Colors.white),
+                                  size: 48, color: Colors.white),
                             ),
                           ),
 
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 16),
 
                           const Text(
                             'SkillMatch',
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: 30,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
 
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
 
                           const Text(
                             'Connect talent with opportunity',
                             style: TextStyle(color: Colors.white70),
                           ),
 
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 36),
 
-                          // 🧊 Glass Card
+                        
                           ClipRRect(
                             borderRadius: BorderRadius.circular(28),
                             child: BackdropFilter(
                               filter:
-                                  ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                  ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.85),
+                                  color: Colors.white.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(28),
                                   border: Border.all(
                                     color: Colors.white.withOpacity(0.3),
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(28),
+                                  padding: const EdgeInsets.all(26),
                                   child: Form(
                                     key: _formKey,
                                     child: Column(
@@ -213,34 +209,33 @@ class _LoginPageState extends State<LoginPage>
                                           'Welcome back',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                            fontSize: 24,
+                                            fontSize: 26,
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFF2C2F30),
+                                            color: Colors.white,
                                           ),
                                         ),
 
-                                        const SizedBox(height: 24),
+                                        const SizedBox(height: 22),
 
                                         _modernField(
                                           controller: _emailCtrl,
                                           label: 'Email',
-                                          icon: Icons.email_outlined,
+                                          icon: Icons.mail_outline_rounded,
                                         ),
 
-                                        const SizedBox(height: 18),
+                                        const SizedBox(height: 16),
 
                                         _modernField(
                                           controller: _passCtrl,
                                           label: 'Password',
-                                          icon: Icons.lock_outline,
+                                          icon: Icons.lock_rounded,
                                           obscure: _obscurePass,
                                           suffix: IconButton(
                                             icon: Icon(
                                               _obscurePass
                                                   ? Icons.visibility_outlined
                                                   : Icons.visibility_off_outlined,
-                                              color:
-                                                  const Color(0xFF595C5D),
+                                              color: Colors.black54,
                                             ),
                                             onPressed: () => setState(() =>
                                                 _obscurePass =
@@ -248,63 +243,99 @@ class _LoginPageState extends State<LoginPage>
                                           ),
                                         ),
 
-                                        const SizedBox(height: 28),
+                                        const SizedBox(height: 8),
 
-                                        // 🎯 Button
+                                    
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Checkbox(
+                                                  value: _remember,
+                                                  onChanged: (v) =>
+                                                      setState(() =>
+                                                          _remember = v ?? false),
+                                                ),
+                                                const Text(
+                                                  'Remember me',
+                                                  style: TextStyle(color: Colors.white),
+                                                ),
+                                              ],
+                                            ),
+                                            InkWell(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              splashColor: Colors.white24,
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        const ForgotPasswordPage(),
+                                                  ),
+                                                );
+                                              },
+                                              child: const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 6, vertical: 4),
+                                                child: Text(
+                                                  'Forgot Password?',
+                                                  style: TextStyle(
+                                                    color: Color.fromARGB(255, 2, 61, 74),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 18),
+
+                                    
                                         GestureDetector(
                                           onTap:
                                               _loading ? null : _login,
                                           child: AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 200),
-                                            height: 54,
+                                            duration: const Duration(milliseconds: 300),
+                                            height: 52,
                                             decoration: BoxDecoration(
-                                              gradient:
-                                                  const LinearGradient(
+                                              gradient: const LinearGradient(
                                                 colors: [
                                                   Color(0xFF4052B6),
                                                   Color(0xFF652FE7),
                                                 ],
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                      16),
-                                              boxShadow: const [
+                                                  BorderRadius.circular(16),
+                                              boxShadow: [
                                                 BoxShadow(
-                                                  color:
-                                                      Color(0xFF4052B6),
-                                                  blurRadius: 14,
-                                                  offset: Offset(0, 6),
-                                                )
+                                                  color: const Color(0xFF652FE7)
+                                                      .withOpacity(0.7),
+                                                  blurRadius: 30,
+                                                  spreadRadius: 2,
+                                                ),
                                               ],
                                             ),
                                             child: Center(
                                               child: _loading
-                                                  ? const SizedBox(
-                                                      height: 22,
-                                                      width: 22,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                        color:
-                                                            Colors.white,
-                                                      ),
-                                                    )
+                                                  ? const CircularProgressIndicator(
+                                                      color: Colors.white)
                                                   : const Text(
                                                       'Login',
                                                       style: TextStyle(
-                                                        color:
-                                                            Colors.white,
+                                                        color: Colors.white,
                                                         fontWeight:
-                                                            FontWeight
-                                                                .bold,
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                             ),
                                           ),
                                         ),
 
-                                        const SizedBox(height: 20),
+                                        const SizedBox(height: 18),
 
                                         Row(
                                           mainAxisAlignment:
@@ -312,9 +343,8 @@ class _LoginPageState extends State<LoginPage>
                                           children: [
                                             const Text(
                                               "Don't have an account? ",
-                                              style: TextStyle(
-                                                  color: Color(
-                                                      0xFF595C5D)),
+                                              style:
+                                                  TextStyle(color: Colors.white70),
                                             ),
                                             GestureDetector(
                                               onTap: () {
@@ -329,10 +359,8 @@ class _LoginPageState extends State<LoginPage>
                                               child: const Text(
                                                 'Register',
                                                 style: TextStyle(
-                                                  color:
-                                                      Color(0xFF00618F),
-                                                  fontWeight:
-                                                      FontWeight.bold,
+                                                  color: Color.fromARGB(255, 2, 61, 74),
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
@@ -368,22 +396,17 @@ class _LoginPageState extends State<LoginPage>
     return TextFormField(
       controller: controller,
       obscureText: obscure,
+      style: const TextStyle(color: Colors.black87),
       decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFF4052B6)),
         suffixIcon: suffix,
         filled: true,
-        fillColor: const Color(0xFFF5F6F7),
+        fillColor: Colors.white.withOpacity(0.9),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: Color(0xFF652FE7),
-            width: 1.5,
-          ),
         ),
       ),
       validator: (v) {

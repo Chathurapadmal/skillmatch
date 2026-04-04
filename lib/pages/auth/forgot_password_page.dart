@@ -1,6 +1,6 @@
+import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../../services/auth_service.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -48,49 +48,92 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      body: Stack(
+        children: [
+          
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF4052B6),
+                  Color(0xFF652FE7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: Column(
-                  children: [
-                    // Back button
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_rounded,
-                            color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
 
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+
+          Positioned(
+            top: -80,
+            right: -60,
+            child: Container(
+              height: 200,
+              width: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF652FE7).withOpacity(0.3),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0xFF652FE7),
+                    blurRadius: 40,
+                    spreadRadius: 10,
+                  )
+                ],
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Column(
+                    children: [
+                      // 🔙 Back button
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_rounded,
+                              color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
                       ),
-                      elevation: 8,
-                      child: Padding(
-                        padding: const EdgeInsets.all(28),
-                        child: _sent ? _successBody() : _formBody(),
+
+                      const SizedBox(height: 20),
+
+                  
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: BackdropFilter(
+                          filter:
+                              ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(28),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(26),
+                              child: _sent ? _successBody() : _formBody(),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -101,48 +144,57 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icon
+    
           Container(
-            width: 72,
-            height: 72,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
-              color: const Color(0xFF1565C0).withValues(alpha: 0.1),
+              color: Colors.white.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.lock_reset_rounded,
-              size: 38,
-              color: Color(0xFF1565C0),
+              size: 36,
+              color: Colors.white,
             ),
           ),
+
           const SizedBox(height: 20),
 
           const Text(
             'Reset Password',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
+
           const SizedBox(height: 8),
-          Text(
-            'Enter the email address associated with your account '
-            'and we will send a reset link.',
+
+          const Text(
+            'Enter your email and we will send a reset link.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
+
           const SizedBox(height: 24),
 
-          // Email field
+  
           TextFormField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
-            autocorrect: false,
-            textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => _send(),
             decoration: InputDecoration(
               labelText: 'Email',
-              prefixIcon: const Icon(Icons.email_outlined),
+              labelStyle: const TextStyle(color: Colors.black87),
+              prefixIcon:
+                  const Icon(Icons.alternate_email_rounded),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.9),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
               ),
             ),
             validator: (v) {
@@ -153,37 +205,44 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               return null;
             },
           ),
+
           const SizedBox(height: 24),
 
-          // Send button
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          
+          GestureDetector(
+            onTap: _loading ? null : _send,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF4052B6),
+                    Color(0xFF652FE7),
+                  ],
                 ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF652FE7)
+                        .withOpacity(0.6),
+                    blurRadius: 25,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-              onPressed: _loading ? null : _send,
-              child: _loading
-                  ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+              child: Center(
+                child: _loading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white)
+                    : const Text(
+                        'Send Reset Link',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    )
-                  : const Text(
-                      'Send Reset Link',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              ),
             ),
           ),
         ],
@@ -195,35 +254,49 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.check_circle_rounded, size: 64, color: Colors.green),
+        const Icon(Icons.check_circle_rounded,
+            size: 64, color: Colors.green),
+
         const SizedBox(height: 20),
+
         const Text(
           'Email Sent!',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white),
         ),
+
         const SizedBox(height: 8),
+
         Text(
-          'Check your inbox at ${_emailCtrl.text.trim()} for a password reset link.',
+          'Check your inbox at ${_emailCtrl.text.trim()}',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          style: const TextStyle(
+              color: Colors.white70, fontSize: 13),
         ),
+
         const SizedBox(height: 24),
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1565C0),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            height: 50,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF4052B6),
+                  Color(0xFF652FE7),
+                ],
               ),
+              borderRadius: BorderRadius.circular(12),
             ),
-            onPressed: () => Navigator.pop(context),
             child: const Text(
               'Back to Login',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
             ),
           ),
         ),
