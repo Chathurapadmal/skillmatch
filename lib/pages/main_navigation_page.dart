@@ -32,7 +32,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       ),
       _NavPage(
         label: 'Upload CV',
-        icon: Icons.upload_file_rounded,
+        icon: Icons.cloud_upload_rounded,
         page: const UploadCvPage(returnResultOnExtract: false),
       ),
     ];
@@ -41,7 +41,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       case UserRole.admin:
         return [
           _NavPage(
-            label: 'Overview',
+            label: 'Dashboard',
             icon: Icons.dashboard_rounded,
             page: AdminDashboard(
               user: widget.user,
@@ -65,9 +65,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           ),
           ...commonPages,
         ];
+
       case UserRole.company:
-        // Company users use CompanyDashboard directly with no MainNavigationPage wrapper
         return [];
+
       case UserRole.applicant:
         return [
           _NavPage(
@@ -89,7 +90,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   Widget build(BuildContext context) {
     final role = widget.user.role;
 
-    // Company users use CompanyDashboard directly
     if (role == UserRole.company) {
       return CompanyDashboard(user: widget.user);
     }
@@ -105,21 +105,64 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         index: _selectedIndex,
         children: pages.map((entry) => entry.page).toList(),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        destinations: pages
-            .map(
-              (entry) => NavigationDestination(
-                icon: Icon(entry.icon),
-                label: entry.label,
+
+      // 🔥 CUSTOM NAV BAR (UI FIXED)
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Container(
+          height: 75,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-            )
-            .toList(),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(pages.length, (index) {
+              final item = pages[index];
+              final isSelected = _selectedIndex == index;
+
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        item.icon,
+                        color:
+                            isSelected ? const Color(0xFF6C63FF) : Colors.grey,
+                        size: isSelected ? 26 : 24,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.label,
+                        style: TextStyle(
+                          color: isSelected
+                              ? const Color(0xFF6C63FF)
+                              : Colors.grey,
+                          fontSize: 12,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }
@@ -130,5 +173,9 @@ class _NavPage {
   final IconData icon;
   final Widget page;
 
-  const _NavPage({required this.label, required this.icon, required this.page});
+  const _NavPage({
+    required this.label,
+    required this.icon,
+    required this.page,
+  });
 }
