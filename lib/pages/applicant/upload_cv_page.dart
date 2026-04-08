@@ -1,8 +1,13 @@
 ﻿import 'dart:convert';
 import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import '../../services/ai_service.dart';
 import '../../services/aiserv.dart';
 import '../../shared/chat_overlay.dart';
 
@@ -63,7 +68,8 @@ class _UploadCvPageState extends State<UploadCvPage> {
 
       if (content.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not read text from the selected file.')),
+          const SnackBar(
+              content: Text('Could not read text from the selected file.')),
         );
         return;
       }
@@ -89,7 +95,8 @@ class _UploadCvPageState extends State<UploadCvPage> {
     final cvText = _cvTextCtrl.text.trim();
     if (cvText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload or paste your CV text first.')),
+        const SnackBar(
+            content: Text('Please upload or paste your CV text first.')),
       );
       return;
     }
@@ -97,12 +104,44 @@ class _UploadCvPageState extends State<UploadCvPage> {
     setState(() => _extracting = true);
     try {
       final parsed = await AIService.extractCvProfile(cvText);
+      final extractedSkills = (parsed['skills'] as List?)
+              ?.map((e) => e.toString().trim())
+              .where((e) => e.isNotEmpty)
+              .toSet()
+              .toList() ??
+          <String>[];
+      final extractedCerts = ((parsed['certifications'] as List?) ?? [])
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+
+      final applicantPath = AiService.inferApplicantPath(
+        skills: extractedSkills,
+        cvText: cvText,
+        certifications: extractedCerts,
+      );
+
+      final companySuggestions = await _buildCompanySuggestions(
+        extractedSkills: extractedSkills,
+        applicantPath: applicantPath,
+      );
+
+      await _updateApplicantProfileAndCompanySuggestions(
+        cvText: cvText,
+        extractedSkills: extractedSkills,
+        extractedCerts: extractedCerts,
+        applicantPath: applicantPath,
+        companySuggestions: companySuggestions,
+      );
+
       if (!mounted) return;
 
       final result = {
         'cvText': cvText,
-        'aiSkills': parsed['skills'] ?? <String>[],
-        'certifications': parsed['certifications'] ?? <Map<String, dynamic>>[],
+        'aiSkills': extractedSkills,
+        'certifications': extractedCerts,
+        'applicantPath': applicantPath,
+        'suggestedCompanies': companySuggestions,
       };
 
       if (widget.returnResultOnExtract) {
@@ -111,8 +150,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Extracted ${(result['aiSkills'] as List).length} skills and '
-              '${(result['certifications'] as List).length} certifications.',
+              'Extracted ${(result['aiSkills'] as List).length} skills, identified path "${result['applicantPath']}", and found ${(result['suggestedCompanies'] as List).length} company matches.',
             ),
           ),
         );
@@ -127,12 +165,121 @@ class _UploadCvPageState extends State<UploadCvPage> {
     }
   }
 
+  Future<List<Map<String, dynamic>>> _buildCompanySuggestions({
+    required List<String> extractedSkills,
+    required String applicantPath,
+  }) async {
+    final internships = await FirebaseFirestore.instance
+        .collection('internships')
+        .where('active', isEqualTo: true)
+        .limit(120)
+        .get();
+
+    final ranked = <Map<String, dynamic>>[];
+
+    for (final doc in internships.docs) {
+      final data = doc.data();
+      final requiredSkills = ((data['skills'] as List?) ?? const <dynamic>[])
+          .map((e) => '$e')
+          .toList();
+
+      final score = AiService.calculateSkillMatchScore(
+        candidateSkills: extractedSkills,
+        requiredSkills: requiredSkills,
+      );
+      if (score < 35) continue;
+
+      final breakdown = AiService.skillMatchBreakdown(
+        candidateSkills: extractedSkills,
+        requiredSkills: requiredSkills,
+      );
+
+      ranked.add({
+        'internshipId': doc.id,
+        'companyId': (data['companyId'] as String? ?? '').trim(),
+        'companyName': (data['company'] as String? ?? 'Company').trim(),
+        'roleTitle': (data['title'] as String? ?? 'Internship').trim(),
+        'industry': (data['industry'] as String? ?? '').trim(),
+        'matchScore': score,
+        'matchedSkills': breakdown['matchedSkills'] ?? const <String>[],
+        'missingSkills': breakdown['missingSkills'] ?? const <String>[],
+        'applicantPath': applicantPath,
+      });
+    }
+
+    ranked.sort(
+        (a, b) => (b['matchScore'] as int).compareTo(a['matchScore'] as int));
+    return ranked.take(10).toList();
+  }
+
+  Future<void> _updateApplicantProfileAndCompanySuggestions({
+    required String cvText,
+    required List<String> extractedSkills,
+    required List<Map<String, dynamic>> extractedCerts,
+    required String applicantPath,
+    required List<Map<String, dynamic>> companySuggestions,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final userDocRef = FirebaseFirestore.instance.collection('users').doc(uid);
+    final existing = await userDocRef.get();
+    final existingSkills =
+        ((existing.data()?['skills'] as List?) ?? const <dynamic>[]) // manual
+            .map((e) => '$e')
+            .toList();
+
+    final mergedSkills = <String>{
+      ...existingSkills,
+      ...extractedSkills,
+    }.toList();
+
+    await userDocRef.set({
+      'cvText': cvText,
+      'aiSkills': extractedSkills,
+      'cvSkills': extractedSkills,
+      'certifications': extractedCerts,
+      'skills': mergedSkills,
+      'applicantPath': applicantPath,
+      'industry': applicantPath,
+      'field': applicantPath,
+      'aiSuggestedCompanies': companySuggestions,
+      'lastCvAiRunAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'aiVerified': extractedSkills.isNotEmpty || extractedCerts.isNotEmpty,
+    }, SetOptions(merge: true));
+
+    final suggestionsRef =
+        FirebaseFirestore.instance.collection('company_candidate_suggestions');
+
+    for (final suggestion in companySuggestions) {
+      final companyId = (suggestion['companyId'] as String? ?? '').trim();
+      if (companyId.isEmpty) continue;
+
+      final docId = '${companyId}_$uid';
+      await suggestionsRef.doc(docId).set({
+        'companyId': companyId,
+        'candidateId': uid,
+        'matchScore': suggestion['matchScore'] ?? 0,
+        'matchedSkills': suggestion['matchedSkills'] ?? const <String>[],
+        'missingSkills': suggestion['missingSkills'] ?? const <String>[],
+        'applicantPath': applicantPath,
+        'internshipId': suggestion['internshipId'] ?? '',
+        'roleTitle': suggestion['roleTitle'] ?? 'Internship',
+        'companyName': suggestion['companyName'] ?? 'Company',
+        'source': 'cv_ai',
+        'status': 'new',
+        'updatedAt': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChatOverlay(
       child: Scaffold(
         backgroundColor: const Color(0xFFF7F8FC),
-
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -146,12 +293,9 @@ class _UploadCvPageState extends State<UploadCvPage> {
             ),
           ),
         ),
-
         body: SafeArea(
           child: Column(
             children: [
-
-              
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
@@ -167,7 +311,6 @@ class _UploadCvPageState extends State<UploadCvPage> {
                 ),
                 child: Stack(
                   children: [
-
                     Positioned(
                       right: -20,
                       top: -10,
@@ -180,7 +323,6 @@ class _UploadCvPageState extends State<UploadCvPage> {
                         ),
                       ),
                     ),
-
                     Positioned(
                       left: -30,
                       bottom: -20,
@@ -193,12 +335,10 @@ class _UploadCvPageState extends State<UploadCvPage> {
                         ),
                       ),
                     ),
-
                     Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-
                           Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
@@ -215,9 +355,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
                               color: Colors.white,
                             ),
                           ),
-
                           const SizedBox(height: 12),
-
                           const Text(
                             'Seamless CV Upload',
                             textAlign: TextAlign.center,
@@ -227,9 +365,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           const SizedBox(height: 6),
-
                           const Text(
                             'Upload your CV and let AI extract\nskills instantly',
                             textAlign: TextAlign.center,
@@ -245,14 +381,11 @@ class _UploadCvPageState extends State<UploadCvPage> {
                   ],
                 ),
               ),
-
-              
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(18),
                   child: Column(
                     children: [
-
                       GestureDetector(
                         onTap: _uploading || _extracting ? null : _pickCvFile,
                         child: Container(
@@ -313,9 +446,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 18),
-
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.all(16),
@@ -342,9 +473,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 18),
-
                       GestureDetector(
                         onTap: _extracting || _uploading
                             ? null
@@ -354,16 +483,14 @@ class _UploadCvPageState extends State<UploadCvPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF5B5FFF),
-                                Color(0xFF7C3AED)
-                              ],
+                              colors: [Color(0xFF5B5FFF), Color(0xFF7C3AED)],
                             ),
                             borderRadius: BorderRadius.circular(18),
                           ),
                           child: Center(
                             child: _extracting
-                                ? const CircularProgressIndicator(color: Colors.white)
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
                                 : const Text(
                                     "Extract to Profile",
                                     style: TextStyle(

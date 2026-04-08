@@ -1,12 +1,163 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'aiserv.dart';
 
 class AiService {
   static const String _cvBucket = 'cv';
+
+  static String inferApplicantPath({
+    required List<String> skills,
+    required String cvText,
+    List<Map<String, dynamic>> certifications = const [],
+  }) {
+    final normalizedSkills = skills.map((e) => e.toLowerCase()).toList();
+    final normalizedText = cvText.toLowerCase();
+    final normalizedCerts = certifications
+        .map((e) =>
+            '${(e['title'] ?? '').toString().toLowerCase()} ${(e['issuer'] ?? '').toString().toLowerCase()}')
+        .join(' ');
+
+    final corpus = [
+      ...normalizedSkills,
+      normalizedText,
+      normalizedCerts,
+    ].join(' ');
+
+    final pathKeywords = <String, List<String>>{
+      'IT & Software': [
+        'flutter',
+        'dart',
+        'java',
+        'python',
+        'javascript',
+        'typescript',
+        'react',
+        'node',
+        'api',
+        'firebase',
+        'sql',
+        'aws',
+        'docker',
+        'devops',
+        'cloud'
+      ],
+      'Business & Management': [
+        'business',
+        'management',
+        'operations',
+        'leadership',
+        'project management',
+        'strategy',
+        'hr',
+        'human resource'
+      ],
+      'Finance & Accounting': [
+        'finance',
+        'accounting',
+        'audit',
+        'bookkeeping',
+        'excel',
+        'financial model',
+        'tax'
+      ],
+      'Design & Art': [
+        'design',
+        'ui',
+        'ux',
+        'figma',
+        'illustrator',
+        'photoshop',
+        'graphic',
+        'art',
+        'creative'
+      ],
+      'Engineering': [
+        'engineering',
+        'mechanical',
+        'electrical',
+        'civil',
+        'autocad',
+        'solidworks',
+        'manufacturing'
+      ],
+      'Healthcare': [
+        'health',
+        'clinical',
+        'nursing',
+        'medical',
+        'patient',
+        'hospital',
+        'pharmacy'
+      ],
+    };
+
+    String bestPath = 'General';
+    var bestScore = 0;
+
+    pathKeywords.forEach((path, keywords) {
+      var score = 0;
+      for (final keyword in keywords) {
+        if (corpus.contains(keyword)) score++;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestPath = path;
+      }
+    });
+
+    return bestPath;
+  }
+
+  static int calculateSkillMatchScore({
+    required List<String> candidateSkills,
+    required List<String> requiredSkills,
+  }) {
+    final candidate = candidateSkills
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+    final required = requiredSkills
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+
+    if (candidate.isEmpty || required.isEmpty) return 0;
+
+    final overlap = required.where(candidate.contains).length;
+    final ratio = overlap / required.length;
+    return (ratio * 100).round().clamp(0, 100);
+  }
+
+  static Map<String, List<String>> skillMatchBreakdown({
+    required List<String> candidateSkills,
+    required List<String> requiredSkills,
+  }) {
+    final candidate = candidateSkills
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+    final required =
+        requiredSkills.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+
+    final matched = <String>[];
+    final missing = <String>[];
+
+    for (final skill in required) {
+      if (candidate.contains(skill.toLowerCase())) {
+        matched.add(skill);
+      } else {
+        missing.add(skill);
+      }
+    }
+
+    return {
+      'matchedSkills': matched,
+      'missingSkills': missing,
+    };
+  }
 
   static Future<Map<String, dynamic>> analyzeCredential({
     required String title,
@@ -107,29 +258,6 @@ class AiService {
     });
 
     return {'questions': questions};
-  }
-
-  static Future<String> generateSupportReply({
-    required String message,
-    List<String> recentMessages = const [],
-  }) async {
-    final text = message.trim();
-    if (text.isEmpty) {
-      return 'Please share your question and I will help right away.';
-    }
-
-    final lower = text.toLowerCase();
-    if (lower.contains('notification')) {
-      return 'You can manage alerts in Settings > Notifications. Important application updates are also shown in your in-app notification center.';
-    }
-    if (lower.contains('dashboard')) {
-      return 'Student and Company dashboards are separate experiences in one app, and your account role decides which dashboard you see after login.';
-    }
-    if (lower.contains('cv') || lower.contains('resume')) {
-      return 'Upload a PDF/TXT CV from the student dashboard. AI extracts skills and recommendations, then updates your profile.';
-    }
-
-    return 'Thanks for your message. I can help with internships, applications, profile setup, AI tools, and notifications. Could you share a little more detail?';
   }
 
   static Future<Map<String, dynamic>> uploadCvToStorage({

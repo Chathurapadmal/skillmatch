@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:skillmatch/student/advanced/roadmap_screen.dart';
-import 'package:skillmatch/student/advanced/skill_verification_screen.dart';
-import 'package:skillmatch/student/home/home_screen.dart';
-import 'package:skillmatch/student/profile/profilepage.dart';
-import 'package:skillmatch/student/settings/help_support_screen.dart';
-import 'package:skillmatch/student/settings/privacy_security_screen.dart';
+import 'package:skillmatch/pages/applicant/advanced/roadmap_screen.dart';
+import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.dart';
+import 'package:skillmatch/pages/applicant/home/home_screen.dart';
+import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
+import 'package:skillmatch/pages/applicant/settings/help_support_screen.dart';
+import 'package:skillmatch/pages/applicant/settings/privacy_security_screen.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';

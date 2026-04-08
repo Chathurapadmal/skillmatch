@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';
@@ -2901,8 +2900,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
 
         // Calculate percentages
         final approvalRate = totalApps > 0 ? (approved / totalApps) * 100 : 0.0;
-        final rejectionRate =
-            totalApps > 0 ? (rejected / totalApps) * 100 : 0.0;
         final interviewRate =
             approved > 0 ? (interviewed / approved) * 100 : 0.0;
         final hireRate = approved > 0 ? (hired / approved) * 100 : 0.0;
@@ -3040,7 +3037,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                         Text(
                           '${interviewRate.toStringAsFixed(1)}%',
                           style: const TextStyle(
-                            color: const Color(0xFF8A5BFF),
+                            color: Color(0xFF8A5BFF),
                             fontWeight: FontWeight.w700,
                             fontSize: 20,
                           ),
@@ -3071,7 +3068,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                         Text(
                           '${hireRate.toStringAsFixed(1)}%',
                           style: const TextStyle(
-                            color: const Color(0xFF18C17C),
+                            color: Color(0xFF18C17C),
                             fontWeight: FontWeight.w700,
                             fontSize: 20,
                           ),
@@ -3158,7 +3155,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                           );
                         },
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),
@@ -3334,7 +3331,7 @@ class _PrivacyPolicyPage extends StatelessWidget {
                   '4. Your Rights\n'
                   'You have the right to access, correct, or delete your personal data.\n\n'
                   'For more information, please contact our support team.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 1.6,
                     color: Colors.black54,
@@ -3533,7 +3530,7 @@ class _TermsOfServicePage extends StatelessWidget {
                   '5. Modification of Terms\n'
                   'We may revise these terms at any time without notice. Your continued use constitutes acceptance of revised terms.\n\n'
                   'For clarifications, contact support@skillmatch.app',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 1.6,
                     color: Colors.black54,
