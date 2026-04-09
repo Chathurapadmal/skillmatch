@@ -2096,11 +2096,6 @@ class _AppliedTabState extends State<_AppliedTab> {
             children: [
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  const SizedBox(width: 4),
                   const Expanded(
                     child: Text('My Applications',
                         style: TextStyle(

@@ -244,71 +244,65 @@ class ApplicantDashboard extends StatelessWidget {
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 14),
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.5,
+                      Column(
                         children: [
-                          _ActionCard(
-                            icon: Icons.map_outlined,
-                            label: 'Roadmap',
-                            color: const Color(0xFF1565C0),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const RoadmapScreen(
-                                    field: 'IT & Software',
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _ActionCard(
+                                  icon: Icons.map_outlined,
+                                  label: 'Roadmap',
+                                  color: const Color(0xFF1565C0),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const RoadmapScreen(
+                                          field: 'IT & Software',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _ActionCard(
+                                  icon: Icons.trending_up,
+                                  label: 'Trends',
+                                  color: const Color(0xFF2B6CB0),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const IndustryForecastScreen(
+                                          field: 'IT & Software',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: _ActionCard(
+                              icon: Icons.psychology_outlined,
+                              label: 'Skill Match AI',
+                              color: Colors.teal,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const SkillVerificationScreen(),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionCard(
-                            icon: Icons.trending_up,
-                            label: 'Trends',
-                            color: const Color(0xFF2B6CB0),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const IndustryForecastScreen(
-                                    field: 'IT & Software',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionCard(
-                            icon: Icons.psychology_outlined,
-                            label: 'Skill Match AI',
-                            color: Colors.teal,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const SkillVerificationScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionCard(
-                            icon: Icons.description_outlined,
-                            label: 'My Applications',
-                            color: Colors.orange,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const HomeScreen(initialTabIndex: 2),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),

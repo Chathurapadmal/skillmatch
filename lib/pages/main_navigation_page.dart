@@ -81,7 +81,16 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             icon: Icons.search_rounded,
             page: const HomeScreen(initialTabIndex: 0),
           ),
-          ...commonPages,
+          _NavPage(
+            label: 'My Applications',
+            icon: Icons.assignment_rounded,
+            page: const HomeScreen(initialTabIndex: 2),
+          ),
+          _NavPage(
+            label: 'Upload CV',
+            icon: Icons.cloud_upload_rounded,
+            page: const UploadCvPage(returnResultOnExtract: false),
+          ),
         ];
     }
   }
