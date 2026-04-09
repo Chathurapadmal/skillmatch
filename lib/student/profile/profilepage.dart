@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
 import 'package:skillmatch/shared/supabase_storage_page.dart';
+import 'package:skillmatch/services/image_service.dart';
+import 'package:skillmatch/widgets/supabase_image_widget.dart';
 import '../../shared/chat_overlay.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -90,7 +92,9 @@ class _ProfilePageState extends State<ProfilePage> {
       _bioCtrl.text = (data['bio'] as String?) ?? '';
       _graduationCtrl.text =
           (data['graduationYear'] as String?) ?? 'Class of 2025';
-      _avatarUrlCtrl.text = (data['avatarUrl'] as String?) ?? '';
+      _avatarUrlCtrl.text = (data['avatarStoragePath'] as String?) ??
+          (data['avatarUrl'] as String?) ??
+          '';
 
       _manualSkills = (data['skills'] as List?)?.cast<String>() ?? <String>[];
       _aiSkills = (data['aiSkills'] as List?)?.cast<String>() ?? <String>[];
@@ -144,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'field': industry,
         'bio': bio,
         'graduationYear': graduationYear,
-        'avatarUrl': avatarUrl,
+        'avatarStoragePath': avatarUrl,
         'skills': _manualSkills,
         'aiSkills': _aiSkills,
         'certifications': _certifications,
@@ -201,17 +205,17 @@ class _ProfilePageState extends State<ProfilePage> {
         bytes,
         fileOptions: const FileOptions(upsert: true),
       );
-      final signed = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
 
+      // Store only the path, not the signed URL (to avoid expiry issues)
       await _docRef.set({
-        'avatarUrl': signed,
-        'avatarStorageBucket': _profileBucket,
         'avatarStoragePath': path,
+        'avatarStorageBucket': _profileBucket,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       if (!mounted) return;
-      setState(() => _avatarUrlCtrl.text = signed);
+      // Store path in controller for reference
+      setState(() => _avatarUrlCtrl.text = path);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content:
             Text('Profile image uploaded to Supabase $_profileBucket bucket.'),
@@ -695,16 +699,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                       width: 3,
                                     ),
                                   ),
-                                  child: CircleAvatar(
-                                    radius: 54,
-                                    backgroundColor: Colors.white,
-                                    backgroundImage: avatarUrl.isNotEmpty
-                                        ? NetworkImage(avatarUrl)
-                                        : null,
-                                    child: avatarUrl.isEmpty
-                                        ? const Icon(Icons.person, size: 55)
-                                        : null,
-                                  ),
+                                  child: avatarUrl.isNotEmpty
+                                      ? SupabaseImageWidget(
+                                          storagePath: avatarUrl,
+                                          isCircular: true,
+                                          radius: 54,
+                                        )
+                                      : CircleAvatar(
+                                          radius: 54,
+                                          backgroundColor: Colors.white,
+                                          child: const Icon(Icons.person,
+                                              size: 55),
+                                        ),
                                 ),
                                 Positioned(
                                   right: 2,

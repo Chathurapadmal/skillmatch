@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:skillmatch/widgets/termofservice_card.dart';
-import '../../theme/app_theme.dart';
 
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
@@ -69,4 +68,3 @@ class TermsOfServiceScreen extends StatelessWidget {
     );
   }
 }
-

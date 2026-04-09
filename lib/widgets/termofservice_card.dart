@@ -6,7 +6,7 @@ class TermsOfServiceScreencard extends StatelessWidget {
   final String body;
 
   const TermsOfServiceScreencard(
-      {required this.icon, required this.title, required this.body});
+      {super.key, required this.icon, required this.title, required this.body});
 
   @override
   Widget build(BuildContext context) {
