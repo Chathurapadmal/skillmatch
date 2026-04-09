@@ -4,6 +4,7 @@ import 'package:skillmatch/student/advanced/roadmap_screen.dart';
 import 'package:skillmatch/student/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/student/home/home_screen.dart';
 import 'package:skillmatch/student/home/saved_jobs_screen.dart';
+import 'package:skillmatch/student/profile/profile_views_screen.dart';
 import 'package:skillmatch/student/profile/profilepage.dart';
 import 'package:skillmatch/student/settings/help_support_screen.dart';
 import 'package:skillmatch/student/settings/privacy_security_screen.dart';
@@ -241,6 +242,14 @@ class ApplicantDashboard extends StatelessWidget {
                             label: 'Profile Views',
                             value: '$profileViews',
                             color: Colors.green,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ProfileViewsScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

@@ -839,7 +839,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                           (data['cvStorageSignedUrl'] as String? ?? '').trim();
 
                       return GestureDetector(
-                        onTap: () => _showCandidateDetails(data),
+                        onTap: () => _showCandidateDetails(doc.id, data),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(14),
@@ -1152,7 +1152,12 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     );
   }
 
-  void _showCandidateDetails(Map<String, dynamic> data) {
+  Future<void> _showCandidateDetails(
+    String studentId,
+    Map<String, dynamic> data,
+  ) async {
+    await _registerProfileView(studentId);
+
     final skills = ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
     final cvSkills =
         ((data['cvSkills'] as List?) ?? []).map((e) => '$e').toList();
@@ -1161,6 +1166,8 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     final certs = ((data['certifications'] as List?) ?? const <dynamic>[])
         .map((e) => '$e')
         .toList();
+
+    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -1248,6 +1255,24 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         ],
       ),
     );
+  }
+
+  Future<void> _registerProfileView(String studentId) async {
+    if (studentId.isEmpty) return;
+
+    final profileRef =
+        FirebaseFirestore.instance.collection('users').doc(studentId);
+
+    await profileRef.set({
+      'profileViews': FieldValue.increment(1),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    await profileRef.collection('profile_views').add({
+      'companyId': widget.companyId,
+      'companyName': widget.companyName,
+      'viewedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   Color _statusColor(String status) {
