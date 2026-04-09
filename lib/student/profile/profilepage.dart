@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
 import 'package:skillmatch/shared/supabase_storage_page.dart';
-import 'package:skillmatch/services/image_service.dart';
 import 'package:skillmatch/widgets/supabase_image_widget.dart';
 import '../../shared/chat_overlay.dart';
 

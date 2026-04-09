@@ -11,7 +11,7 @@ class SupabaseImageWidget extends StatefulWidget {
   final double? radius;
 
   const SupabaseImageWidget({
-    Key? key,
+    super.key,
     required this.storagePath,
     this.width,
     this.height,
@@ -19,7 +19,7 @@ class SupabaseImageWidget extends StatefulWidget {
     this.semanticLabel,
     this.isCircular = false,
     this.radius,
-  }) : super(key: key);
+  });
 
   @override
   State<SupabaseImageWidget> createState() => _SupabaseImageWidgetState();

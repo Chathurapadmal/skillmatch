@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:skillmatch/student/advanced/roadmap_screen.dart';
 import 'package:skillmatch/student/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/student/home/home_screen.dart';
+import 'package:skillmatch/student/home/saved_jobs_screen.dart';
 import 'package:skillmatch/student/profile/profilepage.dart';
 import 'package:skillmatch/student/settings/help_support_screen.dart';
 import 'package:skillmatch/student/settings/privacy_security_screen.dart';
@@ -225,6 +226,14 @@ class ApplicantDashboard extends StatelessWidget {
                             label: 'Saved',
                             value: '$savedCount',
                             color: Colors.orange,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const SavedJobsScreen(),
+                                ),
+                              );
+                            },
                           ),
                           const SizedBox(width: 12),
                           _StatCard(
@@ -410,40 +419,50 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final VoidCallback? onTap;
 
   const _StatCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final card = Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 6),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        ],
+      ),
+    );
+
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 26),
-            const SizedBox(height: 6),
-            Text(value,
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-            Text(label,
-                style: const TextStyle(fontSize: 11, color: Colors.grey)),
-          ],
+          child: card,
         ),
       ),
     );
