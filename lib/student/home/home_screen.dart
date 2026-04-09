@@ -1336,11 +1336,6 @@ class _InternshipsTabState extends State<_InternshipsTab> {
             children: [
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  const SizedBox(width: 4),
                   const Expanded(
                     child: Text('Browse Jobs',
                         style: TextStyle(
@@ -1445,9 +1440,9 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                   margin: const EdgeInsets.only(top: 10),
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF19193F),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: const Color(0xFF313173)),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
                   ),
                   child: Text(
                     _selectedFilterIndex == 0
@@ -1455,8 +1450,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                             ? 'No internships available right now.'
                             : 'No internships found for $studentIndustry yet.')
                         : 'No internships found for ${filters[_selectedFilterIndex]} filter.',
-                    style: const TextStyle(
-                        color: AppTheme.textMuted, fontSize: 15),
+                    style: const TextStyle(color: Colors.grey, fontSize: 15),
                   ),
                 )
               else
@@ -1464,7 +1458,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                   (item) => Container(
                     margin: const EdgeInsets.only(bottom: 14),
                     child: Material(
-                      color: const Color(0xFF19193F),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(22),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(22),
@@ -1473,7 +1467,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(22),
-                            border: Border.all(color: const Color(0xFF313173)),
+                            border: Border.all(color: const Color(0xFFE0E0E0)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1581,7 +1575,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                               Text(
                                 item['title'] as String,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: Colors.black87,
                                   fontSize: 24,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -1596,7 +1590,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    color: AppTheme.textMuted,
+                                    color: Colors.black54,
                                     fontSize: 14,
                                     height: 1.35,
                                   ),

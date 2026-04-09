@@ -213,45 +213,48 @@ class ApplicantDashboard extends StatelessWidget {
                       const SizedBox(height: 24),
 
                       // ── Quick stats ────────────────────────────────────────────────
-                      Row(
-                        children: [
-                          _StatCard(
-                            icon: Icons.work_outline,
-                            label: 'Applied',
-                            value: '$appliedCount',
-                            color: const Color(0xFF1565C0),
-                          ),
-                          const SizedBox(width: 12),
-                          _StatCard(
-                            icon: Icons.bookmark_outline,
-                            label: 'Saved',
-                            value: '$savedCount',
-                            color: Colors.orange,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const SavedJobsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 12),
-                          _StatCard(
-                            icon: Icons.visibility_outlined,
-                            label: 'Profile Views',
-                            value: '$profileViews',
-                            color: Colors.green,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ProfileViewsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                      SizedBox(
+                        height: 110,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: _StatCard(
+                                icon: Icons.bookmark_outline,
+                                label: 'Saved',
+                                value: '$savedCount',
+                                color: const Color(0xFF1565C0),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const SavedJobsScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 1,
+                              child: _StatCard(
+                                icon: Icons.visibility_outlined,
+                                label: 'Profile Views',
+                                value: '$profileViews',
+                                color: const Color(0xFF1565C0),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ProfileViewsScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 24),
 
