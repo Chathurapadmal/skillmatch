@@ -21,7 +21,6 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
 
   static const primary = Color(0xFF4052B6);
   static const deepViolet = Color(0xFF5000D2);
-  static const electricPurple = Color(0xFF652FE7);
 
   static const textPrimary = Color(0xFF2C2F30);
   static const textSecondary = Color(0xFF595C5D);
@@ -33,7 +32,6 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
   static const border = Color(0xFFDCE3F0);
 
   static const info = Color(0xFF4CB9FF);
-  static const link = Color(0xFF00618F);
   static const error = Colors.red;
   static const success = Colors.green;
 
