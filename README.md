@@ -14,3 +14,28 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Chatbot API setup
+
+1. Go to [backside/.env.example](backside/.env.example) and create `backside/.env`.
+2. Add your key:
+
+	```env
+	OPENAI_API_KEY=your_key_here
+	PORT=5000
+	```
+
+3. Start backend:
+
+	```bash
+	cd backside
+	npm start
+	```
+
+4. Run Flutter app as usual.
+
+Optional: override API URL when needed:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://localhost:5000
+```

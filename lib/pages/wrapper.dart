@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import 'auth/login_page.dart';
-import 'main_navigation_page.dart';
+import 'navigation.dart';
 
 /// Root widget that listens to auth-state AND Firestore role changes.
 /// Automatically routes to the correct screen.

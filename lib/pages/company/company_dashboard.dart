@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/image_service.dart';
@@ -2996,8 +2995,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
 
         // Calculate percentages
         final approvalRate = totalApps > 0 ? (approved / totalApps) * 100 : 0.0;
-        final rejectionRate =
-            totalApps > 0 ? (rejected / totalApps) * 100 : 0.0;
         final interviewRate =
             approved > 0 ? (interviewed / approved) * 100 : 0.0;
         final hireRate = approved > 0 ? (hired / approved) * 100 : 0.0;

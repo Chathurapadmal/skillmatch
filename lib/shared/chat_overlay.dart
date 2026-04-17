@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/ai_service.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 
 class ChatOverlay extends StatefulWidget {
@@ -16,45 +16,32 @@ class _ChatOverlayState extends State<ChatOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    var fabBottom = 20.0 + media.viewPadding.bottom;
-    if (widget.child is Scaffold) {
-      final scaffold = widget.child as Scaffold;
-      if (scaffold.bottomNavigationBar != null) {
-        fabBottom += 80;
-      }
-    }
-
     return Stack(
       children: [
         widget.child,
         if (_showChat)
           GestureDetector(
-            onTap: () {
-              setState(() => _showChat = false);
-            },
+            onTap: () => setState(() => _showChat = false),
             child: Container(
               color: Colors.black.withOpacity(0.3),
             ),
           ),
         if (_showChat)
           _ChatPanel(
-            onClose: () {
-              setState(() => _showChat = false);
-            },
+            onClose: () => setState(() => _showChat = false),
           ),
-        if (!_showChat)
-          Positioned(
-            bottom: fabBottom,
-            right: 20,
-            child: FloatingActionButton(
-              onPressed: () {
-                setState(() => _showChat = true);
-              },
-              backgroundColor: AppTheme.primary,
-              child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+        Positioned(
+          bottom: 20,
+          right: 20,
+          child: FloatingActionButton(
+            onPressed: () => setState(() => _showChat = !_showChat),
+            backgroundColor: AppTheme.primary,
+            child: Icon(
+              _showChat ? Icons.close : Icons.chat_bubble_outline,
+              color: Colors.white,
             ),
           ),
+        ),
       ],
     );
   }
@@ -94,7 +81,8 @@ class _ChatPanelState extends State<_ChatPanel>
       begin: const Offset(0, 1),
       end: Offset.zero,
     ).animate(
-        CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
     _animationController.forward();
   }
 
@@ -119,10 +107,18 @@ class _ChatPanelState extends State<_ChatPanel>
         .map((m) => '${m.fromUser ? 'User' : 'AI'}: ${m.text}')
         .toList();
 
-    final reply = await AiService.generateSupportReply(
-      message: text,
-      recentMessages: history,
-    );
+    String reply;
+    try {
+      reply = await ApiService.sendMessage(
+        text,
+        recentMessages: history,
+      );
+      if (reply.trim().isEmpty) {
+        reply = 'I could not generate a response right now. Please try again.';
+      }
+    } catch (_) {
+      reply = 'I can\'t reach the chat API right now. Please check backend and try again.';
+    }
 
     if (!mounted) return;
     setState(() {
@@ -144,155 +140,160 @@ class _ChatPanelState extends State<_ChatPanel>
           child: Container(
             height: MediaQuery.of(context).size.height * 0.75,
             decoration: const BoxDecoration(
-              color: Color(0xFFF5F7FA),
+              color: AppTheme.bgDark,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
             ),
-            child: Column(
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFDCE3F0)),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 84),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Color(0xFF2D2D5E)),
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'SkillMatch AI Support',
-                        style: TextStyle(
-                          color: Color(0xFF1565C0),
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Color(0xFF1565C0)),
-                        onPressed: widget.onClose,
-                      ),
-                    ],
-                  ),
-                ),
-                // Messages
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final m = _messages[index];
-                      final bubbleColor =
-                          m.fromUser ? AppTheme.primary : Colors.white;
-
-                      return Align(
-                        alignment: m.fromUser
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          constraints: const BoxConstraints(maxWidth: 290),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: bubbleColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: m.fromUser
-                                  ? AppTheme.primary
-                                  : const Color(0xFFDCE3F0),
-                            ),
-                          ),
-                          child: Text(
-                            m.text,
-                            style: TextStyle(
-                              color: m.fromUser
-                                  ? Colors.white
-                                  : const Color(0xFF2B3A55),
-                              fontSize: 13,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                // Input
-                Container(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: Color(0xFFDCE3F0))),
-                  ),
-                  child: SafeArea(
-                    top: false,
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _messageCtrl,
-                            style: const TextStyle(color: Color(0xFF2B3A55)),
-                            minLines: 1,
-                            maxLines: 4,
-                            onSubmitted: (_) => _sendMessage(),
-                            decoration: InputDecoration(
-                              hintText: 'Ask support... ',
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              filled: true,
-                              fillColor: const Color(0xFFF4F7FC),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFDCE3F0),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFDCE3F0),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    const BorderSide(color: AppTheme.primary),
-                              ),
-                            ),
+                        const Text(
+                          'SkillMatch AI Support',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          height: 48,
-                          width: 48,
-                          child: ElevatedButton(
-                            onPressed: _sending ? null : _sendMessage,
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              backgroundColor: AppTheme.primary,
-                            ),
-                            child: _sending
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.send_rounded,
-                                    color: Colors.white),
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: widget.onClose,
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        final m = _messages[index];
+                        final bubbleColor = m.fromUser
+                            ? AppTheme.primary
+                            : const Color(0xFF1C1C44);
+
+                        return Align(
+                          alignment: m.fromUser
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 290),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: bubbleColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: m.fromUser
+                                    ? AppTheme.primaryLight
+                                    : const Color(0xFF323273),
+                              ),
+                            ),
+                            child: Text(
+                              m.text,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF131333),
+                      border: Border(top: BorderSide(color: Color(0xFF2D2D5E))),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _messageCtrl,
+                              style: const TextStyle(color: Colors.white),
+                              minLines: 1,
+                              maxLines: 4,
+                              onSubmitted: (_) => _sendMessage(),
+                              decoration: InputDecoration(
+                                hintText: 'Ask support... ',
+                                hintStyle: const TextStyle(
+                                  color: AppTheme.textMuted,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFF1D1D46),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF313173),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF313173),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppTheme.primaryLight,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            height: 48,
+                            width: 48,
+                            child: ElevatedButton(
+                              onPressed: _sending ? null : _sendMessage,
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                backgroundColor: AppTheme.primary,
+                              ),
+                              child: _sending
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.send_rounded,
+                                      color: Colors.white,
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
