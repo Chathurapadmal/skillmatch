@@ -8,10 +8,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../services/image_service.dart';
 import '../../shared/chat_overlay.dart';
 import '../../shared/notifications_center_screen.dart';
 import '../../shared/supabase_storage_page.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/supabase_image_widget.dart';
 
 class CompanyDashboard extends StatefulWidget {
   final UserModel user;
@@ -836,7 +838,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                           (data['cvStorageSignedUrl'] as String? ?? '').trim();
 
                       return GestureDetector(
-                        onTap: () => _showCandidateDetails(data),
+                        onTap: () => _showCandidateDetails(doc.id, data),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(14),
@@ -850,24 +852,32 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                             children: [
                               Row(
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: const Color(0xFF1565C0),
-                                    backgroundImage:
-                                        (data['avatarUrl'] as String?)
-                                                    ?.trim()
-                                                    .isNotEmpty ==
-                                                true
-                                            ? NetworkImage(
-                                                data['avatarUrl'] as String)
-                                            : null,
-                                    child: (data['avatarUrl'] as String?)
-                                                ?.trim()
-                                                .isNotEmpty ==
-                                            true
-                                        ? null
-                                        : const Icon(Icons.person,
-                                            color: Colors.white),
-                                  ),
+                                  (data['avatarStoragePath'] as String?)
+                                              ?.trim()
+                                              .isNotEmpty ==
+                                          true
+                                      ? SupabaseImageWidget(
+                                          storagePath: data['avatarStoragePath']
+                                              as String?,
+                                          isCircular: true,
+                                          radius: 24,
+                                        )
+                                      : ((data['avatarUrl'] as String?)
+                                                  ?.trim()
+                                                  .isNotEmpty ==
+                                              true
+                                          ? CircleAvatar(
+                                              backgroundColor:
+                                                  const Color(0xFF1565C0),
+                                              backgroundImage: NetworkImage(
+                                                  data['avatarUrl'] as String),
+                                            )
+                                          : const CircleAvatar(
+                                              backgroundColor:
+                                                  Color(0xFF1565C0),
+                                              child: Icon(Icons.person,
+                                                  color: Colors.white),
+                                            )),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
@@ -1141,7 +1151,12 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     );
   }
 
-  void _showCandidateDetails(Map<String, dynamic> data) {
+  Future<void> _showCandidateDetails(
+    String studentId,
+    Map<String, dynamic> data,
+  ) async {
+    await _registerProfileView(studentId);
+
     final skills = ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
     final cvSkills =
         ((data['cvSkills'] as List?) ?? []).map((e) => '$e').toList();
@@ -1150,6 +1165,8 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     final certs = ((data['certifications'] as List?) ?? const <dynamic>[])
         .map((e) => '$e')
         .toList();
+
+    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -1161,18 +1178,24 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundImage:
-                        (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
-                                true
-                            ? NetworkImage(data['avatarUrl'] as String)
-                            : null,
-                    child: (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
-                            true
-                        ? null
-                        : const Icon(Icons.person),
-                  ),
+                  (data['avatarStoragePath'] as String?)?.trim().isNotEmpty ==
+                          true
+                      ? SupabaseImageWidget(
+                          storagePath: data['avatarStoragePath'] as String?,
+                          isCircular: true,
+                          radius: 26,
+                        )
+                      : ((data['avatarUrl'] as String?)?.trim().isNotEmpty ==
+                              true
+                          ? CircleAvatar(
+                              radius: 26,
+                              backgroundImage:
+                                  NetworkImage(data['avatarUrl'] as String),
+                            )
+                          : const CircleAvatar(
+                              radius: 26,
+                              child: Icon(Icons.person),
+                            )),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1231,6 +1254,24 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         ],
       ),
     );
+  }
+
+  Future<void> _registerProfileView(String studentId) async {
+    if (studentId.isEmpty) return;
+
+    final profileRef =
+        FirebaseFirestore.instance.collection('users').doc(studentId);
+
+    await profileRef.set({
+      'profileViews': FieldValue.increment(1),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    await profileRef.collection('profile_views').add({
+      'companyId': widget.companyId,
+      'companyName': widget.companyName,
+      'viewedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   Color _statusColor(String status) {
@@ -1383,6 +1424,7 @@ class _InternshipManagementTab extends StatefulWidget {
 class _InternshipManagementTabState extends State<_InternshipManagementTab> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  final _aboutRoleCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
   final _compensationCtrl = TextEditingController();
   final _skillsCtrl = TextEditingController();
@@ -1397,6 +1439,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
+    _aboutRoleCtrl.dispose();
     _locationCtrl.dispose();
     _compensationCtrl.dispose();
     _skillsCtrl.dispose();
@@ -1407,6 +1450,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
   Future<void> _publishPost() async {
     final title = _titleCtrl.text.trim();
     final description = _descCtrl.text.trim();
+    final aboutRole = _aboutRoleCtrl.text.trim();
     final location = _locationCtrl.text.trim();
     final compensation = _compensationCtrl.text.trim();
     final minGpa = double.tryParse(_minGpaCtrl.text.trim());
@@ -1439,6 +1483,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
       'postType': _postType,
       'title': title,
       'description': description,
+      'aboutRole': aboutRole,
       'location': location.isEmpty ? _mode : location,
       'type': _mode,
       'duration': _duration,
@@ -1456,6 +1501,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
 
     _titleCtrl.clear();
     _descCtrl.clear();
+    _aboutRoleCtrl.clear();
     _locationCtrl.clear();
     _compensationCtrl.clear();
     _skillsCtrl.clear();
@@ -1539,6 +1585,15 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
                 decoration: const InputDecoration(
                   labelText: 'Description',
                   hintText: 'Role responsibilities and outcomes',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _aboutRoleCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'About the Role',
+                  hintText: 'Team, impact, and key expectations for this role',
                 ),
               ),
               const SizedBox(height: 8),
@@ -1685,6 +1740,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               children: docs.take(10).map((doc) {
                 final data = doc.data();
                 final active = data['active'] != false;
+                final aboutRole = (data['aboutRole'] as String? ?? '').trim();
                 final skills =
                     ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
                 return Container(
@@ -1732,6 +1788,15 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
                         'Compensation: ${(data['salary'] as String?) ?? (data['stipend'] as String?) ?? 'Negotiable'}',
                         style: const TextStyle(color: Color(0xFF1565C0)),
                       ),
+                      if (aboutRole.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          'About the Role: $aboutRole',
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ],
                       if (skills.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Wrap(
@@ -2077,7 +2142,9 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     _industryCtrl.text = (data['industry'] as String?) ?? '';
     _websiteCtrl.text = (data['website'] as String?) ?? '';
     _descriptionCtrl.text = (data['description'] as String?) ?? '';
-    _logoCtrl.text = (data['logoUrl'] as String?) ?? '';
+    _logoCtrl.text = (data['logoStoragePath'] as String?) ??
+        (data['logoUrl'] as String?) ??
+        '';
     _notifyNewApplications = data['notifyNewApplications'] as bool? ?? true;
     _notifyCandidateSuggestions =
         data['notifyCandidateSuggestions'] as bool? ?? true;
@@ -2097,7 +2164,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
       'industry': _industryCtrl.text.trim(),
       'website': _websiteCtrl.text.trim(),
       'description': _descriptionCtrl.text.trim(),
-      'logoUrl': _logoCtrl.text.trim(),
+      'logoStoragePath': _logoCtrl.text.trim(),
       'notifyNewApplications': _notifyNewApplications,
       'notifyCandidateSuggestions': _notifyCandidateSuggestions,
       'appearanceMode': _darkMode ? 'dark' : 'light',
@@ -2175,19 +2242,18 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         bytes,
         fileOptions: const FileOptions(upsert: true),
       );
-      final signedUrl = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
+      // Store only the path, not the signed URL (to avoid expiry issues)
       await FirebaseFirestore.instance
           .collection('companies')
           .doc(widget.companyId)
           .set({
-        'logoUrl': signedUrl,
-        'logoStorageBucket': _profileBucket,
         'logoStoragePath': path,
+        'logoStorageBucket': _profileBucket,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       if (!mounted) return;
-      setState(() => _logoCtrl.text = signedUrl);
+      setState(() => _logoCtrl.text = path);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content:
             Text('Company logo uploaded to Supabase $_profileBucket bucket.'),
@@ -2317,15 +2383,44 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                       width: 96,
                       height: 96,
                       color: const Color(0xFFF4F7FC),
-                      child: Image.network(
-                        _logoCtrl.text.trim(),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                          Icons.business,
-                          size: 42,
-                          color: Color(0xFF1565C0),
-                        ),
+                      child: FutureBuilder<String?>(
+                        future: _logoCtrl.text.trim().contains('http')
+                            ? Future.value(_logoCtrl.text.trim())
+                            : ImageService.getCompanyLogoUrl(
+                                _logoCtrl.text.trim()),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: SizedBox(
+                                width: 30,
+                                height: 30,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (snapshot.hasError || snapshot.data == null) {
+                            return const Icon(
+                              Icons.business,
+                              size: 42,
+                              color: Color(0xFF1565C0),
+                            );
+                          }
+
+                          return Image.network(
+                            snapshot.data!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                              Icons.business,
+                              size: 42,
+                              color: Color(0xFF1565C0),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),

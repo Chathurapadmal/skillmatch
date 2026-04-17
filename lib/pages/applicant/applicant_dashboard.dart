@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:skillmatch/pages/applicant/advanced/roadmap_screen.dart';
 import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/pages/applicant/home/home_screen.dart';
+import 'package:skillmatch/pages/applicant/home/saved_jobs_screen.dart';
+import 'package:skillmatch/pages/applicant/profile/profile_views_screen.dart';
 import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
 import 'package:skillmatch/pages/applicant/settings/help_support_screen.dart';
 import 'package:skillmatch/pages/applicant/settings/privacy_security_screen.dart';
@@ -211,29 +213,48 @@ class ApplicantDashboard extends StatelessWidget {
                       const SizedBox(height: 24),
 
                       // ── Quick stats ────────────────────────────────────────────────
-                      Row(
-                        children: [
-                          _StatCard(
-                            icon: Icons.work_outline,
-                            label: 'Applied',
-                            value: '$appliedCount',
-                            color: const Color(0xFF1565C0),
-                          ),
-                          const SizedBox(width: 12),
-                          _StatCard(
-                            icon: Icons.bookmark_outline,
-                            label: 'Saved',
-                            value: '$savedCount',
-                            color: Colors.orange,
-                          ),
-                          const SizedBox(width: 12),
-                          _StatCard(
-                            icon: Icons.visibility_outlined,
-                            label: 'Profile Views',
-                            value: '$profileViews',
-                            color: Colors.green,
-                          ),
-                        ],
+                      SizedBox(
+                        height: 110,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: _StatCard(
+                                icon: Icons.bookmark_outline,
+                                label: 'Saved',
+                                value: '$savedCount',
+                                color: const Color(0xFF1565C0),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const SavedJobsScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 1,
+                              child: _StatCard(
+                                icon: Icons.visibility_outlined,
+                                label: 'Profile Views',
+                                value: '$profileViews',
+                                color: const Color(0xFF1565C0),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ProfileViewsScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 24),
 
@@ -244,71 +265,65 @@ class ApplicantDashboard extends StatelessWidget {
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 14),
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.5,
+                      Column(
                         children: [
-                          _ActionCard(
-                            icon: Icons.map_outlined,
-                            label: 'Roadmap',
-                            color: const Color(0xFF1565C0),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const RoadmapScreen(
-                                    field: 'IT & Software',
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _ActionCard(
+                                  icon: Icons.map_outlined,
+                                  label: 'Roadmap',
+                                  color: const Color(0xFF1565C0),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const RoadmapScreen(
+                                          field: 'IT & Software',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _ActionCard(
+                                  icon: Icons.trending_up,
+                                  label: 'Trends',
+                                  color: const Color(0xFF2B6CB0),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const IndustryForecastScreen(
+                                          field: 'IT & Software',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: _ActionCard(
+                              icon: Icons.psychology_outlined,
+                              label: 'Skill Match AI',
+                              color: Colors.teal,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const SkillVerificationScreen(),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionCard(
-                            icon: Icons.trending_up,
-                            label: 'Trends',
-                            color: const Color(0xFF2B6CB0),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const IndustryForecastScreen(
-                                    field: 'IT & Software',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionCard(
-                            icon: Icons.psychology_outlined,
-                            label: 'Skill Match AI',
-                            color: Colors.teal,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const SkillVerificationScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          _ActionCard(
-                            icon: Icons.description_outlined,
-                            label: 'My Applications',
-                            color: Colors.orange,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const HomeScreen(initialTabIndex: 2),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -357,6 +372,8 @@ class ApplicantDashboard extends StatelessWidget {
                                       (data['location'] as String?) ??
                                       'Remote')
                                   .trim(),
+                              'aboutRole':
+                                  ((data['aboutRole'] as String?) ?? '').trim(),
                               'industry':
                                   ((data['industry'] as String?) ?? '').trim(),
                               'match': _calculateMatch(tags, studentSkills),
@@ -387,6 +404,7 @@ class ApplicantDashboard extends StatelessWidget {
                                   title: item['title'] as String,
                                   company: item['company'] as String,
                                   location: item['location'] as String,
+                                  aboutRole: item['aboutRole'] as String,
                                   matchRate: item['match'] as int,
                                 ),
                               );
@@ -413,40 +431,50 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final VoidCallback? onTap;
 
   const _StatCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final card = Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 6),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        ],
+      ),
+    );
+
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 26),
-            const SizedBox(height: 6),
-            Text(value,
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-            Text(label,
-                style: const TextStyle(fontSize: 11, color: Colors.grey)),
-          ],
+          child: card,
         ),
       ),
     );
@@ -512,12 +540,14 @@ class _JobCard extends StatelessWidget {
   final String title;
   final String company;
   final String location;
+  final String aboutRole;
   final int matchRate;
 
   const _JobCard({
     required this.title,
     required this.company,
     required this.location,
+    required this.aboutRole,
     required this.matchRate,
   });
 
@@ -558,6 +588,15 @@ class _JobCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text('$company · $location',
                     style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                if (aboutRole.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    aboutRole.trim(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                  ),
+                ],
               ],
             ),
           ),

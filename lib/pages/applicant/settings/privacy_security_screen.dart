@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
-import '../../../theme/app_theme.dart';
 
 class PrivacySecurityScreen extends StatefulWidget {
   const PrivacySecurityScreen({super.key});
@@ -19,6 +18,24 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
   bool _showCredentials = true;
   bool _dataAnalytics = true;
   bool _loading = true;
+
+  static const primary = Color(0xFF4052B6);
+  static const deepViolet = Color(0xFF5000D2);
+  static const electricPurple = Color(0xFF652FE7);
+
+  static const textPrimary = Color(0xFF2C2F30);
+  static const textSecondary = Color(0xFF595C5D);
+  static const textMuted = Color(0xFF595C5D);
+
+  static const bgMain = Color(0xFFF5F6F7);
+  static const cardBg = Colors.white;
+
+  static const border = Color(0xFFDCE3F0);
+
+  static const info = Color(0xFF4CB9FF);
+  static const link = Color(0xFF00618F);
+  static const error = Colors.red;
+  static const success = Colors.green;
 
   @override
   void initState() {
@@ -46,18 +63,18 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppTheme.bgCard,
+        backgroundColor: cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Change Password',
-            style: TextStyle(color: AppTheme.textPrimary)),
+            style: TextStyle(color: textPrimary)),
         content: const Text(
             'A password reset email will be sent to your registered email address.',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+            style: TextStyle(color: textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel',
-                  style: TextStyle(color: AppTheme.textMuted))),
+                  style: TextStyle(color: textMuted))),
           TextButton(
             onPressed: () async {
               final email = FirebaseAuth.instance.currentUser?.email ?? '';
@@ -70,13 +87,13 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                       content: Text('Password reset email sent!'),
-                      backgroundColor: AppTheme.success),
+                      backgroundColor: success),
                 );
               }
             },
             child: const Text('Send Email',
                 style: TextStyle(
-                    color: AppTheme.primary, fontWeight: FontWeight.w600)),
+                    color: primary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -87,23 +104,23 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppTheme.bgCard,
+        backgroundColor: cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Account',
-            style: TextStyle(color: AppTheme.error)),
+            style: TextStyle(color: error)),
         content: const Text(
             'This will permanently delete your account and all associated data. This action cannot be undone.',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+            style: TextStyle(color: textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel',
-                  style: TextStyle(color: AppTheme.textMuted))),
+                  style: TextStyle(color: textMuted))),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Delete',
                 style: TextStyle(
-                    color: AppTheme.error, fontWeight: FontWeight.w600)),
+                    color: error, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -113,15 +130,15 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: bgMain,
       appBar: AppBar(
           title: const Text('Privacy & Security'),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
+          backgroundColor: cardBg,
+          foregroundColor: textPrimary,
           elevation: 0),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary))
+              child: CircularProgressIndicator(color: primary))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -180,7 +197,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                     'Change Password',
                     'Send a password reset email',
                     _showChangePassword,
-                    AppTheme.primaryLight,
+                    primary,
                   ),
                   _actionTile(
                     Icons.privacy_tip_outlined,
@@ -191,7 +208,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                         builder: (_) => const PrivacyPolicyScreen(),
                       ),
                     ),
-                    AppTheme.info,
+                    info,
                   ),
                   _actionTile(
                     Icons.description_outlined,
@@ -202,7 +219,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                         builder: (_) => const TermsOfServiceScreen(),
                       ),
                     ),
-                    AppTheme.info,
+                    info,
                   ),
                 ]),
                 const SizedBox(height: 20),
@@ -213,7 +230,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                     'Delete Account',
                     'Permanently remove your account and data',
                     _showDeleteAccount,
-                    AppTheme.error,
+                    error,
                   ),
                 ]),
                 const SizedBox(height: 20),
@@ -226,7 +243,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
         padding: const EdgeInsets.only(bottom: 10),
         child: Text(t,
             style: const TextStyle(
-                color: AppTheme.textMuted,
+                color: textMuted,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.8)),
@@ -235,9 +252,9 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
   Widget _card(List<Widget> tiles) => Container(
         margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardBg,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFDCE3F0)),
+          border: Border.all(color: border),
         ),
         child: Column(
             children: tiles
@@ -247,7 +264,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                       if (e.key > 0)
                         Divider(
                             height: 1,
-                            color: const Color(0xFFDCE3F0).withOpacity(0.8)),
+                            color: border.withOpacity(0.8)),
                       e.value,
                     ]))
                 .toList()),
@@ -256,14 +273,14 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
   Widget _switchTile(IconData icon, String title, String sub, bool val,
       ValueChanged<bool> onChanged) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryLight, size: 22),
+      leading: Icon(icon, color: deepViolet, size: 22),
       title: Text(title,
-          style: const TextStyle(color: Colors.black87, fontSize: 14)),
+          style: const TextStyle(color: textPrimary, fontSize: 14)),
       subtitle: Text(sub,
-          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+          style: const TextStyle(color: textMuted, fontSize: 11)),
       trailing: Switch(
         value: val,
-        activeColor: AppTheme.primary,
+        activeColor: primary,
         onChanged: onChanged,
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -276,12 +293,12 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
       leading: Icon(icon, color: color, size: 22),
       title: Text(title,
           style: TextStyle(
-              color: color == AppTheme.error ? AppTheme.error : Colors.black87,
+              color: color == error ? error : textPrimary,
               fontSize: 14)),
       subtitle: Text(sub,
-          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+          style: const TextStyle(color: textMuted, fontSize: 11)),
       trailing:
-          const Icon(Icons.chevron_right, color: AppTheme.textMuted, size: 18),
+          const Icon(Icons.chevron_right, color: textMuted, size: 18),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
     );

@@ -15,6 +15,7 @@ import '../../../shared/chat_overlay.dart';
 import '../Browsjobs/browsjob.dart';
 import '../advanced/roadmap_screen.dart';
 import '../profile/profilepage.dart';
+import 'saved_jobs_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -105,6 +106,8 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _internships = [];
   bool _loading = true;
+  final Set<String> _savedInternshipIds = {};
+  final Set<String> _savingInternshipIds = {};
 
   String _normalizeIndustry(String? value) {
     return (value ?? '').trim().toLowerCase();
@@ -213,9 +216,66 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
     ));
   }
 
+  Future<void> _toggleSavedInternship(Map<String, dynamic> internship) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final internshipId = internship['id'] as String?;
+    if (uid == null || internshipId == null || internshipId.isEmpty) return;
+    if (_savingInternshipIds.contains(internshipId)) return;
+
+    final shouldSave = !_savedInternshipIds.contains(internshipId);
+
+    setState(() {
+      _savingInternshipIds.add(internshipId);
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'savedInternships': shouldSave
+            ? FieldValue.arrayUnion([internshipId])
+            : FieldValue.arrayRemove([internshipId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      setState(() {
+        if (shouldSave) {
+          _savedInternshipIds.add(internshipId);
+        } else {
+          _savedInternshipIds.remove(internshipId);
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            shouldSave
+                ? 'Job saved to your list.'
+                : 'Job removed from saved list.',
+          ),
+          backgroundColor: AppTheme.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to update saved jobs: $e'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _savingInternshipIds.remove(internshipId);
+        });
+      }
+    }
+  }
+
   Future<void> _openInternshipDetails(Map<String, dynamic> internship) async {
     final tags =
         ((internship['tags'] as List?) ?? []).map((e) => '$e').toList();
+    final aboutRole = (internship['aboutRole'] as String? ?? '').trim();
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -255,6 +315,19 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                     : 'No additional description provided.',
                 style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
+              if (aboutRole.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text('About the Role',
+                    style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Text(
+                  aboutRole,
+                  style: const TextStyle(color: Colors.black54, height: 1.4),
+                ),
+              ],
               const SizedBox(height: 14),
               const Text('Required Skills',
                   style: TextStyle(
@@ -341,6 +414,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
         'mode': mode,
         'salary': salary,
         'description': (data['description'] as String?) ?? '',
+        'aboutRole': (data['aboutRole'] as String?) ?? '',
         'tags': tags,
         'industry': (data['industry'] as String?) ?? '',
         'match': _calculateMatch(tags, studentSkills),
@@ -382,12 +456,19 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
         (data?['industry'] as String?) ?? (data?['field'] as String?) ?? '';
     final studentSkills =
         ((data?['skills'] as List?) ?? []).map((e) => '$e').toList();
+    final savedInternships = ((data?['savedInternships'] as List?) ?? const [])
+        .map((e) => '$e')
+        .where((item) => item.trim().isNotEmpty)
+        .toSet();
     final internships =
         await _fetchInternshipsForIndustry(studentIndustry, studentSkills);
 
     if (!mounted) return;
     setState(() {
       _profile = data;
+      _savedInternshipIds
+        ..clear()
+        ..addAll(savedInternships);
       _internships = internships;
       _loading = false;
     });
@@ -759,6 +840,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
 
   Widget _internshipCard(Map<String, dynamic> item) {
     final tags = (item['tags'] as List<dynamic>).cast<String>();
+    final aboutRole = (item['aboutRole'] as String? ?? '').trim();
     return GestureDetector(
       onTap: () => _openInternshipDetails(item),
       child: Container(
@@ -809,6 +891,19 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 35 / 2)),
+            if (aboutRole.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                aboutRole,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppTheme.textMuted,
+                  fontSize: 13,
+                  height: 1.35,
+                ),
+              ),
+            ],
             const Spacer(),
             Text(item['salary'],
                 style: const TextStyle(
@@ -850,6 +945,8 @@ class _InternshipsTabState extends State<_InternshipsTab> {
   Map<String, dynamic>? _profile;
   bool _loadingProfile = true;
   int _selectedFilterIndex = 0;
+  final Set<String> _savedInternshipIds = {};
+  final Set<String> _savingInternshipIds = {};
 
   String _normalizeIndustry(String? value) {
     return (value ?? '').trim().toLowerCase();
@@ -955,6 +1052,62 @@ class _InternshipsTabState extends State<_InternshipsTab> {
     ));
   }
 
+  Future<void> _toggleSavedInternship(Map<String, dynamic> internship) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final internshipId = internship['id'] as String?;
+    if (uid == null || internshipId == null || internshipId.isEmpty) return;
+    if (_savingInternshipIds.contains(internshipId)) return;
+
+    final shouldSave = !_savedInternshipIds.contains(internshipId);
+
+    setState(() {
+      _savingInternshipIds.add(internshipId);
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'savedInternships': shouldSave
+            ? FieldValue.arrayUnion([internshipId])
+            : FieldValue.arrayRemove([internshipId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      setState(() {
+        if (shouldSave) {
+          _savedInternshipIds.add(internshipId);
+        } else {
+          _savedInternshipIds.remove(internshipId);
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            shouldSave
+                ? 'Job saved to your list.'
+                : 'Job removed from saved list.',
+          ),
+          backgroundColor: AppTheme.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to update saved jobs: $e'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _savingInternshipIds.remove(internshipId);
+        });
+      }
+    }
+  }
+
   Future<void> _showInternshipDetails(Map<String, dynamic> internship) async {
     final tags =
         ((internship['tags'] as List?) ?? []).map((e) => '$e').toList();
@@ -998,6 +1151,20 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                     : 'No additional description provided.',
                 style: const TextStyle(color: Colors.black54, height: 1.4),
               ),
+              if ((internship['aboutRole'] as String?)?.trim().isNotEmpty ==
+                  true) ...[
+                const SizedBox(height: 12),
+                const Text('About the Role',
+                    style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Text(
+                  (internship['aboutRole'] as String).trim(),
+                  style: const TextStyle(color: Colors.black54, height: 1.4),
+                ),
+              ],
               const SizedBox(height: 14),
               const Text('Required Skills',
                   style: TextStyle(
@@ -1070,6 +1237,11 @@ class _InternshipsTabState extends State<_InternshipsTab> {
     if (!mounted) return;
     setState(() {
       _profile = profile;
+      _savedInternshipIds
+        ..clear()
+        ..addAll(((profile?['savedInternships'] as List?) ?? const [])
+            .map((e) => '$e')
+            .where((item) => item.trim().isNotEmpty));
       _loadingProfile = false;
     });
   }
@@ -1115,6 +1287,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                   (data['stipend'] as String?) ??
                   'Negotiable',
               'description': (data['description'] as String?) ?? '',
+              'aboutRole': (data['aboutRole'] as String?) ?? '',
               'tags':
                   ((data['skills'] as List?) ?? []).map((e) => '$e').toList(),
               'industry': (data['industry'] as String?) ?? '',
@@ -1164,17 +1337,21 @@ class _InternshipsTabState extends State<_InternshipsTab> {
             children: [
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  const SizedBox(width: 4),
                   const Expanded(
                     child: Text('Browse Jobs',
                         style: TextStyle(
                             color: Colors.black87,
                             fontSize: 34,
                             fontWeight: FontWeight.w700)),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SavedJobsScreen(),
+                      ),
+                    ),
+                    icon: const Icon(Icons.bookmark_outline_rounded),
+                    tooltip: 'Saved jobs',
                   ),
                 ],
               ),
@@ -1264,9 +1441,9 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                   margin: const EdgeInsets.only(top: 10),
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF19193F),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: const Color(0xFF313173)),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
                   ),
                   child: Text(
                     _selectedFilterIndex == 0
@@ -1274,119 +1451,179 @@ class _InternshipsTabState extends State<_InternshipsTab> {
                             ? 'No internships available right now.'
                             : 'No internships found for $studentIndustry yet.')
                         : 'No internships found for ${filters[_selectedFilterIndex]} filter.',
-                    style: const TextStyle(
-                        color: AppTheme.textMuted, fontSize: 15),
+                    style: const TextStyle(color: Colors.grey, fontSize: 15),
                   ),
                 )
               else
                 ...filteredInternships.map(
-                  (item) => GestureDetector(
-                    onTap: () => _showInternshipDetails(item),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 14),
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF19193F),
+                  (item) => Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    child: Material(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                      child: InkWell(
                         borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: const Color(0xFF313173)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                        onTap: () => _showInternshipDetails(item),
+                        child: Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: const Color(0xFFE0E0E0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  gradient: AppTheme.primaryGradient,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    item['logo'] as String,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 20,
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 56,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      gradient: AppTheme.primaryGradient,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        item['logo'] as String,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 20,
+                                        ),
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['company'] as String,
+                                          style: const TextStyle(
+                                              color: AppTheme.textSecondary,
+                                              fontSize: 18),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          item['location'] as String,
+                                          style: const TextStyle(
+                                              color: AppTheme.textMuted,
+                                              fontSize: 15),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.success
+                                              .withValues(alpha: 0.18),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          item['salary'] as String,
+                                          style: const TextStyle(
+                                            color: AppTheme.success,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: _savingInternshipIds
+                                                .contains(item['id'] as String)
+                                            ? null
+                                            : () =>
+                                                _toggleSavedInternship(item),
+                                        icon: _savingInternshipIds
+                                                .contains(item['id'] as String)
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
+                                              )
+                                            : Icon(
+                                                _savedInternshipIds.contains(
+                                                        item['id'] as String)
+                                                    ? Icons.bookmark
+                                                    : Icons.bookmark_outline,
+                                                color: _savedInternshipIds
+                                                        .contains(item['id']
+                                                            as String)
+                                                    ? Colors.orange
+                                                    : AppTheme.textMuted,
+                                              ),
+                                        tooltip: _savedInternshipIds
+                                                .contains(item['id'] as String)
+                                            ? 'Remove saved job'
+                                            : 'Save job',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              Text(
+                                item['title'] as String,
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item['company'] as String,
-                                      style: const TextStyle(
-                                          color: AppTheme.textSecondary,
-                                          fontSize: 18),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      item['location'] as String,
-                                      style: const TextStyle(
-                                          color: AppTheme.textMuted,
-                                          fontSize: 15),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color:
-                                      AppTheme.success.withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  item['salary'] as String,
+                              if ((item['aboutRole'] as String?)
+                                      ?.trim()
+                                      .isNotEmpty ==
+                                  true) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  (item['aboutRole'] as String).trim(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    color: AppTheme.success,
+                                    color: Colors.black54,
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                                    height: 1.35,
                                   ),
                                 ),
+                              ],
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  _pill(
+                                    item['mode'] as String,
+                                    const Color(0xFF204C92),
+                                    const Color(0xFF4EA0FF),
+                                  ),
+                                  _pill(
+                                    item['duration'] as String,
+                                    const Color(0xFF41256E),
+                                    AppTheme.primaryLight,
+                                  ),
+                                  ...(item['tags'] as List<String>).map(
+                                    (tag) => _pill(
+                                      tag,
+                                      const Color(0xFF23235A),
+                                      AppTheme.textMuted,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
-                          Text(
-                            item['title'] as String,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              _pill(
-                                item['mode'] as String,
-                                const Color(0xFF204C92),
-                                const Color(0xFF4EA0FF),
-                              ),
-                              _pill(
-                                item['duration'] as String,
-                                const Color(0xFF41256E),
-                                AppTheme.primaryLight,
-                              ),
-                              ...(item['tags'] as List<String>).map(
-                                (tag) => _pill(
-                                  tag,
-                                  const Color(0xFF23235A),
-                                  AppTheme.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -2037,11 +2274,6 @@ class _AppliedTabState extends State<_AppliedTab> {
             children: [
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.maybePop(context),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  const SizedBox(width: 4),
                   const Expanded(
                     child: Text('My Applications',
                         style: TextStyle(
