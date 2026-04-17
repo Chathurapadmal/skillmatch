@@ -171,8 +171,7 @@ class ApplicantDashboard extends StatelessWidget {
                   .collection('applications')
                   .where('studentId', isEqualTo: user.uid)
                   .snapshots(),
-              builder: (context, appSnapshot) {
-                final appliedCount = appSnapshot.data?.docs.length ?? 0;
+              builder: (context, _) {
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(20),

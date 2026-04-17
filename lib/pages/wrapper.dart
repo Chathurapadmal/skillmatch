@@ -1,14 +1,33 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/auth_gate_controller.dart';
 import 'auth/login_page.dart';
 import 'navigation.dart';
 
 /// Root widget that listens to auth-state AND Firestore role changes.
 /// Automatically routes to the correct screen.
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  late final AuthGateController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AuthGateController()..start();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,39 +35,40 @@ class AuthWrapper extends StatelessWidget {
       return const _DevBypassWrapper();
     }
 
-    return StreamBuilder<User?>(
-      stream: AuthService.authStateChanges,
-      builder: (context, authSnap) {
-        // ── Still waiting for auth state ───────────────────────────────────
-        if (authSnap.connectionState == ConnectionState.waiting) {
-          return const _LoadingScreen();
-        }
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) {
+        switch (_controller.stage) {
+          case AuthGateStage.checkingAuth:
+          case AuthGateStage.loadingProfile:
+            return const _LoadingScreen(
+              message: 'Setting up your account…',
+            );
 
-        // ── Not logged in → show login ─────────────────────────────────────
-        final user = authSnap.data;
-        if (user == null) {
-          return const LoginPage();
-        }
+          case AuthGateStage.unauthenticated:
+            return const LoginPage();
 
-        // ── Logged in → listen for role changes in Firestore ──────────────
-        return StreamBuilder<UserModel?>(
-          stream: AuthService.userModelStream(user.uid),
-          builder: (context, userSnap) {
-            if (userSnap.connectionState == ConnectionState.waiting) {
-              return const _LoadingScreen();
+          case AuthGateStage.authenticated:
+            final model = _controller.userModel;
+            if (model == null) {
+              return const _LoadingScreen(message: 'Loading your profile…');
             }
+            return MainNavigationPage(user: model);
 
-            final userModel = userSnap.data;
+          case AuthGateStage.permissionDenied:
+            return const _AuthDataErrorScreen(
+              title: 'Firestore access denied',
+              message:
+                  'Your account is signed in, but Firestore rules are blocking user profile access.',
+            );
 
-            // Firestore doc not yet created / missing
-            if (userModel == null) {
-              return const _LoadingScreen(message: 'Setting up your account…');
-            }
-
-            // 2FA/email-verification gates are disabled temporarily.
-            return MainNavigationPage(user: userModel);
-          },
-        );
+          case AuthGateStage.error:
+            return _AuthDataErrorScreen(
+              title: 'Unable to load account data',
+              message: _controller.errorMessage ??
+                  'An unknown error occurred while loading account data.',
+            );
+        }
       },
     );
   }
@@ -134,6 +154,59 @@ class _LoadingScreen extends StatelessWidget {
                 style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AuthDataErrorScreen extends StatelessWidget {
+  final String title;
+  final String message;
+
+  const _AuthDataErrorScreen({
+    required this.title,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_outline, size: 54, color: Colors.red),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.black54),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () async {
+                    await AuthService.signOut();
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Sign out'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

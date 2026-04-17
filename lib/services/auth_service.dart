@@ -54,6 +54,29 @@ class AuthService {
   static Future<UserModel?> fetchUserModel(String uid) =>
       FirestoreUserService.getUser(uid);
 
+  // ── Ensure a Firestore user profile exists for authenticated users ───────
+  static Future<UserModel?> ensureUserModel(User firebaseUser) async {
+    final uid = firebaseUser.uid;
+    final existing = await fetchUserModel(uid);
+    if (existing != null) return existing;
+
+    final fallback = UserModel(
+      uid: uid,
+      email: firebaseUser.email ?? '',
+      displayName: (firebaseUser.displayName ?? '').trim().isNotEmpty
+          ? firebaseUser.displayName!.trim()
+          : (firebaseUser.email?.split('@').first ?? 'User'),
+      role: UserRole.applicant,
+      emailVerified: firebaseUser.emailVerified,
+      twoFactorEnabled: false,
+      profileCompleted: false,
+      createdAt: DateTime.now(),
+    );
+
+    await FirestoreUserService.createUser(fallback);
+    return fetchUserModel(uid);
+  }
+
   // ── Register ──────────────────────────────────────────────────────────────
   static Future<void> register({
     required String email,

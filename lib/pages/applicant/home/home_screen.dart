@@ -216,6 +216,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
     ));
   }
 
+  // ignore: unused_element
   Future<void> _toggleSavedInternship(Map<String, dynamic> internship) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final internshipId = internship['id'] as String?;

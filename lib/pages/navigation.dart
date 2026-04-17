@@ -84,7 +84,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           _NavPage(
             label: 'My Applications',
             icon: Icons.assignment_rounded,
-            page: const HomeScreen(initialTabIndex: 2),
+            page: ApplicantDashboard(user: widget.user),
           ),
           _NavPage(
             label: 'Upload CV',
