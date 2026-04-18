@@ -19,6 +19,8 @@ class _ChatOverlayState extends State<ChatOverlay> {
     return Stack(
       children: [
         widget.child,
+
+        /// BACKDROP
         if (_showChat)
           GestureDetector(
             onTap: () => setState(() => _showChat = false),
@@ -26,22 +28,25 @@ class _ChatOverlayState extends State<ChatOverlay> {
               color: Colors.black.withOpacity(0.3),
             ),
           ),
+
+        /// CHAT PANEL
         if (_showChat)
           _ChatPanel(
             onClose: () => setState(() => _showChat = false),
           ),
-        Positioned(
-          bottom: 20,
-          right: 20,
-          child: FloatingActionButton(
-            onPressed: () => setState(() => _showChat = !_showChat),
-            backgroundColor: AppTheme.primary,
-            child: Icon(
-              _showChat ? Icons.close : Icons.chat_bubble_outline,
-              color: Colors.white,
+
+        /// FLOATING BUTTON (HIDDEN WHEN CHAT OPEN)
+        if (!_showChat)
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: () => setState(() => _showChat = true),
+              backgroundColor: const Color(0xFF4F8CFF),
+              child: const Icon(Icons.chat_bubble_outline,
+                  color: Colors.white),
             ),
           ),
-        ),
       ],
     );
   }
@@ -59,30 +64,36 @@ class _ChatPanel extends StatefulWidget {
 class _ChatPanelState extends State<_ChatPanel>
     with SingleTickerProviderStateMixin {
   final TextEditingController _messageCtrl = TextEditingController();
-  final List<_ChatMessage> _messages = <_ChatMessage>[
+
+  final List<_ChatMessage> _messages = [
     const _ChatMessage(
       text:
           'Hello! I am SkillMatch AI Support. Ask me anything about internships, applications, notifications, or settings.',
       fromUser: false,
     ),
   ];
+
   bool _sending = false;
+
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
+
     _animationController.forward();
   }
 
@@ -114,13 +125,14 @@ class _ChatPanelState extends State<_ChatPanel>
         recentMessages: history,
       );
       if (reply.trim().isEmpty) {
-        reply = 'I could not generate a response right now. Please try again.';
+        reply = 'I could not generate a response.';
       }
     } catch (_) {
-      reply = 'I can\'t reach the chat API right now. Please check backend and try again.';
+      reply = 'Cannot reach chat API. Try again later.';
     }
 
     if (!mounted) return;
+
     setState(() {
       _messages.add(_ChatMessage(text: reply, fromUser: false));
       _sending = false;
@@ -140,77 +152,102 @@ class _ChatPanelState extends State<_ChatPanel>
           child: Container(
             height: MediaQuery.of(context).size.height * 0.75,
             decoration: const BoxDecoration(
-              color: AppTheme.bgDark,
+              gradient: LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 84),
+              padding: const EdgeInsets.only(bottom: 10),
               child: Column(
                 children: [
+                  /// HEADER
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: Color(0xFF2D2D5E)),
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF4F8CFF), Color(0xFF7B61FF)],
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
                       ),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        const CircleAvatar(
+                          backgroundColor: Colors.white,
+                          child: Icon(Icons.smart_toy,
+                              color: Color(0xFF4F8CFF)),
+                        ),
+                        const SizedBox(width: 10),
                         const Text(
-                          'SkillMatch AI Support',
+                          'SkillMatch AI',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: widget.onClose,
+                        const Spacer(),
+
+                        /// CLOSE BUTTON (IMPROVED)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.close,
+                                color: Colors.white),
+                            onPressed: widget.onClose,
+                          ),
                         ),
                       ],
                     ),
                   ),
+
+                  /// MESSAGES
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                      padding: const EdgeInsets.all(16),
                       itemCount: _messages.length,
                       itemBuilder: (context, index) {
                         final m = _messages[index];
-                        final bubbleColor = m.fromUser
-                            ? AppTheme.primary
-                            : const Color(0xFF1C1C44);
 
                         return Align(
                           alignment: m.fromUser
                               ? Alignment.centerRight
                               : Alignment.centerLeft,
                           child: Container(
-                            constraints: const BoxConstraints(maxWidth: 290),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(12),
+                            constraints:
+                                const BoxConstraints(maxWidth: 280),
                             decoration: BoxDecoration(
-                              color: bubbleColor,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: m.fromUser
-                                    ? AppTheme.primaryLight
-                                    : const Color(0xFF323273),
-                              ),
+                              gradient: m.fromUser
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFF4F8CFF),
+                                        Color(0xFF7B61FF)
+                                      ],
+                                    )
+                                  : null,
+                              color: m.fromUser
+                                  ? null
+                                  : Colors.white.withOpacity(0.08),
+                              borderRadius:
+                                  BorderRadius.circular(16),
                             ),
                             child: Text(
                               m.text,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 13,
-                                height: 1.4,
                               ),
                             ),
                           ),
@@ -218,78 +255,65 @@ class _ChatPanelState extends State<_ChatPanel>
                       },
                     ),
                   ),
+
+                  /// INPUT
                   Container(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF131333),
-                      border: Border(top: BorderSide(color: Color(0xFF2D2D5E))),
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _messageCtrl,
-                              style: const TextStyle(color: Colors.white),
-                              minLines: 1,
-                              maxLines: 4,
-                              onSubmitted: (_) => _sendMessage(),
-                              decoration: InputDecoration(
-                                hintText: 'Ask support... ',
-                                hintStyle: const TextStyle(
-                                  color: AppTheme.textMuted,
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFF1D1D46),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF313173),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF313173),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: AppTheme.primaryLight,
-                                  ),
-                                ),
+                    padding:
+                        const EdgeInsets.fromLTRB(12, 10, 12, 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _messageCtrl,
+                            style: const TextStyle(
+                                color: Colors.white),
+                            onSubmitted: (_) => _sendMessage(),
+                            decoration: InputDecoration(
+                              hintText: "Ask support...",
+                              hintStyle: const TextStyle(
+                                  color: Colors.white54),
+                              filled: true,
+                              fillColor:
+                                  Colors.white.withOpacity(0.08),
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(30),
+                                borderSide: BorderSide.none,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          SizedBox(
-                            height: 48,
-                            width: 48,
-                            child: ElevatedButton(
-                              onPressed: _sending ? null : _sendMessage,
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                backgroundColor: AppTheme.primary,
+                        ),
+                        const SizedBox(width: 10),
+
+                        /// SEND BUTTON (NEW COLOR)
+                        GestureDetector(
+                          onTap: _sending ? null : _sendMessage,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFF4F8CFF),
+                                  Color(0xFF7B61FF)
+                                ],
                               ),
-                              child: _sending
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.send_rounded,
+                            ),
+                            child: _sending
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child:
+                                        CircularProgressIndicator(
+                                      strokeWidth: 2,
                                       color: Colors.white,
                                     ),
-                            ),
+                                  )
+                                : const Icon(Icons.send,
+                                    color: Colors.white),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -306,5 +330,8 @@ class _ChatMessage {
   final String text;
   final bool fromUser;
 
-  const _ChatMessage({required this.text, required this.fromUser});
+  const _ChatMessage({
+    required this.text,
+    required this.fromUser,
+  });
 }
