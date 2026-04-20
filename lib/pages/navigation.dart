@@ -4,8 +4,9 @@ import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
 
 import '../admin/admin_dashboard.dart';
 import '../models/user_model.dart';
-import 'applicant/Browsjobs/browsjob.dart';
+import 'applicant/jobs/browse_jobs_page.dart';
 import 'applicant/applicant_dashboard.dart';
+import 'applicant/home/home_screen.dart';
 import 'applicant/upload_cv_page.dart';
 import 'company/company_dashboard.dart';
 
@@ -84,7 +85,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           _NavPage(
             label: 'My Applications',
             icon: Icons.assignment_rounded,
-            page: ApplicantDashboard(user: widget.user),
+            page: const HomeScreen(initialTabIndex: 2),
           ),
           _NavPage(
             label: 'Upload CV',

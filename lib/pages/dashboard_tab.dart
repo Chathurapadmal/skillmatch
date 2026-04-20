@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import '../services/aiserv.dart';
+import '../services/ai_service.dart';
 import '../shared/chat_overlay.dart';
 
 class DashboardTab extends StatefulWidget {
@@ -79,7 +79,7 @@ class _DashboardTabState extends State<DashboardTab> {
     });
 
     try {
-      final result = await AIService.testAI().timeout(
+      final result = await AiService.testAI().timeout(
         const Duration(seconds: 45),
         onTimeout: () => throw Exception(
           'Request timed out after 45s — this is usually App Check token/API propagation. Retry in 2-3 minutes.',

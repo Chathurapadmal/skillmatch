@@ -12,7 +12,7 @@ import '../../../services/notification_service.dart';
 import '../../../theme/app_theme.dart';
 import '../../../shared/notifications_center_screen.dart';
 import '../../../shared/chat_overlay.dart';
-import '../Browsjobs/browsjob.dart';
+import '../jobs/browse_jobs_page.dart';
 import '../advanced/roadmap_screen.dart';
 import '../profile/profilepage.dart';
 import 'saved_jobs_screen.dart';
@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icon(Icons.assignment_outlined),
                       selectedIcon:
                           Icon(Icons.assignment, color: Color(0xFF1565C0)),
-                      label: 'Applied',
+                      label: 'Applications',
                     ),
                     NavigationDestination(
                       icon: Icon(Icons.person_outline),
@@ -2128,6 +2128,21 @@ class _AppliedTab extends StatefulWidget {
 }
 
 class _AppliedTabState extends State<_AppliedTab> {
+  String _normalizeIndustry(String? value) {
+    return (value ?? '').trim().toLowerCase();
+  }
+
+  int _calculateMatch(
+      List<String> internshipSkills, List<String> studentSkills) {
+    if (internshipSkills.isEmpty || studentSkills.isEmpty) return 60;
+    final studentSet = studentSkills.map((e) => e.toLowerCase()).toSet();
+    final overlap = internshipSkills
+        .where((skill) => studentSet.contains(skill.toLowerCase()))
+        .length;
+    final ratio = overlap / internshipSkills.length;
+    return (60 + (ratio * 40)).round().clamp(60, 99);
+  }
+
   Timestamp? _getInterviewTimestamp(Map<String, dynamic> data) {
     final direct = data['interviewDate'];
     if (direct is Timestamp) return direct;
@@ -2254,173 +2269,355 @@ class _AppliedTabState extends State<_AppliedTab> {
     }
 
     return SafeArea(
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('applications')
-            .where('studentId', isEqualTo: uid)
-            .limit(200)
-            .snapshots(),
-        builder: (context, snapshot) {
-          var docs = snapshot.data?.docs ?? [];
-          docs.sort((a, b) {
-            final at = a.data()['appliedAt'] as Timestamp?;
-            final bt = b.data()['appliedAt'] as Timestamp?;
-            final aMs = at?.millisecondsSinceEpoch ?? 0;
-            final bMs = bt?.millisecondsSinceEpoch ?? 0;
-            return bMs.compareTo(aMs);
-          });
+      child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream:
+            FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+        builder: (context, profileSnapshot) {
+          final profile =
+              profileSnapshot.data?.data() ?? const <String, dynamic>{};
+          final studentSkills = ((profile['skills'] as List?) ?? const [])
+              .map((e) => '$e')
+              .where((e) => e.trim().isNotEmpty)
+              .toList();
+          final studentIndustry = _normalizeIndustry(
+            (profile['industry'] ?? profile['field']) as String?,
+          );
 
-          return ListView(
-            padding: const EdgeInsets.all(24),
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text('My Applications',
-                        style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 34,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text('Track progress of your applications (${docs.length})',
-                  style: const TextStyle(color: Colors.grey, fontSize: 16)),
-              const SizedBox(height: 24),
-              if (snapshot.connectionState == ConnectionState.waiting)
-                const Center(
-                  child:
-                      CircularProgressIndicator(color: AppTheme.primaryLight),
-                )
-              else if (docs.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: const Column(
+          return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('applications')
+                .where('studentId', isEqualTo: uid)
+                .limit(200)
+                .snapshots(),
+            builder: (context, applicationsSnapshot) {
+              var docs = applicationsSnapshot.data?.docs ?? [];
+              docs.sort((a, b) {
+                final at = a.data()['appliedAt'] as Timestamp?;
+                final bt = b.data()['appliedAt'] as Timestamp?;
+                final aMs = at?.millisecondsSinceEpoch ?? 0;
+                final bMs = bt?.millisecondsSinceEpoch ?? 0;
+                return bMs.compareTo(aMs);
+              });
+
+              return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('internships')
+                    .where('active', isEqualTo: true)
+                    .limit(200)
+                    .snapshots(),
+                builder: (context, internshipsSnapshot) {
+                  final internships = internshipsSnapshot.data?.docs ?? [];
+                  final suggestedJobs = internships.map((doc) {
+                    final data = doc.data();
+                    final skills = ((data['skills'] as List?) ?? const [])
+                        .map((e) => '$e')
+                        .where((e) => e.trim().isNotEmpty)
+                        .toList();
+                    final industry =
+                        _normalizeIndustry((data['industry'] as String?));
+                    final match = _calculateMatch(skills, studentSkills);
+                    return {
+                      'id': doc.id,
+                      'title': (data['title'] as String?) ?? 'Internship',
+                      'company': (data['company'] as String?) ?? 'Company',
+                      'location': ((data['type'] as String?) ??
+                              (data['location'] as String?) ??
+                              'Remote')
+                          .trim(),
+                      'aboutRole':
+                          ((data['aboutRole'] as String?) ?? '').trim(),
+                      'industry': industry,
+                      'match': match,
+                    };
+                  }).where((item) {
+                    if (studentIndustry.isEmpty) return true;
+                    final jobIndustry = item['industry'] as String?;
+                    return jobIndustry == null ||
+                        jobIndustry.isEmpty ||
+                        jobIndustry == studentIndustry;
+                  }).toList();
+
+                  suggestedJobs.sort((a, b) =>
+                      (b['match'] as int).compareTo(a['match'] as int));
+
+                  return ListView(
+                    padding: const EdgeInsets.all(24),
                     children: [
-                      Icon(Icons.inbox_rounded, color: Colors.grey, size: 44),
-                      SizedBox(height: 12),
-                      Text('No applications yet',
-                          style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 19,
-                              fontWeight: FontWeight.w700)),
-                      SizedBox(height: 6),
-                      Text('Apply to internships from the Internships tab.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey, fontSize: 15)),
-                    ],
-                  ),
-                )
-              else
-                ...docs.map((doc) {
-                  final data = doc.data();
-                  final status = (data['status'] as String?) ?? 'applied';
-                  final interviewType =
-                      (data['interviewType'] as String?) ?? '';
-                  final interviewAt = _getInterviewTimestamp(data);
-                  final interviewLink =
-                      (data['interviewLink'] as String?) ?? '';
-                  final interviewLocation =
-                      (data['interviewLocation'] as String?) ?? '';
-                  final interviewToken =
-                      (data['interviewToken'] as String?) ?? '';
-                  final statusColor = _statusColor(status);
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                data['title'] as String? ?? 'Internship',
-                                style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 17),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.16),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                status.toUpperCase(),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text('Applications',
                                 style: TextStyle(
-                                    color: statusColor,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          data['company'] as String? ?? 'Company',
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Applied: ${_formatAppliedDate(data['appliedAt'] as Timestamp?)}',
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        if (status == 'interview_scheduled') ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Interview (${interviewType.toUpperCase()}): ${_formatDateTime(interviewAt)}',
-                            style: const TextStyle(color: Color(0xFF1565C0)),
+                                    color: Colors.black87,
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w700)),
                           ),
-                          if (interviewType == 'online' &&
-                              interviewLink.isNotEmpty)
-                            GestureDetector(
-                              onTap: () => _openInterviewLink(interviewLink),
-                              child: Text('Link: $interviewLink',
-                                  style: const TextStyle(
-                                      color: Color(0xFF1565C0),
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: Color(0xFF1565C0))),
-                            ),
-                          if (_isInPersonInterview(interviewType) &&
-                              interviewLocation.isNotEmpty)
-                            Text('Location: $interviewLocation',
-                                style: const TextStyle(color: Colors.grey)),
-                          if (interviewToken.isNotEmpty)
-                            Text('Token: $interviewToken',
-                                style: const TextStyle(color: Colors.grey)),
+                          TextButton.icon(
+                            onPressed: () {
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Refresh'),
+                          ),
                         ],
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton.icon(
-                            onPressed: () => _deleteApplication(doc),
-                            icon: const Icon(Icons.delete_outline,
-                                color: AppTheme.error, size: 18),
-                            label: const Text('Delete Application',
-                                style: TextStyle(color: AppTheme.error)),
+                      ),
+                      const SizedBox(height: 10),
+                      Text('Track your submitted applications (${docs.length})',
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 16)),
+                      const SizedBox(height: 24),
+                      if (applicationsSnapshot.connectionState ==
+                          ConnectionState.waiting)
+                        const Center(
+                          child: CircularProgressIndicator(
+                              color: AppTheme.primaryLight),
+                        )
+                      else if (docs.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: Colors.grey[300]!),
                           ),
+                          child: const Column(
+                            children: [
+                              Icon(Icons.inbox_rounded,
+                                  color: Colors.grey, size: 44),
+                              SizedBox(height: 12),
+                              Text('No applications yet',
+                                  style: TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.w700)),
+                              SizedBox(height: 6),
+                              Text(
+                                  'Apply to internships from the Browse Jobs tab.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 15)),
+                            ],
+                          ),
+                        )
+                      else
+                        ...docs.map((doc) {
+                          final data = doc.data();
+                          final status =
+                              (data['status'] as String?) ?? 'applied';
+                          final interviewType =
+                              (data['interviewType'] as String?) ?? '';
+                          final interviewAt = _getInterviewTimestamp(data);
+                          final interviewLink =
+                              (data['interviewLink'] as String?) ?? '';
+                          final interviewLocation =
+                              (data['interviewLocation'] as String?) ?? '';
+                          final interviewToken =
+                              (data['interviewToken'] as String?) ?? '';
+                          final statusColor = _statusColor(status);
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        data['title'] as String? ??
+                                            'Internship',
+                                        style: const TextStyle(
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 17),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            statusColor.withValues(alpha: 0.16),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        status.toUpperCase(),
+                                        style: TextStyle(
+                                            color: statusColor,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  data['company'] as String? ?? 'Company',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Applied: ${_formatAppliedDate(data['appliedAt'] as Timestamp?)}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                                if (status == 'interview_scheduled') ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Interview (${interviewType.toUpperCase()}): ${_formatDateTime(interviewAt)}',
+                                    style: const TextStyle(
+                                        color: Color(0xFF1565C0)),
+                                  ),
+                                  if (interviewType == 'online' &&
+                                      interviewLink.isNotEmpty)
+                                    GestureDetector(
+                                      onTap: () =>
+                                          _openInterviewLink(interviewLink),
+                                      child: Text('Link: $interviewLink',
+                                          style: const TextStyle(
+                                              color: Color(0xFF1565C0),
+                                              decoration:
+                                                  TextDecoration.underline,
+                                              decorationColor:
+                                                  Color(0xFF1565C0))),
+                                    ),
+                                  if (_isInPersonInterview(interviewType) &&
+                                      interviewLocation.isNotEmpty)
+                                    Text('Location: $interviewLocation',
+                                        style: const TextStyle(
+                                            color: Colors.grey)),
+                                  if (interviewToken.isNotEmpty)
+                                    Text('Token: $interviewToken',
+                                        style: const TextStyle(
+                                            color: Colors.grey)),
+                                ],
+                                const SizedBox(height: 10),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    onPressed: () => _deleteApplication(doc),
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: AppTheme.error, size: 18),
+                                    label: const Text('Delete Application',
+                                        style:
+                                            TextStyle(color: AppTheme.error)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      const SizedBox(height: 28),
+                      const Text(
+                        'Suggested Jobs',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Ranked by your profile skills and field.',
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 15),
+                      ),
+                      const SizedBox(height: 14),
+                      if (internshipsSnapshot.connectionState ==
+                          ConnectionState.waiting)
+                        const Center(
+                          child: CircularProgressIndicator(
+                              color: AppTheme.primaryLight),
+                        )
+                      else if (suggestedJobs.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: const Text(
+                            'No suggested jobs available right now.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey, fontSize: 15),
+                          ),
+                        )
+                      else
+                        ...suggestedJobs.take(10).map((item) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        item['title'] as String,
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1565C0)
+                                            .withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '${item['match']}% match',
+                                        style: const TextStyle(
+                                          color: Color(0xFF1565C0),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${item['company']} • ${item['location']}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  (item['aboutRole'] as String).isEmpty
+                                      ? 'No additional description provided.'
+                                      : item['aboutRole'] as String,
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                    ],
                   );
-                }),
-            ],
+                },
+              );
+            },
           );
         },
       ),
