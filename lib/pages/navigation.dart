@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skillmatch/pages/dashboard_tab.dart';
 import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
+import 'package:skillmatch/pages/applicant/home/home_screen.dart';
 
 import '../admin/admin_dashboard.dart';
 import '../models/user_model.dart';
@@ -84,7 +85,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           _NavPage(
             label: 'My Applications',
             icon: Icons.assignment_rounded,
-            page: ApplicantDashboard(user: widget.user),
+            page: const HomeScreen(initialTabIndex: 2),
           ),
           _NavPage(
             label: 'Upload CV',
