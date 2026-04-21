@@ -83,7 +83,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             page: const BrowseJobsPage(),
           ),
           _NavPage(
-            label: 'My Applications',
+            label: 'Applications', // 🔥 FIXED (was My Applications)
             icon: Icons.assignment_rounded,
             page: const HomeScreen(initialTabIndex: 2),
           ),
@@ -116,7 +116,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         children: pages.map((entry) => entry.page).toList(),
       ),
 
-      // 🔥 CUSTOM NAV BAR (UI FIXED)
+      // 🔥 FIXED CUSTOM NAV BAR
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(
@@ -133,7 +133,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(pages.length, (index) {
               final item = pages[index];
               final isSelected = _selectedIndex == index;
@@ -147,6 +146,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                   },
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center, // ✅ FIXED
                     children: [
                       Icon(
                         item.icon,
@@ -155,15 +155,24 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                         size: isSelected ? 26 : 24,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          color: isSelected
-                              ? const Color(0xFF6C63FF)
-                              : Colors.grey,
-                          fontSize: 12,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
+
+                      // ✅ PERFECT CENTER ALIGNMENT
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          item.label,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFF6C63FF)
+                                : Colors.grey,
+                            fontSize: 11,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
                         ),
                       ),
                     ],
