@@ -2301,87 +2301,57 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // ── Company Logo Section ───────────────────────────────────────────
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFDCE3F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Company Profile',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
+              Row(
+                children: [
+                  const Icon(Icons.image_rounded,
+                      color: Color(0xFF1565C0), size: 24),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Company Logo',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Company Name'),
-              ),
-              const SizedBox(height: 8),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Industry'),
-                subtitle: Text(
-                  _industryCtrl.text.trim().isEmpty
-                      ? 'Select industry'
-                      : _industryCtrl.text.trim(),
-                  style: const TextStyle(color: Color(0xFF1565C0)),
-                ),
-                trailing: const Icon(Icons.keyboard_arrow_down_rounded),
-                onTap: _pickIndustry,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _websiteCtrl,
-                decoration: const InputDecoration(labelText: 'Website'),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _logoCtrl,
-                onChanged: (_) => setState(() {}),
-                decoration:
-                    const InputDecoration(labelText: 'Company Logo URL'),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed:
-                      _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
-                  icon: _uploadingLogo
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Upload Company Logo (Supabase)'),
-                ),
-              ),
+              const SizedBox(height: 16),
               if (_logoCtrl.text.trim().isNotEmpty) ...[
-                const SizedBox(height: 12),
                 const Text(
-                  'Logo Preview',
+                  'Current Logo',
                   style: TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Center(
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      width: 96,
-                      height: 96,
+                      width: 120,
+                      height: 120,
                       color: const Color(0xFFF4F7FC),
                       child: FutureBuilder<String?>(
                         future: _logoCtrl.text.trim().contains('http')
@@ -2405,7 +2375,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                           if (snapshot.hasError || snapshot.data == null) {
                             return const Icon(
                               Icons.business,
-                              size: 42,
+                              size: 48,
                               color: Color(0xFF1565C0),
                             );
                           }
@@ -2416,7 +2386,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                             errorBuilder: (context, error, stackTrace) =>
                                 const Icon(
                               Icons.business,
-                              size: 42,
+                              size: 48,
                               color: Color(0xFF1565C0),
                             ),
                           );
@@ -2425,41 +2395,171 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
-              const SizedBox(height: 8),
-              TextField(
-                controller: _descriptionCtrl,
-                maxLines: 3,
-                decoration:
-                    const InputDecoration(labelText: 'Company Description'),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed:
+                      _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
+                  icon: _uploadingLogo
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined),
+                  label: const Text('Upload Company Logo'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1565C0),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
+
+        // ── Company Profile Section ────────────────────────────────────────
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFDCE3F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Notification Preferences',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+              Row(
+                children: [
+                  const Icon(Icons.business_rounded,
+                      color: Color(0xFF1565C0), size: 24),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Company Profile',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _nameCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Company Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: const Icon(Icons.business, size: 20),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                title: const Text('Industry',
+                    style: TextStyle(color: Colors.black87, fontSize: 14)),
+                subtitle: Text(
+                  _industryCtrl.text.trim().isEmpty
+                      ? 'Select industry'
+                      : _industryCtrl.text.trim(),
+                  style: const TextStyle(color: Color(0xFF1565C0)),
+                ),
+                trailing: const Icon(Icons.keyboard_arrow_down_rounded),
+                onTap: _pickIndustry,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Color(0xFFDCE3F0)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _websiteCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Website',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: const Icon(Icons.language, size: 20),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _descriptionCtrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Company Description',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: const Icon(Icons.description, size: 20),
+                  alignLabelWithHint: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Notification Preferences Section ───────────────────────────────
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFDCE3F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.notifications_rounded,
+                      color: Color(0xFF1565C0), size: 24),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Notification Preferences',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('New applications'),
+                title: const Text('New applications',
+                    style: TextStyle(color: Colors.black87)),
+                subtitle: const Text(
+                    'Get notified about new applicant submissions',
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
                 value: _notifyNewApplications,
                 onChanged: (value) {
                   setState(() => _notifyNewApplications = value);
@@ -2467,7 +2567,10 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Candidate suggestions'),
+                title: const Text('Candidate suggestions',
+                    style: TextStyle(color: Colors.black87)),
+                subtitle: const Text('Get notified about matching candidates',
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
                 value: _notifyCandidateSuggestions,
                 onChanged: (value) {
                   setState(() => _notifyCandidateSuggestions = value);
@@ -2476,62 +2579,43 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
+
+        // ── Legal & More Section ───────────────────────────────────────────
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFDCE3F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Dark appearance mode'),
-                subtitle: const Text('Preference is saved for this account.'),
-                value: _darkMode,
-                onChanged: (value) => setState(() => _darkMode = value),
-              ),
               Row(
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const NotificationsCenterScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.inbox_outlined),
-                      label: const Text('Open Notification Inbox'),
+                  const Icon(Icons.gavel_rounded,
+                      color: Color(0xFF1565C0), size: 24),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Legal & Information',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SupabaseStoragePage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.cloud_outlined),
-                      label: const Text('Supabase Storage'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -2566,25 +2650,44 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                 ],
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const _TermsOfServicePage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.description_outlined),
-                      label: const Text('Terms of Service'),
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const _TermsOfServicePage(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.description_outlined),
+                  label: const Text('Terms of Service'),
+                ),
               ),
-              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Save & Logout Section ──────────────────────────────────────────
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFDCE3F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -2593,13 +2696,18 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
                         )
                       : const Icon(Icons.save_outlined),
-                  label: const Text('Save Settings'),
+                  label: const Text('Save All Changes'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1565C0),
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -2618,6 +2726,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
             ],
           ),
         ),
+        const SizedBox(height: 24),
       ],
     );
   }
