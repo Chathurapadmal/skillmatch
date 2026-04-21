@@ -51,6 +51,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: Text('${widget.field} Roadmap'),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -68,24 +69,28 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Target card
+                        // 🔥 TARGET CARD (small improvement: shadow)
                         Container(
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: const Color(0xFFDCE3F0),
-                            ),
+                            border: Border.all(color: const Color(0xFFDCE3F0)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(children: [
-                                const Text('🎯',
-                                    style: TextStyle(fontSize: 20)),
-                                const SizedBox(width: 8),
-                                const Text('RECOMMENDED TARGET ROLE',
+                              Row(children: const [
+                                Text('🎯', style: TextStyle(fontSize: 20)),
+                                SizedBox(width: 8),
+                                Text('RECOMMENDED TARGET ROLE',
                                     style: TextStyle(
                                         color: Color(0xFF1565C0),
                                         fontSize: 11,
@@ -94,46 +99,50 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                               ]),
                               const SizedBox(height: 8),
                               Text(
-                                  roadmap['targetRole']?.toString() ??
-                                      'Learning Path',
-                                  style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700)),
-                              Text(roadmap['targetCompany']?.toString() ?? '',
-                                  style: const TextStyle(
-                                      color: Colors.grey, fontSize: 13)),
+                                roadmap['targetRole']?.toString() ??
+                                    'Learning Path',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w700),
+                              ),
+                              Text(
+                                roadmap['targetCompany']?.toString() ?? '',
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 13),
+                              ),
                               const SizedBox(height: 14),
-                              Row(children: [
-                                _matchPill(
-                                    'Current Match',
-                                    '${roadmap['currentMatch'] ?? 0}%',
-                                    AppTheme.warning),
-                                const SizedBox(width: 10),
-                                const Icon(Icons.arrow_forward,
-                                    color: Colors.black38, size: 18),
-                                const SizedBox(width: 10),
-                                _matchPill(
-                                    'Target',
-                                    '${roadmap['targetMatch'] ?? 100}%',
-                                    AppTheme.success),
-                              ]),
+
+                              // 🔥 centered row
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _matchPill(
+                                      'Current Match',
+                                      '${roadmap['currentMatch'] ?? 0}%',
+                                      AppTheme.warning),
+                                  const SizedBox(width: 10),
+                                  const Icon(Icons.arrow_forward,
+                                      color: Colors.black38, size: 18),
+                                  const SizedBox(width: 10),
+                                  _matchPill(
+                                      'Target',
+                                      '${roadmap['targetMatch'] ?? 100}%',
+                                      AppTheme.success),
+                                ],
+                              ),
                             ],
                           ),
                         ).animate().fade(),
                         const SizedBox(height: 24),
 
-                        // Missing skills
+                        // 🔥 FOCUS AREAS (spacing improved)
                         if (missing.isNotEmpty) ...[
                           const Text('Focus Areas',
                               style: TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600)),
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 10),
                           Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
+                            spacing: 10,
+                            runSpacing: 10,
                             children: missing
                                 .map((s) => Container(
                                       padding: const EdgeInsets.symmetric(
@@ -142,8 +151,7 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                                         color: const Color(0xFFEAF2FF),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
-                                          color: const Color(0xFFCDE1FF),
-                                        ),
+                                            color: const Color(0xFFCDE1FF)),
                                       ),
                                       child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -153,46 +161,48 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
                                             const SizedBox(width: 4),
                                             Text(s,
                                                 style: const TextStyle(
-                                                    color: Color(0xFF1565C0),
                                                     fontSize: 12,
-                                                    fontWeight:
-                                                        FontWeight.w500)),
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Color(0xFF1565C0))),
                                           ]),
                                     ))
                                 .toList(),
-                          ).animate(delay: 100.ms).fade(),
+                          ),
                           const SizedBox(height: 24),
                         ],
 
-                        // Roadmap steps
+                        // 🔥 STEPS
                         const Text('Your Learning Path',
                             style: TextStyle(
-                                color: Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600)),
+                                fontSize: 16, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 14),
+
                         ...steps.asMap().entries.map((e) {
                           final step = e.value as Map;
                           final isProject = step['title']
                               .toString()
                               .toLowerCase()
                               .contains('project');
+
                           return _StepCard(
-                                  index: e.key + 1,
-                                  step: step,
-                                  isProject: isProject)
+                            index: e.key + 1,
+                            step: step,
+                            isProject: isProject,
+                            isLast: e.key == steps.length - 1,
+                          )
                               .animate(
                                   delay: Duration(milliseconds: e.key * 100))
                               .fade()
-                              .slideX(begin: -0.08, end: 0);
+                              .slideX(begin: -0.08);
                         }),
-                        const SizedBox(height: 20),
+
+                        const SizedBox(height: 28),
+
                         GradientButton(
-                                label: 'Regenerate Path',
-                                onTap: _loadData,
-                                icon: Icons.refresh)
-                            .animate(delay: 600.ms)
-                            .fade(),
+                          label: 'Regenerate Path',
+                          onTap: _loadData,
+                          icon: Icons.refresh,
+                        ).animate(delay: 600.ms).fade(),
                       ],
                     ),
             ),
@@ -202,70 +212,98 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
   Widget _matchPill(String label, String value, Color color) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: color.withOpacity(0.3))),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label,
-              style: const TextStyle(color: Colors.black54, fontSize: 10)),
-          Text(value,
-              style: TextStyle(
-                  color: color, fontSize: 18, fontWeight: FontWeight.w700)),
-        ]),
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label,
+                style: const TextStyle(color: Colors.black54, fontSize: 10)),
+            Text(value,
+                style: TextStyle(
+                    color: color, fontSize: 18, fontWeight: FontWeight.w700)),
+          ],
+        ),
       );
 }
 
+// 🔥 STEP CARD (minimal improvements only)
 class _StepCard extends StatelessWidget {
   final int index;
   final Map step;
   final bool isProject;
-  const _StepCard(
-      {required this.index, required this.step, required this.isProject});
+  final bool isLast;
+
+  const _StepCard({
+    required this.index,
+    required this.step,
+    required this.isProject,
+    required this.isLast,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Timeline
         Column(children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 38, // slightly bigger
+            height: 38,
             decoration: BoxDecoration(
               gradient: isProject
                   ? AppTheme.primaryGradient
                   : const LinearGradient(
                       colors: [Color(0xFF1E1B4B), Color(0xFF2D1B69)]),
               shape: BoxShape.circle,
-              border: Border.all(
-                  color: isProject
-                      ? AppTheme.primary
-                      : AppTheme.accent.withOpacity(0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Center(
-                child: Text('$index',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14))),
+              child: Text('$index',
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
           ),
-          if (index < 5)
-            Container(width: 2, height: 50, color: const Color(0xFF2D2D5E)),
+
+          // 🔥 FIXED LINE
+          if (!isLast)
+            Container(
+              width: 2,
+              height: 60,
+              color: Colors.grey.shade300,
+            ),
         ]),
         const SizedBox(width: 14),
         Expanded(
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
             decoration: BoxDecoration(
               color:
-                  isProject ? AppTheme.primary.withOpacity(0.08) : Colors.white,
+                  isProject ? AppTheme.primary.withOpacity(0.10) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: isProject
-                      ? AppTheme.primary.withOpacity(0.2)
-                      : const Color(0xFFDCE3F0)),
+                color: isProject
+                    ? AppTheme.primary.withOpacity(0.2)
+                    : const Color(0xFFDCE3F0),
+              ),
+              boxShadow: isProject
+                  ? [
+                      BoxShadow(
+                        color: AppTheme.primary.withOpacity(0.12),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
+                  : [],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,39 +314,24 @@ class _StepCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                     decoration: BoxDecoration(
-                        color: AppTheme.primary.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(5)),
-                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(Icons.build_circle_outlined,
-                          color: AppTheme.primaryLight, size: 11),
-                      SizedBox(width: 3),
-                      Text('SIMULATED PROJECT',
-                          style: TextStyle(
-                              color: AppTheme.primaryLight,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5)),
-                    ]),
+                      color: AppTheme.primary.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: const Text(
+                      'SIMULATED PROJECT',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
-                Text(step['title']?.toString() ?? 'Step',
+                Text(step['title'] ?? 'Step',
                     style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600)),
+                        fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
-                Text(step['description']?.toString() ?? 'Details...',
+                Text(step['description'] ?? '',
                     style: const TextStyle(
-                        color: Colors.black54, fontSize: 12, height: 1.5)),
-                if (step['duration'] != null) ...[
-                  const SizedBox(height: 8),
-                  Row(children: [
-                    const Icon(Icons.access_time, color: Colors.grey, size: 13),
-                    const SizedBox(width: 4),
-                    Text(step['duration'] as String,
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 12)),
-                  ]),
-                ]
+                        fontSize: 12, height: 1.5, color: Colors.black54)),
               ],
             ),
           ),
