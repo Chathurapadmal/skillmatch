@@ -162,6 +162,33 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
     );
   }
 
+  Future<void> _notifyApplicantOnApplication(
+    Map<String, dynamic> internship,
+  ) async {
+    final studentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (studentUid == null) return;
+
+    final title = (internship['title'] as String?)?.trim().isNotEmpty == true
+        ? internship['title'] as String
+        : 'this internship';
+    final company = (internship['company'] as String?)?.trim().isNotEmpty ==
+            true
+        ? internship['company'] as String
+        : 'the company';
+
+    await NotificationService.instance.createInAppNotification(
+      recipientId: studentUid,
+      senderId: internship['companyId'] as String?,
+      type: 'application_confirmation',
+      title: 'Application submitted',
+      body: 'You applied for $title at $company.',
+      data: {
+        'internshipId': internship['id'] ?? '',
+        'companyId': internship['companyId'] ?? '',
+      },
+    );
+  }
+
   Future<void> _applyForInternship(Map<String, dynamic> internship) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
@@ -207,6 +234,7 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
       'appliedAt': FieldValue.serverTimestamp(),
     });
 
+    await _notifyApplicantOnApplication(internship);
     await _notifyCompanyOnApplication(internship);
 
     if (!mounted) return;
@@ -999,6 +1027,33 @@ class _InternshipsTabState extends State<_InternshipsTab> {
     );
   }
 
+  Future<void> _notifyApplicantOnApplication(
+    Map<String, dynamic> internship,
+  ) async {
+    final studentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (studentUid == null) return;
+
+    final title = (internship['title'] as String?)?.trim().isNotEmpty == true
+        ? internship['title'] as String
+        : 'this internship';
+    final company = (internship['company'] as String?)?.trim().isNotEmpty ==
+            true
+        ? internship['company'] as String
+        : 'the company';
+
+    await NotificationService.instance.createInAppNotification(
+      recipientId: studentUid,
+      senderId: internship['companyId'] as String?,
+      type: 'application_confirmation',
+      title: 'Application submitted',
+      body: 'You applied for $title at $company.',
+      data: {
+        'internshipId': internship['id'] ?? '',
+        'companyId': internship['companyId'] ?? '',
+      },
+    );
+  }
+
   Future<void> _applyForInternship(Map<String, dynamic> internship) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
@@ -1044,6 +1099,7 @@ class _InternshipsTabState extends State<_InternshipsTab> {
       'appliedAt': FieldValue.serverTimestamp(),
     });
 
+    await _notifyApplicantOnApplication(internship);
     await _notifyCompanyOnApplication(internship);
 
     if (!mounted) return;
@@ -2189,6 +2245,254 @@ class _AppliedTabState extends State<_AppliedTab> {
     }
   }
 
+  Future<void> _notifyCompanyOnApplication({
+    required Map<String, dynamic> internship,
+    required String studentUid,
+    required String studentName,
+  }) async {
+    final companyId = (internship['companyId'] as String? ?? '').trim();
+    if (companyId.isEmpty) return;
+
+    final companyDoc = await FirebaseFirestore.instance
+        .collection('companies')
+        .doc(companyId)
+        .get();
+    final companyData = companyDoc.data() ?? <String, dynamic>{};
+    if (companyData['notifyNewApplications'] == false) {
+      return;
+    }
+
+    final title = (internship['title'] as String?)?.trim().isNotEmpty == true
+        ? internship['title'] as String
+        : 'your internship';
+
+    await NotificationService.instance.createInAppNotification(
+      recipientId: companyId,
+      senderId: studentUid,
+      type: 'application_submitted',
+      title: 'New internship application',
+      body: '$studentName applied for $title.',
+      data: {
+        'internshipId': internship['id'] ?? '',
+        'companyId': companyId,
+        'studentId': studentUid,
+      },
+    );
+  }
+
+  Future<void> _notifyApplicantOnApplication({
+    required Map<String, dynamic> internship,
+    required String studentUid,
+  }) async {
+    final title = (internship['title'] as String?)?.trim().isNotEmpty == true
+        ? internship['title'] as String
+        : 'this internship';
+    final company = (internship['company'] as String?)?.trim().isNotEmpty ==
+            true
+        ? internship['company'] as String
+        : 'the company';
+
+    await NotificationService.instance.createInAppNotification(
+      recipientId: studentUid,
+      senderId: internship['companyId'] as String?,
+      type: 'application_confirmation',
+      title: 'Application submitted',
+      body: 'You applied for $title at $company.',
+      data: {
+        'internshipId': internship['id'] ?? '',
+        'companyId': internship['companyId'] ?? '',
+      },
+    );
+  }
+
+  Future<void> _applyForInternship(Map<String, dynamic> internship) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final internshipId = (internship['id'] as String?)?.trim() ?? '';
+    if (internshipId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Unable to apply for this internship right now.'),
+        backgroundColor: AppTheme.error,
+      ));
+      return;
+    }
+
+    final existing = await FirebaseFirestore.instance
+        .collection('applications')
+        .where('studentId', isEqualTo: uid)
+        .where('internshipId', isEqualTo: internshipId)
+        .limit(1)
+        .get();
+
+    if (existing.docs.isNotEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('You have already applied for this internship.'),
+        backgroundColor: AppTheme.warning,
+      ));
+      return;
+    }
+
+    final userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final userData = userDoc.data() ?? <String, dynamic>{};
+    final studentName = (userData['name'] as String?)?.trim().isNotEmpty ==
+            true
+        ? userData['name'] as String
+        : (FirebaseAuth.instance.currentUser?.displayName ?? 'Student');
+    final studentEmail = (userData['email'] as String?)?.trim().isNotEmpty ==
+            true
+        ? userData['email'] as String
+        : (FirebaseAuth.instance.currentUser?.email ?? '');
+
+    await FirebaseFirestore.instance.collection('applications').add({
+      'studentId': uid,
+      'studentName': studentName,
+      'studentEmail': studentEmail,
+      'internshipId': internshipId,
+      'companyId': internship['companyId'],
+      'title': internship['title'],
+      'company': internship['company'],
+      'industry': internship['industry'],
+      'status': 'applied',
+      'appliedAt': FieldValue.serverTimestamp(),
+    });
+
+    await _notifyApplicantOnApplication(
+      internship: internship,
+      studentUid: uid,
+    );
+    await _notifyCompanyOnApplication(
+      internship: internship,
+      studentUid: uid,
+      studentName: studentName,
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Application submitted successfully.'),
+      backgroundColor: AppTheme.success,
+    ));
+  }
+
+  Future<void> _showInternshipDetails(Map<String, dynamic> internship) async {
+    final tags =
+        ((internship['tags'] as List?) ?? []).map((e) => '$e').toList();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                internship['title'] as String? ?? 'Internship',
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${internship['company'] ?? ''} • ${internship['location'] ?? internship['mode'] ?? ''}',
+                style: const TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Salary: ${internship['salary'] ?? 'Negotiable'}',
+                style: const TextStyle(
+                  color: AppTheme.success,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                (internship['description'] as String?)?.trim().isNotEmpty ==
+                        true
+                    ? internship['description'] as String
+                    : ((internship['aboutRole'] as String?)?.trim().isNotEmpty ==
+                            true
+                        ? internship['aboutRole'] as String
+                        : 'No additional description provided.'),
+                style: const TextStyle(color: Colors.black54, height: 1.4),
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Required Skills',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (tags.isEmpty)
+                const Text(
+                  'No skills listed yet.',
+                  style: TextStyle(color: Colors.black45),
+                )
+              else
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: tags
+                      .map(
+                        (tag) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F0FF),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            tag,
+                            style: const TextStyle(
+                              color: Color(0xFF1565C0),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await _applyForInternship(internship);
+                    if (mounted) Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text('Apply Now'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _openInterviewLink(String rawLink) async {
     var link = rawLink.trim();
     if (link.isEmpty) return;
@@ -2318,12 +2622,23 @@ class _AppliedTabState extends State<_AppliedTab> {
                     final match = _calculateMatch(skills, studentSkills);
                     return {
                       'id': doc.id,
+                      'companyId': (data['companyId'] as String?) ?? '',
                       'title': (data['title'] as String?) ?? 'Internship',
                       'company': (data['company'] as String?) ?? 'Company',
                       'location': ((data['type'] as String?) ??
                               (data['location'] as String?) ??
                               'Remote')
                           .trim(),
+                      'mode': ((data['type'] as String?) ??
+                          (data['location'] as String?) ??
+                          'Remote')
+                        .trim(),
+                      'salary': (data['salary'] as String?) ??
+                        (data['stipend'] as String?) ??
+                        'Negotiable',
+                      'description':
+                        ((data['description'] as String?) ?? '').trim(),
+                      'tags': skills,
                       'aboutRole':
                           ((data['aboutRole'] as String?) ?? '').trim(),
                       'industry': industry,
@@ -2552,64 +2867,87 @@ class _AppliedTabState extends State<_AppliedTab> {
                         ...suggestedJobs.take(10).map((item) {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
+                            child: Material(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        item['title'] as String,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(18),
+                                onTap: () => _showInternshipDetails(item),
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(18),
+                                    border:
+                                        Border.all(color: Colors.grey[300]!),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              item['title'] as String,
+                                              style: const TextStyle(
+                                                color: Colors.black87,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 17,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF1565C0)
+                                                  .withValues(alpha: 0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              '${item['match']}% match',
+                                              style: const TextStyle(
+                                                color: Color(0xFF1565C0),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        '${item['company']} • ${item['location']}',
+                                        style:
+                                            const TextStyle(color: Colors.grey),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        (item['aboutRole'] as String).isEmpty
+                                            ? 'No additional description provided.'
+                                            : item['aboutRole'] as String,
                                         style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 17,
+                                          color: Colors.black54,
+                                          height: 1.4,
                                         ),
                                       ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1565C0)
-                                            .withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        '${item['match']}% match',
-                                        style: const TextStyle(
-                                          color: Color(0xFF1565C0),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
+                                      const SizedBox(height: 10),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton.icon(
+                                          onPressed: () =>
+                                              _showInternshipDetails(item),
+                                          icon: const Icon(Icons.visibility),
+                                          label: const Text('View & Apply'),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  '${item['company']} • ${item['location']}',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  (item['aboutRole'] as String).isEmpty
-                                      ? 'No additional description provided.'
-                                      : item['aboutRole'] as String,
-                                  style: const TextStyle(
-                                    color: Colors.black54,
-                                    height: 1.4,
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           );
                         }),
