@@ -1771,7 +1771,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
             padding: const EdgeInsets.all(18),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF1E3A5F), Color(0xFF1565C0)],
+                colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -2346,47 +2346,8 @@ class _TokenManagementTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Role-Based Access Tokens',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Generate and share tokens with team members to control hiring workflows.',
-                style: TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _generateToken(context),
-                  icon: const Icon(Icons.key_outlined),
-                  label: const Text('Generate Token'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
+        _buildAccessTokenHeader(context),
+        const SizedBox(height: 14),
         StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('company_tokens')
@@ -2413,113 +2374,523 @@ class _TokenManagementTab extends StatelessWidget {
               );
             }
 
-            if (docs.isEmpty) {
-              return const _EmptyPanel(
-                icon: Icons.key_off_outlined,
-                message: 'No tokens created yet.',
-              );
-            }
+            final activeTokens = docs.where((doc) {
+              final data = doc.data();
+              return data['active'] != false;
+            }).length;
 
             return Column(
-              children: docs.map((doc) {
-                final data = doc.data();
-                final token = (data['token'] as String?) ?? '';
-                final role = (data['role'] as String?) ?? 'candidate_access';
-                final active = data['active'] != false;
-                final createdAt = data['createdAt'] as Timestamp?;
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTokenListHeader(
+                  totalTokens: docs.length,
+                  activeTokens: activeTokens,
+                ),
+                const SizedBox(height: 10),
+                if (docs.isEmpty)
+                  const _EmptyPanel(
+                    icon: Icons.key_off_outlined,
+                    message: 'No tokens created yet.',
+                  )
+                else
+                  ...docs.map((doc) {
+                    final data = doc.data();
+                    final token = (data['token'] as String?) ?? '';
+                    final role =
+                        (data['role'] as String?) ?? 'candidate_access';
+                    final active = data['active'] != false;
+                    final createdAt = data['createdAt'] as Timestamp?;
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFDCE3F0)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SelectableText(
-                              token,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () async {
-                              await Clipboard.setData(
-                                  ClipboardData(text: token));
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(const SnackBar(
-                                content: Text('Token copied.'),
-                                backgroundColor: AppTheme.success,
-                              ));
-                            },
-                            icon: const Icon(Icons.copy_rounded),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        'Role: $role',
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                      Text(
-                        createdAt == null
-                            ? 'Created just now'
-                            : 'Created: ${_fmtDate(createdAt)}',
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: active
-                                  ? AppTheme.success.withValues(alpha: 0.12)
-                                  : AppTheme.warning.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              active ? 'ACTIVE' : 'PAUSED',
-                              style: TextStyle(
-                                color: active
-                                    ? AppTheme.success
-                                    : AppTheme.warning,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          TextButton.icon(
-                            onPressed: () =>
-                                _toggleTokenStatus(doc.reference, active),
-                            icon: Icon(active
-                                ? Icons.pause_circle_outline
-                                : Icons.play_circle_outline),
-                            label: Text(active ? 'Pause' : 'Activate'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                    return _buildTokenCard(
+                      context: context,
+                      token: token,
+                      role: role,
+                      active: active,
+                      createdAt: createdAt,
+                      onToggle: () => _toggleTokenStatus(doc.reference, active),
+                    );
+                  }),
+              ],
             );
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildAccessTokenHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.admin_panel_settings_outlined,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Access Tokens',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Generate, copy, pause, and reactivate candidate access tokens for controlled hiring workflows.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFE),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE3EAF5)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1565C0)
+                              .withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        child: const Icon(
+                          Icons.key_outlined,
+                          color: Color(0xFF1565C0),
+                          size: 19,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Generate a New Token',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Creates a secure 16-character token with candidate access permissions.',
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 12.5,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _generateToken(context),
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                      label: const Text('Generate Token'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: const Color(0xFF1565C0),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTokenListHeader({
+    required int totalTokens,
+    required int activeTokens,
+  }) {
+    final pausedTokens = totalTokens - activeTokens;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.vpn_key_outlined,
+              color: Color(0xFF1565C0),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Token Inventory',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Review active and paused access credentials.',
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
+            children: [
+              _buildCountChip(
+                label: 'Total',
+                value: '$totalTokens',
+                color: const Color(0xFF1565C0),
+              ),
+              _buildCountChip(
+                label: 'Active',
+                value: '$activeTokens',
+                color: AppTheme.success,
+              ),
+              if (pausedTokens > 0)
+                _buildCountChip(
+                  label: 'Paused',
+                  value: '$pausedTokens',
+                  color: AppTheme.warning,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTokenCard({
+    required BuildContext context,
+    required String token,
+    required String role,
+    required bool active,
+    required Timestamp? createdAt,
+    required VoidCallback onToggle,
+  }) {
+    final statusColor = active ? AppTheme.success : AppTheme.warning;
+    final statusLabel = active ? 'ACTIVE' : 'PAUSED';
+    final actionLabel = active ? 'Pause Token' : 'Activate Token';
+    final actionIcon = active
+        ? Icons.pause_circle_outline_rounded
+        : Icons.play_circle_outline_rounded;
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(
+                  active ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                  color: statusColor,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SelectableText(
+                            token,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.0,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStatusBadge(
+                          label: statusLabel,
+                          color: statusColor,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildMetaChip(
+                          icon: Icons.verified_user_outlined,
+                          text: 'Role: $role',
+                        ),
+                        _buildMetaChip(
+                          icon: Icons.calendar_today_outlined,
+                          text: createdAt == null
+                              ? 'Created just now'
+                              : 'Created: ${_fmtDate(createdAt)}',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 520;
+              final copyButton = OutlinedButton.icon(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: token));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Token copied.'),
+                    backgroundColor: AppTheme.success,
+                  ));
+                },
+                icon: const Icon(Icons.copy_rounded),
+                label: const Text('Copy Token'),
+              );
+              final toggleButton = TextButton.icon(
+                onPressed: onToggle,
+                icon: Icon(actionIcon),
+                label: Text(actionLabel),
+                style: TextButton.styleFrom(
+                  foregroundColor: active ? AppTheme.warning : AppTheme.success,
+                ),
+              );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    copyButton,
+                    const SizedBox(height: 8),
+                    toggleButton,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: copyButton),
+                  const SizedBox(width: 10),
+                  Expanded(child: toggleButton),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountChip({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge({
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetaChip({
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F7FC),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFF5A6C83)),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Color(0xFF5A6C83),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -2528,7 +2899,6 @@ class _TokenManagementTab extends StatelessWidget {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 }
-
 class _CompanySettingsTab extends StatefulWidget {
   final String companyId;
   final String initialCompanyName;
@@ -2758,299 +3128,659 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Company Profile',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 10),
+        _buildSettingsHeader(),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.business_center_outlined,
+          title: 'Company Profile',
+          subtitle:
+              'Keep your company identity visible to candidates and hiring workflows.',
+          children: [
+            _buildResponsiveSettingsRow([
               TextField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Company Name'),
-              ),
-              const SizedBox(height: 8),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Industry'),
-                subtitle: Text(
-                  _industryCtrl.text.trim().isEmpty
-                      ? 'Select industry'
-                      : _industryCtrl.text.trim(),
-                  style: const TextStyle(color: Color(0xFF1565C0)),
-                ),
-                trailing: const Icon(Icons.keyboard_arrow_down_rounded),
-                onTap: _pickIndustry,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _websiteCtrl,
-                decoration: const InputDecoration(labelText: 'Website'),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _logoCtrl,
-                onChanged: (_) => setState(() {}),
-                decoration:
-                    const InputDecoration(labelText: 'Company Logo URL'),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed:
-                      _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
-                  icon: _uploadingLogo
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Upload Company Logo (Supabase)'),
+                decoration: const InputDecoration(
+                  labelText: 'Company Name',
+                  prefixIcon: Icon(Icons.business_outlined),
                 ),
               ),
-              if (_logoCtrl.text.trim().isNotEmpty) ...[
-                const SizedBox(height: 12),
+              _buildIndustryPickerTile(),
+            ]),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _websiteCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Website',
+                hintText: 'https://company.com',
+                prefixIcon: Icon(Icons.language_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descriptionCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Company Description',
+                hintText: 'Briefly describe your company, culture, and mission',
+                prefixIcon: Icon(Icons.notes_outlined),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.image_outlined,
+          title: 'Brand Assets',
+          subtitle: 'Add or upload a company logo for a more complete profile.',
+          children: [
+            TextField(
+              controller: _logoCtrl,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                labelText: 'Company Logo URL',
+                hintText: 'Paste a hosted logo URL',
+                prefixIcon: Icon(Icons.link_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildLogoPreview(),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: OutlinedButton.icon(
+                onPressed: _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
+                icon: _uploadingLogo
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.cloud_upload_outlined),
+                label: Text(
+                  _uploadingLogo
+                      ? 'Uploading logo...'
+                      : 'Upload Company Logo (Supabase)',
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF1565C0),
+                  side: const BorderSide(color: Color(0xFFB8C7DC)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.notifications_active_outlined,
+          title: 'Notification Preferences',
+          subtitle: 'Choose the company updates you want to receive.',
+          children: [
+            _buildSettingsSwitchTile(
+              icon: Icons.assignment_ind_outlined,
+              title: 'New applications',
+              subtitle: 'Notify me when candidates apply to company posts.',
+              value: _notifyNewApplications,
+              onChanged: (value) {
+                setState(() => _notifyNewApplications = value);
+              },
+            ),
+            const SizedBox(height: 10),
+            _buildSettingsSwitchTile(
+              icon: Icons.people_alt_outlined,
+              title: 'Candidate suggestions',
+              subtitle: 'Receive updates about matched or recommended profiles.',
+              value: _notifyCandidateSuggestions,
+              onChanged: (value) {
+                setState(() => _notifyCandidateSuggestions = value);
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.tune_outlined,
+          title: 'Workspace Controls',
+          subtitle: 'Manage appearance, storage, policy pages, and account access.',
+          children: [
+            _buildSettingsSwitchTile(
+              icon: Icons.dark_mode_outlined,
+              title: 'Dark appearance mode',
+              subtitle: 'Preference is saved for this account.',
+              value: _darkMode,
+              onChanged: (value) => setState(() => _darkMode = value),
+            ),
+            const SizedBox(height: 14),
+            _buildResponsiveSettingsRow([
+              _buildSettingsActionButton(
+                icon: Icons.inbox_outlined,
+                label: 'Notification Inbox',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsCenterScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsActionButton(
+                icon: Icons.cloud_outlined,
+                label: 'Supabase Storage',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SupabaseStoragePage(),
+                    ),
+                  );
+                },
+              ),
+            ]),
+            const SizedBox(height: 10),
+            _buildResponsiveSettingsRow([
+              _buildSettingsActionButton(
+                icon: Icons.privacy_tip_outlined,
+                label: 'Privacy Policy',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const _PrivacyPolicyPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsActionButton(
+                icon: Icons.security_outlined,
+                label: 'Security',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const _SecurityPage(),
+                    ),
+                  );
+                },
+              ),
+            ]),
+            const SizedBox(height: 10),
+            _buildSettingsActionButton(
+              icon: Icons.description_outlined,
+              label: 'Terms of Service',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const _TermsOfServicePage(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildSaveSettingsButton(),
+        const SizedBox(height: 8),
+        _buildSignOutButton(),
+      ],
+    );
+  }
+
+  Widget _buildSettingsHeader() {
+    final companyName = _nameCtrl.text.trim().isEmpty
+        ? widget.initialCompanyName
+        : _nameCtrl.text.trim();
+    final industry = _industryCtrl.text.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1E3A5F).withValues(alpha: 0.16),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.22),
+              ),
+            ),
+            child: const Icon(
+              Icons.settings_suggest_outlined,
+              color: Colors.white,
+              size: 27,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  'Logo Preview',
+                  'Company Settings',
                   style: TextStyle(
-                    color: Colors.black87,
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  companyName,
+                  style: const TextStyle(
+                    color: Colors.white70,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      color: const Color(0xFFF4F7FC),
-                      child: Image.network(
-                        _logoCtrl.text.trim(),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                          Icons.business,
-                          size: 42,
-                          color: Color(0xFF1565C0),
-                        ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildHeaderPill(
+                      icon: Icons.mail_outline,
+                      text: widget.email,
+                    ),
+                    _buildHeaderPill(
+                      icon: Icons.apartment_outlined,
+                      text: industry.isEmpty ? 'Industry not set' : industry,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderPill({required IconData icon, required String text}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsSection({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF1565C0),
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndustryPickerTile() {
+    final industry = _industryCtrl.text.trim();
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(13),
+      onTap: _pickIndustry,
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Industry',
+          prefixIcon: Icon(Icons.apartment_outlined),
+          suffixIcon: Icon(Icons.keyboard_arrow_down_rounded),
+        ),
+        child: Text(
+          industry.isEmpty ? 'Select industry' : industry,
+          style: TextStyle(
+            color: industry.isEmpty ? Colors.black45 : const Color(0xFF1565C0),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoPreview() {
+    final logoUrl = _logoCtrl.text.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: 72,
+              height: 72,
+              color: const Color(0xFFEAF1FB),
+              child: logoUrl.isEmpty
+                  ? const Icon(
+                      Icons.business,
+                      size: 34,
+                      color: Color(0xFF1565C0),
+                    )
+                  : Image.network(
+                      logoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.business,
+                        size: 34,
+                        color: Color(0xFF1565C0),
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Logo Preview',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  logoUrl.isEmpty
+                      ? 'No logo URL added yet. Upload or paste one above.'
+                      : 'Logo URL is set and will be saved with your profile.',
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12.5,
+                    height: 1.3,
                   ),
                 ),
               ],
-              const SizedBox(height: 8),
-              TextField(
-                controller: _descriptionCtrl,
-                maxLines: 3,
-                decoration:
-                    const InputDecoration(labelText: 'Company Description'),
-              ),
-            ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsSwitchTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: value
+                  ? const Color(0xFF1565C0).withValues(alpha: 0.10)
+                  : Colors.grey.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(
+              icon,
+              size: 19,
+              color: value ? const Color(0xFF1565C0) : Colors.grey,
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            activeColor: const Color(0xFF1565C0),
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        style: OutlinedButton.styleFrom(
+          alignment: Alignment.centerLeft,
+          foregroundColor: const Color(0xFF1E3A5F),
+          side: const BorderSide(color: Color(0xFFD5DEEC)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(13),
+          ),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildSaveSettingsButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: _saving ? null : _save,
+        icon: _saving
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Icon(Icons.save_outlined),
+        label: Text(_saving ? 'Saving settings...' : 'Save Settings'),
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: const Color(0xFF1565C0),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Notification Preferences',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('New applications'),
-                value: _notifyNewApplications,
-                onChanged: (value) {
-                  setState(() => _notifyNewApplications = value);
-                },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Candidate suggestions'),
-                value: _notifyCandidateSuggestions,
-                onChanged: (value) {
-                  setState(() => _notifyCandidateSuggestions = value);
-                },
-              ),
-            ],
+          textStyle: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignOutButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 46,
+      child: TextButton.icon(
+        onPressed: () => AuthService.signOut(),
+        icon: const Icon(Icons.logout, color: AppTheme.error),
+        label: const Text(
+          'Sign Out',
+          style: TextStyle(
+            color: AppTheme.error,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Dark appearance mode'),
-                subtitle: const Text('Preference is saved for this account.'),
-                value: _darkMode,
-                onChanged: (value) => setState(() => _darkMode = value),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const NotificationsCenterScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.inbox_outlined),
-                      label: const Text('Open Notification Inbox'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SupabaseStoragePage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.cloud_outlined),
-                      label: const Text('Supabase Storage'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const _PrivacyPolicyPage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.privacy_tip_outlined),
-                      label: const Text('Privacy Policy'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const _SecurityPage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.security_outlined),
-                      label: const Text('Security'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const _TermsOfServicePage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.description_outlined),
-                      label: const Text('Terms of Service'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _saving ? null : _save,
-                  icon: _saving
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save_outlined),
-                  label: const Text('Save Settings'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: () => AuthService.signOut(),
-                  icon: const Icon(Icons.logout, color: AppTheme.error),
-                  label: const Text(
-                    'Sign Out',
-                    style: TextStyle(color: AppTheme.error),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildResponsiveSettingsRow(List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              Expanded(child: children[i]),
+              if (i != children.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
     );
   }
 }
-
 // ============================================================================
 // Interview Scheduling Dialog
 // ============================================================================
