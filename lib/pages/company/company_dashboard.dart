@@ -6,14 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
-import '../../services/image_service.dart';
 import '../../shared/chat_overlay.dart';
 import '../../shared/notifications_center_screen.dart';
 import '../../shared/supabase_storage_page.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/supabase_image_widget.dart';
 
 class CompanyDashboard extends StatefulWidget {
   final UserModel user;
@@ -659,78 +658,300 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         company.contains(candidate);
   }
 
+  Widget _buildCandidateDiscoveryHeader() {
+    final industryLabel = _loadingIndustry
+        ? 'Loading company industry...'
+        : _companyIndustry.isEmpty
+            ? 'All industries'
+            : _companyIndustry;
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.manage_search_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Candidate Discovery',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Review applicant profiles, verified skills, CV details, and interview actions in one focused workspace.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: _buildCandidateFilterSection(
+              icon: Icons.filter_alt_outlined,
+              title: 'Discovery Filters',
+              subtitle:
+                  'Choose which profiles appear and how closely they should match your company industry.',
+              children: [
+                _buildCandidateFilterRow([
+                  DropdownButtonFormField<String>(
+                    value: _candidateScope,
+                    decoration: const InputDecoration(
+                      labelText: 'Candidate Scope',
+                      prefixIcon: Icon(Icons.people_alt_outlined),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Applied',
+                        child: Text('Applied only'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All profiles'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _candidateScope = value);
+                    },
+                  ),
+                  DropdownButtonFormField<bool>(
+                    value: _enforceIndustryFilter,
+                    decoration: const InputDecoration(
+                      labelText: 'Industry Filter',
+                      prefixIcon: Icon(Icons.apartment_outlined),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: true,
+                        child: Text('Company industry'),
+                      ),
+                      DropdownMenuItem(
+                        value: false,
+                        child: Text('All industries'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _enforceIndustryFilter = value);
+                    },
+                  ),
+                ]),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _candidateFilterChip(
+                      icon: Icons.badge_outlined,
+                      text: _candidateScope == 'Applied'
+                          ? 'Showing applied candidates'
+                          : 'Showing all applicant profiles',
+                      color: const Color(0xFF1565C0),
+                    ),
+                    _candidateFilterChip(
+                      icon: Icons.domain_outlined,
+                      text: _enforceIndustryFilter
+                          ? 'Industry: $industryLabel'
+                          : 'Industry: all industries',
+                      color: _enforceIndustryFilter
+                          ? AppTheme.success
+                          : const Color(0xFF8A5BFF),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCandidateFilterSection({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF1565C0),
+                  size: 19,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCandidateFilterRow(List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              Expanded(child: children[i]),
+              if (i != children.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _candidateFilterChip({
+    required IconData icon,
+    required String text,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.filter_alt_outlined,
-                      size: 18, color: Color(0xFF1565C0)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _loadingIndustry
-                          ? 'Loading company industry filter...'
-                          : _companyIndustry.isEmpty
-                              ? 'Industry filter: all candidates'
-                              : 'Industry filter: $_companyIndustry',
-                      style: const TextStyle(
-                          color: Colors.black54, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _candidateScope,
-                      decoration:
-                          const InputDecoration(labelText: 'Candidate Scope'),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'Applied', child: Text('Applied only')),
-                        DropdownMenuItem(
-                            value: 'All', child: Text('All profiles')),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _candidateScope = value);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: DropdownButtonFormField<bool>(
-                      value: _enforceIndustryFilter,
-                      decoration:
-                          const InputDecoration(labelText: 'Industry Filter'),
-                      items: const [
-                        DropdownMenuItem(
-                            value: true, child: Text('Company industry')),
-                        DropdownMenuItem(
-                            value: false, child: Text('All industries')),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _enforceIndustryFilter = value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        _buildCandidateDiscoveryHeader(),
         Expanded(
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
@@ -838,7 +1059,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                           (data['cvStorageSignedUrl'] as String? ?? '').trim();
 
                       return GestureDetector(
-                        onTap: () => _showCandidateDetails(doc.id, data),
+                        onTap: () => _showCandidateDetails(data),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(14),
@@ -852,32 +1073,24 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                             children: [
                               Row(
                                 children: [
-                                  (data['avatarStoragePath'] as String?)
-                                              ?.trim()
-                                              .isNotEmpty ==
-                                          true
-                                      ? SupabaseImageWidget(
-                                          storagePath: data['avatarStoragePath']
-                                              as String?,
-                                          isCircular: true,
-                                          radius: 24,
-                                        )
-                                      : ((data['avatarUrl'] as String?)
-                                                  ?.trim()
-                                                  .isNotEmpty ==
-                                              true
-                                          ? CircleAvatar(
-                                              backgroundColor:
-                                                  const Color(0xFF1565C0),
-                                              backgroundImage: NetworkImage(
-                                                  data['avatarUrl'] as String),
-                                            )
-                                          : const CircleAvatar(
-                                              backgroundColor:
-                                                  Color(0xFF1565C0),
-                                              child: Icon(Icons.person,
-                                                  color: Colors.white),
-                                            )),
+                                  CircleAvatar(
+                                    backgroundColor: const Color(0xFF1565C0),
+                                    backgroundImage:
+                                        (data['avatarUrl'] as String?)
+                                                    ?.trim()
+                                                    .isNotEmpty ==
+                                                true
+                                            ? NetworkImage(
+                                                data['avatarUrl'] as String)
+                                            : null,
+                                    child: (data['avatarUrl'] as String?)
+                                                ?.trim()
+                                                .isNotEmpty ==
+                                            true
+                                        ? null
+                                        : const Icon(Icons.person,
+                                            color: Colors.white),
+                                  ),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
@@ -1151,12 +1364,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     );
   }
 
-  Future<void> _showCandidateDetails(
-    String studentId,
-    Map<String, dynamic> data,
-  ) async {
-    await _registerProfileView(studentId);
-
+  void _showCandidateDetails(Map<String, dynamic> data) {
     final skills = ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
     final cvSkills =
         ((data['cvSkills'] as List?) ?? []).map((e) => '$e').toList();
@@ -1165,8 +1373,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     final certs = ((data['certifications'] as List?) ?? const <dynamic>[])
         .map((e) => '$e')
         .toList();
-
-    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -1178,24 +1384,18 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
             children: [
               Row(
                 children: [
-                  (data['avatarStoragePath'] as String?)?.trim().isNotEmpty ==
-                          true
-                      ? SupabaseImageWidget(
-                          storagePath: data['avatarStoragePath'] as String?,
-                          isCircular: true,
-                          radius: 26,
-                        )
-                      : ((data['avatarUrl'] as String?)?.trim().isNotEmpty ==
-                              true
-                          ? CircleAvatar(
-                              radius: 26,
-                              backgroundImage:
-                                  NetworkImage(data['avatarUrl'] as String),
-                            )
-                          : const CircleAvatar(
-                              radius: 26,
-                              child: Icon(Icons.person),
-                            )),
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundImage:
+                        (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
+                                true
+                            ? NetworkImage(data['avatarUrl'] as String)
+                            : null,
+                    child: (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
+                            true
+                        ? null
+                        : const Icon(Icons.person),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1254,24 +1454,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         ],
       ),
     );
-  }
-
-  Future<void> _registerProfileView(String studentId) async {
-    if (studentId.isEmpty) return;
-
-    final profileRef =
-        FirebaseFirestore.instance.collection('users').doc(studentId);
-
-    await profileRef.set({
-      'profileViews': FieldValue.increment(1),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    await profileRef.collection('profile_views').add({
-      'companyId': widget.companyId,
-      'companyName': widget.companyName,
-      'viewedAt': FieldValue.serverTimestamp(),
-    });
   }
 
   Color _statusColor(String status) {
@@ -1453,7 +1635,8 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
     final aboutRole = _aboutRoleCtrl.text.trim();
     final location = _locationCtrl.text.trim();
     final compensation = _compensationCtrl.text.trim();
-    final minGpa = double.tryParse(_minGpaCtrl.text.trim());
+    final minGpaText = _minGpaCtrl.text.trim();
+    final minGpa = double.tryParse(minGpaText);
 
     final skills = _skillsCtrl.text
         .split(',')
@@ -1469,50 +1652,68 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
       return;
     }
 
+    if (minGpaText.isNotEmpty && minGpa == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please enter a valid number for minimum GPA.'),
+        backgroundColor: AppTheme.warning,
+      ));
+      return;
+    }
+
     setState(() => _publishing = true);
 
-    final companyDoc = await FirebaseFirestore.instance
-        .collection('companies')
-        .doc(widget.companyId)
-        .get();
-    final companyData = companyDoc.data() ?? <String, dynamic>{};
+    try {
+      final companyDoc = await FirebaseFirestore.instance
+          .collection('companies')
+          .doc(widget.companyId)
+          .get();
+      final companyData = companyDoc.data() ?? <String, dynamic>{};
 
-    await FirebaseFirestore.instance.collection('internships').add({
-      'companyId': widget.companyId,
-      'company': widget.companyName,
-      'postType': _postType,
-      'title': title,
-      'description': description,
-      'aboutRole': aboutRole,
-      'location': location.isEmpty ? _mode : location,
-      'type': _mode,
-      'duration': _duration,
-      'salary': compensation.isEmpty ? 'Negotiable' : compensation,
-      'stipend': compensation.isEmpty ? 'Negotiable' : compensation,
-      'skills': skills,
-      'minimumGpa': minGpa,
-      'industry': (companyData['industry'] as String?) ?? '',
-      'active': true,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+      await FirebaseFirestore.instance.collection('internships').add({
+        'companyId': widget.companyId,
+        'company': widget.companyName,
+        'postType': _postType,
+        'title': title,
+        'description': description,
+        'aboutRole': aboutRole,
+        'location': location.isEmpty ? _mode : location,
+        'type': _mode,
+        'duration': _duration,
+        'salary': compensation.isEmpty ? 'Negotiable' : compensation,
+        'stipend': compensation.isEmpty ? 'Negotiable' : compensation,
+        'skills': skills,
+        'minimumGpa': minGpa,
+        'industry': (companyData['industry'] as String?) ?? '',
+        'active': true,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    _titleCtrl.clear();
-    _descCtrl.clear();
-    _aboutRoleCtrl.clear();
-    _locationCtrl.clear();
-    _compensationCtrl.clear();
-    _skillsCtrl.clear();
-    _minGpaCtrl.clear();
+      _titleCtrl.clear();
+      _descCtrl.clear();
+      _aboutRoleCtrl.clear();
+      _locationCtrl.clear();
+      _compensationCtrl.clear();
+      _skillsCtrl.clear();
+      _minGpaCtrl.clear();
 
-    setState(() => _publishing = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Internship post published.'),
-      backgroundColor: AppTheme.success,
-    ));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Internship post published.'),
+        backgroundColor: AppTheme.success,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to publish internship post: $e'),
+        backgroundColor: AppTheme.error,
+      ));
+    } finally {
+      if (mounted) {
+        setState(() => _publishing = false);
+      }
+    }
   }
 
   Future<void> _togglePostStatus(
@@ -1547,157 +1748,410 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
     await ref.delete();
   }
 
+
+  Widget _buildCreateInternshipPostCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E3A5F), Color(0xFF1565C0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.post_add_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Create Internship Post',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Structure the role, work setup, compensation, and required skills before publishing.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildPostFormSection(
+                  icon: Icons.badge_outlined,
+                  title: 'Role Details',
+                  subtitle:
+                      'Give applicants a clear overview of the opportunity.',
+                  children: [
+                    TextField(
+                      controller: _titleCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Title',
+                        hintText: 'Software Engineer Intern',
+                        prefixIcon: Icon(Icons.work_outline_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _descCtrl,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        hintText: 'Role responsibilities and outcomes',
+                        prefixIcon: Icon(Icons.notes_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _aboutRoleCtrl,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'About the Role',
+                        hintText:
+                            'Team, impact, and key expectations for this role',
+                        prefixIcon: Icon(Icons.auto_stories_outlined),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildPostFormSection(
+                  icon: Icons.tune_rounded,
+                  title: 'Post Setup',
+                  subtitle:
+                      'Define the post type, work mode, location, and duration.',
+                  children: [
+                    _buildResponsiveFieldRow([
+                      DropdownButtonFormField<String>(
+                        value: _postType,
+                        decoration: const InputDecoration(
+                          labelText: 'Post Type',
+                          prefixIcon: Icon(Icons.category_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Internship',
+                            child: Text('Internship'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Job',
+                            child: Text('Job'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _postType = value);
+                        },
+                      ),
+                      TextField(
+                        controller: _locationCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Location',
+                          hintText: 'Colombo / Remote',
+                          prefixIcon: Icon(Icons.location_on_outlined),
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 12),
+                    _buildResponsiveFieldRow([
+                      DropdownButtonFormField<String>(
+                        value: _mode,
+                        decoration: const InputDecoration(
+                          labelText: 'Work Mode',
+                          prefixIcon: Icon(Icons.laptop_mac_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Remote',
+                            child: Text('Remote'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Onsite',
+                            child: Text('Onsite'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Hybrid',
+                            child: Text('Hybrid'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _mode = value);
+                        },
+                      ),
+                      DropdownButtonFormField<String>(
+                        value: _duration,
+                        decoration: const InputDecoration(
+                          labelText: 'Duration',
+                          prefixIcon: Icon(Icons.schedule_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Not specified',
+                            child: Text('Not specified'),
+                          ),
+                          DropdownMenuItem(
+                            value: '1 month',
+                            child: Text('1 month'),
+                          ),
+                          DropdownMenuItem(
+                            value: '3 months',
+                            child: Text('3 months'),
+                          ),
+                          DropdownMenuItem(
+                            value: '6 months',
+                            child: Text('6 months'),
+                          ),
+                          DropdownMenuItem(
+                            value: '12 months',
+                            child: Text('12 months'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _duration = value);
+                        },
+                      ),
+                    ]),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildPostFormSection(
+                  icon: Icons.payments_outlined,
+                  title: 'Compensation & Eligibility',
+                  subtitle:
+                      'Set stipend expectations and applicant requirements.',
+                  children: [
+                    _buildResponsiveFieldRow([
+                      TextField(
+                        controller: _compensationCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Salary/Stipend',
+                          hintText: 'LKR 45,000 / month',
+                          prefixIcon:
+                              Icon(Icons.account_balance_wallet_outlined),
+                        ),
+                      ),
+                      TextField(
+                        controller: _minGpaCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: const InputDecoration(
+                          labelText: 'Minimum GPA',
+                          hintText: '3.0',
+                          prefixIcon: Icon(Icons.school_outlined),
+                        ),
+                      ),
+                    ]),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildPostFormSection(
+                  icon: Icons.psychology_outlined,
+                  title: 'Required Skills',
+                  subtitle:
+                      'Separate skills with commas so applicants can be matched accurately.',
+                  children: [
+                    TextField(
+                      controller: _skillsCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Required Skills',
+                        hintText: 'Flutter, Firebase, REST',
+                        prefixIcon: Icon(Icons.handyman_outlined),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: _publishing ? null : _publishPost,
+                    icon: _publishing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.publish_outlined),
+                    label: Text(_publishing ? 'Publishing...' : 'Publish Post'),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(0xFF1565C0),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostFormSection({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF1565C0),
+                  size: 19,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResponsiveFieldRow(List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              Expanded(child: children[i]),
+              if (i != children.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Create Internship Post',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _titleCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  hintText: 'Software Engineer Intern',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _descCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Role responsibilities and outcomes',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _aboutRoleCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'About the Role',
-                  hintText: 'Team, impact, and key expectations for this role',
-                ),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _postType,
-                decoration: const InputDecoration(labelText: 'Post Type'),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'Internship', child: Text('Internship')),
-                  DropdownMenuItem(value: 'Job', child: Text('Job')),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _postType = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _locationCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Location',
-                  hintText: 'Colombo / Remote',
-                ),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _mode,
-                decoration: const InputDecoration(labelText: 'Work Mode'),
-                items: const [
-                  DropdownMenuItem(value: 'Remote', child: Text('Remote')),
-                  DropdownMenuItem(value: 'Onsite', child: Text('Onsite')),
-                  DropdownMenuItem(value: 'Hybrid', child: Text('Hybrid')),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _mode = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _duration,
-                decoration: const InputDecoration(labelText: 'Duration'),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'Not specified', child: Text('Not specified')),
-                  DropdownMenuItem(value: '1 month', child: Text('1 month')),
-                  DropdownMenuItem(value: '3 months', child: Text('3 months')),
-                  DropdownMenuItem(value: '6 months', child: Text('6 months')),
-                  DropdownMenuItem(
-                      value: '12 months', child: Text('12 months')),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _duration = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _compensationCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Salary/Stipend',
-                  hintText: 'LKR 45,000 / month',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _minGpaCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Minimum GPA',
-                  hintText: '3.0',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _skillsCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Required Skills',
-                  hintText: 'Flutter, Firebase, REST',
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _publishing ? null : _publishPost,
-                  icon: _publishing
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.publish_outlined),
-                  label: const Text('Publish Post'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        _buildCreateInternshipPostCard(),
         const SizedBox(height: 14),
         const Text(
           'Recent Posts',
@@ -1712,7 +2166,9 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = snapshot.data?.docs ?? const [];
+            final docs = (snapshot.data?.docs ??
+                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
+                .toList();
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
@@ -1938,7 +2394,9 @@ class _TokenManagementTab extends StatelessWidget {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = snapshot.data?.docs ?? const [];
+            final docs = (snapshot.data?.docs ??
+                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
+                .toList();
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
@@ -2142,9 +2600,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     _industryCtrl.text = (data['industry'] as String?) ?? '';
     _websiteCtrl.text = (data['website'] as String?) ?? '';
     _descriptionCtrl.text = (data['description'] as String?) ?? '';
-    _logoCtrl.text = (data['logoStoragePath'] as String?) ??
-        (data['logoUrl'] as String?) ??
-        '';
+    _logoCtrl.text = (data['logoUrl'] as String?) ?? '';
     _notifyNewApplications = data['notifyNewApplications'] as bool? ?? true;
     _notifyCandidateSuggestions =
         data['notifyCandidateSuggestions'] as bool? ?? true;
@@ -2164,7 +2620,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
       'industry': _industryCtrl.text.trim(),
       'website': _websiteCtrl.text.trim(),
       'description': _descriptionCtrl.text.trim(),
-      'logoStoragePath': _logoCtrl.text.trim(),
+      'logoUrl': _logoCtrl.text.trim(),
       'notifyNewApplications': _notifyNewApplications,
       'notifyCandidateSuggestions': _notifyCandidateSuggestions,
       'appearanceMode': _darkMode ? 'dark' : 'light',
@@ -2242,18 +2698,19 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         bytes,
         fileOptions: const FileOptions(upsert: true),
       );
-      // Store only the path, not the signed URL (to avoid expiry issues)
+      final signedUrl = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
       await FirebaseFirestore.instance
           .collection('companies')
           .doc(widget.companyId)
           .set({
-        'logoStoragePath': path,
+        'logoUrl': signedUrl,
         'logoStorageBucket': _profileBucket,
+        'logoStoragePath': path,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       if (!mounted) return;
-      setState(() => _logoCtrl.text = path);
+      setState(() => _logoCtrl.text = signedUrl);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content:
             Text('Company logo uploaded to Supabase $_profileBucket bucket.'),
@@ -2383,44 +2840,15 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                       width: 96,
                       height: 96,
                       color: const Color(0xFFF4F7FC),
-                      child: FutureBuilder<String?>(
-                        future: _logoCtrl.text.trim().contains('http')
-                            ? Future.value(_logoCtrl.text.trim())
-                            : ImageService.getCompanyLogoUrl(
-                                _logoCtrl.text.trim()),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: SizedBox(
-                                width: 30,
-                                height: 30,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            );
-                          }
-
-                          if (snapshot.hasError || snapshot.data == null) {
-                            return const Icon(
-                              Icons.business,
-                              size: 42,
-                              color: Color(0xFF1565C0),
-                            );
-                          }
-
-                          return Image.network(
-                            snapshot.data!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
-                              Icons.business,
-                              size: 42,
-                              color: Color(0xFF1565C0),
-                            ),
-                          );
-                        },
+                      child: Image.network(
+                        _logoCtrl.text.trim(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.business,
+                          size: 42,
+                          color: Color(0xFF1565C0),
+                        ),
                       ),
                     ),
                   ),
@@ -2995,6 +3423,8 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
 
         // Calculate percentages
         final approvalRate = totalApps > 0 ? (approved / totalApps) * 100 : 0.0;
+        final rejectionRate =
+            totalApps > 0 ? (rejected / totalApps) * 100 : 0.0;
         final interviewRate =
             approved > 0 ? (interviewed / approved) * 100 : 0.0;
         final hireRate = approved > 0 ? (hired / approved) * 100 : 0.0;

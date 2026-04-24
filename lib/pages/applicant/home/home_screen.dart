@@ -2965,6 +2965,8 @@ class _AppliedTabState extends State<_AppliedTab> {
   }
 }
 
+// ================== INDUSTRY FORECAST SCREEN ==================
+
 class IndustryForecastScreen extends StatefulWidget {
   final String field;
   const IndustryForecastScreen({super.key, required this.field});
@@ -2985,7 +2987,9 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
 
   Future<void> _loadTrends() async {
     final data = await AiService.generateIndustryTrends(widget.field);
+
     if (!mounted) return;
+
     setState(() {
       _trends = data;
       _loading = false;
@@ -2995,15 +2999,17 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
   @override
   Widget build(BuildContext context) {
     final industry = (_trends['industry'] as String?) ?? widget.field;
+
     final overview = (_trends['overview'] as String?) ??
-        'AI analyzed recent job postings to forecast skill demand in your field.';
+        'AI trend model indicates demand is increasing for practical, tool-based skills in IT & Software roles.';
+
     final trendItems = ((_trends['trends'] as List?) ?? [])
         .whereType<Map>()
         .map((item) => {
               'skill': (item['skill'] ?? 'Skill').toString(),
               'demandPct': int.tryParse('${item['demandPct']}') ?? 50,
               'yoy': (item['yoy'] ?? '+0% YoY').toString(),
-              'direction': (item['direction'] ?? 'up').toString().toLowerCase(),
+              'direction': (item['direction'] ?? 'up').toString(),
             })
         .toList();
 
@@ -3017,107 +3023,145 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
         actions: const [ApplicantNotificationButton()],
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               children: [
+                // 🔹 AI CARD
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: const Color(0xFFDCE3F0)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.trending_up,
-                          color: Color(0xFF3692FF), size: 28),
-                      const SizedBox(width: 14),
+                      const Icon(Icons.trending_up, color: Color(0xFF3692FF)),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('AI Market Intelligence: $industry',
-                                style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 18)),
-                            const SizedBox(height: 6),
-                            Text(overview,
-                                style: const TextStyle(
-                                    color: Colors.black54, fontSize: 16)),
+                            Text(
+                              'AI Market Intelligence: $industry',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              overview,
+                              style: const TextStyle(color: Colors.black54),
+                            ),
                           ],
                         ),
-                      ),
+                      )
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text('Forecasted Skills',
-                    style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700)),
-                const SizedBox(height: 12),
-                if (trendItems.isEmpty)
-                  const Text('No trend data generated right now.',
-                      style: TextStyle(color: Colors.grey))
-                else
-                  ...trendItems.map(
-                    (item) {
-                      final direction = (item['direction'] as String?) ?? 'up';
-                      final demand = (item['demandPct'] as int?) ?? 50;
-                      final color = direction == 'down'
-                          ? AppTheme.error
-                          : direction == 'flat'
-                              ? AppTheme.warning
-                              : AppTheme.success;
-                      final icon = direction == 'down'
-                          ? Icons.trending_down
-                          : direction == 'flat'
-                              ? Icons.trending_flat
-                              : Icons.trending_up;
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: color.withOpacity(0.35)),
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Forecasted Skills',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                ...trendItems.map((item) {
+                  final demand = item['demandPct'] as int;
+
+                  final direction = item['direction'] as String;
+
+                  final color = direction == 'down'
+                      ? Colors.red
+                      : direction == 'flat'
+                          ? Colors.orange
+                          : Colors.green;
+
+                  final icon = direction == 'down'
+                      ? Icons.trending_down
+                      : direction == 'flat'
+                          ? Icons.trending_flat
+                          : Icons.trending_up;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+
+                      // ✨ subtle futuristic touch
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white,
+                          color.withOpacity(0.03),
+                        ],
+                      ),
+
+                      border: Border.all(color: color.withOpacity(0.25)),
+
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.12),
+                          blurRadius: 10,
                         ),
-                        child: Row(
-                          children: [
-                            Icon(icon, color: color),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(item['skill'] as String,
-                                  style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        // 🔹 icon
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(icon, color: color, size: 18),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        // 🔹 skill
+                        Expanded(
+                          child: Text(
+                            item['skill'] as String,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text('Demand: $demand%',
-                                    style: TextStyle(
-                                        color: color,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700)),
-                                Text(item['yoy'] as String,
-                                    style: const TextStyle(
-                                        color: Colors.grey, fontSize: 15)),
-                              ],
+                          ),
+                        ),
+
+                        // 🔹 demand
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '$demand%',
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            Text(
+                              item['yoy'] as String,
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 12),
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
+                      ],
+                    ),
+                  );
+                }),
               ],
             ),
     );

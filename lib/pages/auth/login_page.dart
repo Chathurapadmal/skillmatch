@@ -56,8 +56,7 @@ class _LoginPageState extends State<LoginPage>
     setState(() => _loading = true);
 
     try {
-      await AuthService.login(
-          email: _emailCtrl.text, password: _passCtrl.text);
+      await AuthService.login(email: _emailCtrl.text, password: _passCtrl.text);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       _showError(AuthService.friendlyError(e));
@@ -87,7 +86,6 @@ class _LoginPageState extends State<LoginPage>
     return Scaffold(
       body: Stack(
         children: [
-        
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -97,8 +95,6 @@ class _LoginPageState extends State<LoginPage>
               ),
             ),
           ),
-
-        
           Positioned(
             top: -80,
             right: -60,
@@ -118,7 +114,6 @@ class _LoginPageState extends State<LoginPage>
               ),
             ),
           ),
-
           SafeArea(
             child: Center(
               child: FadeTransition(
@@ -132,7 +127,6 @@ class _LoginPageState extends State<LoginPage>
                       constraints: const BoxConstraints(maxWidth: 420),
                       child: Column(
                         children: [
-                    
                           TweenAnimationBuilder(
                             tween: Tween(begin: 0.9, end: 1.0),
                             duration: const Duration(milliseconds: 800),
@@ -162,9 +156,7 @@ class _LoginPageState extends State<LoginPage>
                                   size: 48, color: Colors.white),
                             ),
                           ),
-
                           const SizedBox(height: 16),
-
                           const Text(
                             'SkillMatch',
                             style: TextStyle(
@@ -173,22 +165,16 @@ class _LoginPageState extends State<LoginPage>
                               color: Colors.white,
                             ),
                           ),
-
                           const SizedBox(height: 4),
-
                           const Text(
                             'Connect talent with opportunity',
                             style: TextStyle(color: Colors.white70),
                           ),
-
                           const SizedBox(height: 36),
-
-                        
                           ClipRRect(
                             borderRadius: BorderRadius.circular(28),
                             child: BackdropFilter(
-                              filter:
-                                  ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.15),
@@ -214,17 +200,13 @@ class _LoginPageState extends State<LoginPage>
                                             color: Colors.white,
                                           ),
                                         ),
-
                                         const SizedBox(height: 22),
-
                                         _modernField(
                                           controller: _emailCtrl,
                                           label: 'Email',
                                           icon: Icons.mail_outline_rounded,
                                         ),
-
                                         const SizedBox(height: 16),
-
                                         _modernField(
                                           controller: _passCtrl,
                                           label: 'Password',
@@ -234,18 +216,15 @@ class _LoginPageState extends State<LoginPage>
                                             icon: Icon(
                                               _obscurePass
                                                   ? Icons.visibility_outlined
-                                                  : Icons.visibility_off_outlined,
+                                                  : Icons
+                                                      .visibility_off_outlined,
                                               color: Colors.black54,
                                             ),
                                             onPressed: () => setState(() =>
-                                                _obscurePass =
-                                                    !_obscurePass),
+                                                _obscurePass = !_obscurePass),
                                           ),
                                         ),
-
                                         const SizedBox(height: 8),
-
-                                    
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -254,13 +233,14 @@ class _LoginPageState extends State<LoginPage>
                                               children: [
                                                 Checkbox(
                                                   value: _remember,
-                                                  onChanged: (v) =>
-                                                      setState(() =>
-                                                          _remember = v ?? false),
+                                                  onChanged: (v) => setState(
+                                                      () => _remember =
+                                                          v ?? false),
                                                 ),
                                                 const Text(
                                                   'Remember me',
-                                                  style: TextStyle(color: Colors.white),
+                                                  style: TextStyle(
+                                                      color: Colors.white),
                                                 ),
                                               ],
                                             ),
@@ -283,7 +263,8 @@ class _LoginPageState extends State<LoginPage>
                                                 child: Text(
                                                   'Forgot Password?',
                                                   style: TextStyle(
-                                                    color: Color.fromARGB(255, 2, 61, 74),
+                                                    color: Color.fromARGB(
+                                                        255, 2, 61, 74),
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
@@ -291,15 +272,12 @@ class _LoginPageState extends State<LoginPage>
                                             ),
                                           ],
                                         ),
-
                                         const SizedBox(height: 18),
-
-                                    
                                         GestureDetector(
-                                          onTap:
-                                              _loading ? null : _login,
+                                          onTap: _loading ? null : _login,
                                           child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 300),
+                                            duration: const Duration(
+                                                milliseconds: 300),
                                             height: 52,
                                             decoration: BoxDecoration(
                                               gradient: const LinearGradient(
@@ -334,17 +312,15 @@ class _LoginPageState extends State<LoginPage>
                                             ),
                                           ),
                                         ),
-
                                         const SizedBox(height: 18),
-
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
                                             const Text(
                                               "Don't have an account? ",
-                                              style:
-                                                  TextStyle(color: Colors.white70),
+                                              style: TextStyle(
+                                                  color: Colors.white70),
                                             ),
                                             GestureDetector(
                                               onTap: () {
@@ -359,7 +335,8 @@ class _LoginPageState extends State<LoginPage>
                                               child: const Text(
                                                 'Register',
                                                 style: TextStyle(
-                                                  color: Color.fromARGB(255, 2, 61, 74),
+                                                  color: Color.fromARGB(
+                                                      255, 2, 61, 74),
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
@@ -397,9 +374,13 @@ class _LoginPageState extends State<LoginPage>
       controller: controller,
       obscureText: obscure,
       style: const TextStyle(color: Colors.black87),
+      textAlign: TextAlign.start,
+      textAlignVertical: TextAlignVertical.center,
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        labelText: label,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        hintText: label,
+        hintStyle: const TextStyle(color: Colors.black54),
         prefixIcon: Icon(icon, color: const Color(0xFF4052B6)),
         suffixIcon: suffix,
         filled: true,
