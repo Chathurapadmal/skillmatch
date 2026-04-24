@@ -1771,7 +1771,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
             padding: const EdgeInsets.all(18),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF1E3A5F), Color(0xFF1565C0)],
+                colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -2346,47 +2346,8 @@ class _TokenManagementTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Role-Based Access Tokens',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Generate and share tokens with team members to control hiring workflows.',
-                style: TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _generateToken(context),
-                  icon: const Icon(Icons.key_outlined),
-                  label: const Text('Generate Token'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
+        _buildAccessTokenHeader(context),
+        const SizedBox(height: 14),
         StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('company_tokens')
@@ -2413,113 +2374,523 @@ class _TokenManagementTab extends StatelessWidget {
               );
             }
 
-            if (docs.isEmpty) {
-              return const _EmptyPanel(
-                icon: Icons.key_off_outlined,
-                message: 'No tokens created yet.',
-              );
-            }
+            final activeTokens = docs.where((doc) {
+              final data = doc.data();
+              return data['active'] != false;
+            }).length;
 
             return Column(
-              children: docs.map((doc) {
-                final data = doc.data();
-                final token = (data['token'] as String?) ?? '';
-                final role = (data['role'] as String?) ?? 'candidate_access';
-                final active = data['active'] != false;
-                final createdAt = data['createdAt'] as Timestamp?;
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTokenListHeader(
+                  totalTokens: docs.length,
+                  activeTokens: activeTokens,
+                ),
+                const SizedBox(height: 10),
+                if (docs.isEmpty)
+                  const _EmptyPanel(
+                    icon: Icons.key_off_outlined,
+                    message: 'No tokens created yet.',
+                  )
+                else
+                  ...docs.map((doc) {
+                    final data = doc.data();
+                    final token = (data['token'] as String?) ?? '';
+                    final role =
+                        (data['role'] as String?) ?? 'candidate_access';
+                    final active = data['active'] != false;
+                    final createdAt = data['createdAt'] as Timestamp?;
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFDCE3F0)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SelectableText(
-                              token,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () async {
-                              await Clipboard.setData(
-                                  ClipboardData(text: token));
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(const SnackBar(
-                                content: Text('Token copied.'),
-                                backgroundColor: AppTheme.success,
-                              ));
-                            },
-                            icon: const Icon(Icons.copy_rounded),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        'Role: $role',
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                      Text(
-                        createdAt == null
-                            ? 'Created just now'
-                            : 'Created: ${_fmtDate(createdAt)}',
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: active
-                                  ? AppTheme.success.withValues(alpha: 0.12)
-                                  : AppTheme.warning.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              active ? 'ACTIVE' : 'PAUSED',
-                              style: TextStyle(
-                                color: active
-                                    ? AppTheme.success
-                                    : AppTheme.warning,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          TextButton.icon(
-                            onPressed: () =>
-                                _toggleTokenStatus(doc.reference, active),
-                            icon: Icon(active
-                                ? Icons.pause_circle_outline
-                                : Icons.play_circle_outline),
-                            label: Text(active ? 'Pause' : 'Activate'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                    return _buildTokenCard(
+                      context: context,
+                      token: token,
+                      role: role,
+                      active: active,
+                      createdAt: createdAt,
+                      onToggle: () => _toggleTokenStatus(doc.reference, active),
+                    );
+                  }),
+              ],
             );
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildAccessTokenHeader(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.admin_panel_settings_outlined,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Access Tokens',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Generate, copy, pause, and reactivate candidate access tokens for controlled hiring workflows.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFE),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE3EAF5)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1565C0)
+                              .withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        child: const Icon(
+                          Icons.key_outlined,
+                          color: Color(0xFF1565C0),
+                          size: 19,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Generate a New Token',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Creates a secure 16-character token with candidate access permissions.',
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 12.5,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _generateToken(context),
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                      label: const Text('Generate Token'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: const Color(0xFF1565C0),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTokenListHeader({
+    required int totalTokens,
+    required int activeTokens,
+  }) {
+    final pausedTokens = totalTokens - activeTokens;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.vpn_key_outlined,
+              color: Color(0xFF1565C0),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Token Inventory',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Review active and paused access credentials.',
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
+            children: [
+              _buildCountChip(
+                label: 'Total',
+                value: '$totalTokens',
+                color: const Color(0xFF1565C0),
+              ),
+              _buildCountChip(
+                label: 'Active',
+                value: '$activeTokens',
+                color: AppTheme.success,
+              ),
+              if (pausedTokens > 0)
+                _buildCountChip(
+                  label: 'Paused',
+                  value: '$pausedTokens',
+                  color: AppTheme.warning,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTokenCard({
+    required BuildContext context,
+    required String token,
+    required String role,
+    required bool active,
+    required Timestamp? createdAt,
+    required VoidCallback onToggle,
+  }) {
+    final statusColor = active ? AppTheme.success : AppTheme.warning;
+    final statusLabel = active ? 'ACTIVE' : 'PAUSED';
+    final actionLabel = active ? 'Pause Token' : 'Activate Token';
+    final actionIcon = active
+        ? Icons.pause_circle_outline_rounded
+        : Icons.play_circle_outline_rounded;
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(
+                  active ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                  color: statusColor,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SelectableText(
+                            token,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.0,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStatusBadge(
+                          label: statusLabel,
+                          color: statusColor,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildMetaChip(
+                          icon: Icons.verified_user_outlined,
+                          text: 'Role: $role',
+                        ),
+                        _buildMetaChip(
+                          icon: Icons.calendar_today_outlined,
+                          text: createdAt == null
+                              ? 'Created just now'
+                              : 'Created: ${_fmtDate(createdAt)}',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 520;
+              final copyButton = OutlinedButton.icon(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: token));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Token copied.'),
+                    backgroundColor: AppTheme.success,
+                  ));
+                },
+                icon: const Icon(Icons.copy_rounded),
+                label: const Text('Copy Token'),
+              );
+              final toggleButton = TextButton.icon(
+                onPressed: onToggle,
+                icon: Icon(actionIcon),
+                label: Text(actionLabel),
+                style: TextButton.styleFrom(
+                  foregroundColor: active ? AppTheme.warning : AppTheme.success,
+                ),
+              );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    copyButton,
+                    const SizedBox(height: 8),
+                    toggleButton,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: copyButton),
+                  const SizedBox(width: 10),
+                  Expanded(child: toggleButton),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountChip({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge({
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetaChip({
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F7FC),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFF5A6C83)),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Color(0xFF5A6C83),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -2528,7 +2899,6 @@ class _TokenManagementTab extends StatelessWidget {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 }
-
 class _CompanySettingsTab extends StatefulWidget {
   final String companyId;
   final String initialCompanyName;
