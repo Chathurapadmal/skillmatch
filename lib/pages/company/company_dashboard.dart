@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -7,14 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
-import '../../services/image_service.dart';
 import '../../shared/chat_overlay.dart';
 import '../../shared/notifications_center_screen.dart';
 import '../../shared/supabase_storage_page.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/supabase_image_widget.dart';
 
 class CompanyDashboard extends StatefulWidget {
   final UserModel user;
@@ -335,22 +333,10 @@ class _CompanyOverviewTab extends StatelessWidget {
               });
 
             void openApplicantsDetails() {
-              final items = topApplications.map((e) {
-                final status =
-                    (e.data()['status'] as String? ?? '').toUpperCase();
-                return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
-              }).toList();
-
-              // ✅ SAME FIX as shortlisted
-              if (items.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('No applications received yet'),
-                  ),
-                );
-                return;
-              }
-
+              final items = topApplications
+                  .map((e) =>
+                      '${(e.data()['studentName'] as String? ?? 'Student')} • ${(e.data()['title'] as String? ?? 'Role')}')
+                  .toList();
               _showMetricDetails(
                 context,
                 title: 'Applicants',
@@ -368,17 +354,6 @@ class _CompanyOverviewTab extends StatelessWidget {
                     (e.data()['status'] as String? ?? '').toUpperCase();
                 return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
               }).toList();
-
-              // ✅ FIX: handle empty state properly
-              if (items.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('No shortlisted candidates yet'),
-                  ),
-                );
-                return;
-              }
-
               _showMetricDetails(
                 context,
                 title: 'Shortlisted Candidates',
@@ -392,17 +367,6 @@ class _CompanyOverviewTab extends StatelessWidget {
                   .map((e) =>
                       '${(e.data()['title'] as String? ?? 'Internship')} • ${(e.data()['type'] as String? ?? 'Mode')}')
                   .toList();
-
-              // ✅ FIX (same as others)
-              if (items.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('No active posts yet'),
-                  ),
-                );
-                return;
-              }
-
               _showMetricDetails(
                 context,
                 title: 'Active Posts',
@@ -411,15 +375,14 @@ class _CompanyOverviewTab extends StatelessWidget {
             }
 
             return ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              padding: const EdgeInsets.all(20),
               children: [
-                // Welcome Card
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                      colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -432,79 +395,68 @@ class _CompanyOverviewTab extends StatelessWidget {
                         'Welcome, $companyName',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 26,
+                          fontSize: 19,
                           fontWeight: FontWeight.w700,
-                          height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 6),
                       const Text(
-                        'Your recruitment overview is ready.\nTrack your applicants and manage\nyour workspace efficiency here.',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
+                        'Track applicants, manage active posts, and move top-matched candidates forward.',
+                        style: TextStyle(color: Colors.white70),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                // Metrics Column
-                _DashboardCard(
-                  icon: Icons.person_search_outlined,
-                  title: 'Applicants',
-                  value: '${applications.length}',
-                  subtitleText: '12% this week', // Placeholders based on design
-                  subtitleIcon: Icons.trending_up,
-                  subtitleColor: const Color(0xFF0D9488), // Teal success
-                  onTap: openApplicantsDetails,
-                ),
-                _DashboardCard(
-                  icon: Icons.star_rounded,
-                  title: 'Shortlisted',
-                  value: '$shortlisted',
-                  subtitleText: '8 ready for interview',
-                  subtitleIcon: Icons.check_circle,
-                  subtitleColor: const Color(0xFF0D9488),
-                  onTap: openShortlistedDetails,
-                ),
-                _DashboardCard(
-                  icon: Icons.work,
-                  title: 'Active Posts',
-                  value: '$activePosts',
-                  subtitleText: '3 closing soon',
-                  subtitleIcon: Icons.access_time_filled,
-                  subtitleColor: const Color(0xFF94A3B8), // Slate grey
-                  onTap: openActivePostsDetails,
-                ),
-
-                const SizedBox(height: 8),
+                const SizedBox(height: 18),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Top-Matched Candidate Workflow',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0F172A),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: openApplicantsDetails,
+                        child: _MetricCard(
+                          icon: Icons.assignment_ind_outlined,
+                          label: 'Applicants',
+                          value: '${applications.length}',
+                          color: const Color(0xFF1565C0),
+                        ),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF0F4C81),
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: openShortlistedDetails,
+                        child: _MetricCard(
+                          icon: Icons.check_circle_outline,
+                          label: 'Shortlisted',
+                          value: '$shortlisted',
+                          color: AppTheme.success,
+                        ),
                       ),
-                      child: const Text('View All'),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: openActivePostsDetails,
+                        child: _MetricCard(
+                          icon: Icons.work_outline,
+                          label: 'Active Posts',
+                          value: '$activePosts',
+                          color: AppTheme.warning,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
+                const SizedBox(height: 18),
+                const Text(
+                  'Top-Matched Candidate Workflow',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
                 if (isLoading)
                   const Padding(
                     padding: EdgeInsets.only(top: 18),
@@ -513,82 +465,89 @@ class _CompanyOverviewTab extends StatelessWidget {
                     ),
                   )
                 else if (topApplications.isEmpty)
-                  const _DashboardEmptyState()
+                  _EmptyPanel(
+                    icon: Icons.inbox_rounded,
+                    message: 'No applications received yet.',
+                  )
                 else
                   ...topApplications.take(5).map((doc) {
                     final data = doc.data();
                     final status =
                         (data['status'] as String? ?? 'applied').toLowerCase();
-                    return _buildApplicantTile(data, status);
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFDCE3F0)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1565C0)
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.person_outline,
+                                color: Color(0xFF1565C0)),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (data['studentName'] as String?)
+                                              ?.trim()
+                                              .isNotEmpty ==
+                                          true
+                                      ? data['studentName'] as String
+                                      : 'Student Candidate',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  (data['title'] as String?) ??
+                                      'Internship role',
+                                  style: const TextStyle(color: Colors.black54),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color:
+                                  _statusColor(status).withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              status.toUpperCase(),
+                              style: TextStyle(
+                                color: _statusColor(status),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }),
               ],
             );
           },
         );
       },
-    );
-  }
-
-  Widget _buildApplicantTile(Map<String, dynamic> data, String status) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1565C0).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.person_outline, color: Color(0xFF1565C0)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  (data['studentName'] as String?)?.trim().isNotEmpty == true
-                      ? data['studentName'] as String
-                      : 'Student Candidate',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  (data['title'] as String?) ?? 'Internship role',
-                  style: const TextStyle(color: Colors.black54),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: _statusColor(status).withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              status.toUpperCase(),
-              style: TextStyle(
-                color: _statusColor(status),
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -878,7 +837,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                           (data['cvStorageSignedUrl'] as String? ?? '').trim();
 
                       return GestureDetector(
-                        onTap: () => _showCandidateDetails(doc.id, data),
+                        onTap: () => _showCandidateDetails(data),
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(14),
@@ -892,32 +851,24 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                             children: [
                               Row(
                                 children: [
-                                  (data['avatarStoragePath'] as String?)
-                                              ?.trim()
-                                              .isNotEmpty ==
-                                          true
-                                      ? SupabaseImageWidget(
-                                          storagePath: data['avatarStoragePath']
-                                              as String?,
-                                          isCircular: true,
-                                          radius: 24,
-                                        )
-                                      : ((data['avatarUrl'] as String?)
-                                                  ?.trim()
-                                                  .isNotEmpty ==
-                                              true
-                                          ? CircleAvatar(
-                                              backgroundColor:
-                                                  const Color(0xFF1565C0),
-                                              backgroundImage: NetworkImage(
-                                                  data['avatarUrl'] as String),
-                                            )
-                                          : const CircleAvatar(
-                                              backgroundColor:
-                                                  Color(0xFF1565C0),
-                                              child: Icon(Icons.person,
-                                                  color: Colors.white),
-                                            )),
+                                  CircleAvatar(
+                                    backgroundColor: const Color(0xFF1565C0),
+                                    backgroundImage:
+                                        (data['avatarUrl'] as String?)
+                                                    ?.trim()
+                                                    .isNotEmpty ==
+                                                true
+                                            ? NetworkImage(
+                                                data['avatarUrl'] as String)
+                                            : null,
+                                    child: (data['avatarUrl'] as String?)
+                                                ?.trim()
+                                                .isNotEmpty ==
+                                            true
+                                        ? null
+                                        : const Icon(Icons.person,
+                                            color: Colors.white),
+                                  ),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
@@ -1191,12 +1142,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     );
   }
 
-  Future<void> _showCandidateDetails(
-    String studentId,
-    Map<String, dynamic> data,
-  ) async {
-    await _registerProfileView(studentId);
-
+  void _showCandidateDetails(Map<String, dynamic> data) {
     final skills = ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
     final cvSkills =
         ((data['cvSkills'] as List?) ?? []).map((e) => '$e').toList();
@@ -1205,8 +1151,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     final certs = ((data['certifications'] as List?) ?? const <dynamic>[])
         .map((e) => '$e')
         .toList();
-
-    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -1218,24 +1162,18 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
             children: [
               Row(
                 children: [
-                  (data['avatarStoragePath'] as String?)?.trim().isNotEmpty ==
-                          true
-                      ? SupabaseImageWidget(
-                          storagePath: data['avatarStoragePath'] as String?,
-                          isCircular: true,
-                          radius: 26,
-                        )
-                      : ((data['avatarUrl'] as String?)?.trim().isNotEmpty ==
-                              true
-                          ? CircleAvatar(
-                              radius: 26,
-                              backgroundImage:
-                                  NetworkImage(data['avatarUrl'] as String),
-                            )
-                          : const CircleAvatar(
-                              radius: 26,
-                              child: Icon(Icons.person),
-                            )),
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundImage:
+                        (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
+                                true
+                            ? NetworkImage(data['avatarUrl'] as String)
+                            : null,
+                    child: (data['avatarUrl'] as String?)?.trim().isNotEmpty ==
+                            true
+                        ? null
+                        : const Icon(Icons.person),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1296,24 +1234,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     );
   }
 
-  Future<void> _registerProfileView(String studentId) async {
-    if (studentId.isEmpty) return;
-
-    final profileRef =
-        FirebaseFirestore.instance.collection('users').doc(studentId);
-
-    await profileRef.set({
-      'profileViews': FieldValue.increment(1),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    await profileRef.collection('profile_views').add({
-      'companyId': widget.companyId,
-      'companyName': widget.companyName,
-      'viewedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
   Color _statusColor(String status) {
     switch (status) {
       case 'approved':
@@ -1358,6 +1278,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     String newStatus,
     Map<String, dynamic> studentData,
   ) async {
+    // Find or create an application document for this student
     final appQuery = await FirebaseFirestore.instance
         .collection('applications')
         .where('studentId', isEqualTo: studentId)
@@ -1374,11 +1295,13 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
       return;
     }
 
+    // Update existing application
     await appQuery.docs.first.reference.update({
       'status': newStatus,
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
+    // Send notification to student
     await FirebaseFirestore.instance.collection('notifications').add({
       'recipientId': studentId,
       'type': 'application_status',
@@ -1490,7 +1413,8 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
     final aboutRole = _aboutRoleCtrl.text.trim();
     final location = _locationCtrl.text.trim();
     final compensation = _compensationCtrl.text.trim();
-    final minGpa = double.tryParse(_minGpaCtrl.text.trim());
+    final minGpaText = _minGpaCtrl.text.trim();
+    final minGpa = double.tryParse(minGpaText);
 
     final skills = _skillsCtrl.text
         .split(',')
@@ -1506,50 +1430,68 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
       return;
     }
 
+    if (minGpaText.isNotEmpty && minGpa == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please enter a valid number for minimum GPA.'),
+        backgroundColor: AppTheme.warning,
+      ));
+      return;
+    }
+
     setState(() => _publishing = true);
 
-    final companyDoc = await FirebaseFirestore.instance
-        .collection('companies')
-        .doc(widget.companyId)
-        .get();
-    final companyData = companyDoc.data() ?? <String, dynamic>{};
+    try {
+      final companyDoc = await FirebaseFirestore.instance
+          .collection('companies')
+          .doc(widget.companyId)
+          .get();
+      final companyData = companyDoc.data() ?? <String, dynamic>{};
 
-    await FirebaseFirestore.instance.collection('internships').add({
-      'companyId': widget.companyId,
-      'company': widget.companyName,
-      'postType': _postType,
-      'title': title,
-      'description': description,
-      'aboutRole': aboutRole,
-      'location': location.isEmpty ? _mode : location,
-      'type': _mode,
-      'duration': _duration,
-      'salary': compensation.isEmpty ? 'Negotiable' : compensation,
-      'stipend': compensation.isEmpty ? 'Negotiable' : compensation,
-      'skills': skills,
-      'minimumGpa': minGpa,
-      'industry': (companyData['industry'] as String?) ?? '',
-      'active': true,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+      await FirebaseFirestore.instance.collection('internships').add({
+        'companyId': widget.companyId,
+        'company': widget.companyName,
+        'postType': _postType,
+        'title': title,
+        'description': description,
+        'aboutRole': aboutRole,
+        'location': location.isEmpty ? _mode : location,
+        'type': _mode,
+        'duration': _duration,
+        'salary': compensation.isEmpty ? 'Negotiable' : compensation,
+        'stipend': compensation.isEmpty ? 'Negotiable' : compensation,
+        'skills': skills,
+        'minimumGpa': minGpa,
+        'industry': (companyData['industry'] as String?) ?? '',
+        'active': true,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    _titleCtrl.clear();
-    _descCtrl.clear();
-    _aboutRoleCtrl.clear();
-    _locationCtrl.clear();
-    _compensationCtrl.clear();
-    _skillsCtrl.clear();
-    _minGpaCtrl.clear();
+      _titleCtrl.clear();
+      _descCtrl.clear();
+      _aboutRoleCtrl.clear();
+      _locationCtrl.clear();
+      _compensationCtrl.clear();
+      _skillsCtrl.clear();
+      _minGpaCtrl.clear();
 
-    setState(() => _publishing = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Internship post published.'),
-      backgroundColor: AppTheme.success,
-    ));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Internship post published.'),
+        backgroundColor: AppTheme.success,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to publish internship post: $e'),
+        backgroundColor: AppTheme.error,
+      ));
+    } finally {
+      if (mounted) {
+        setState(() => _publishing = false);
+      }
+    }
   }
 
   Future<void> _togglePostStatus(
@@ -1584,157 +1526,410 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
     await ref.delete();
   }
 
+
+  Widget _buildCreateInternshipPostCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E3A5F), Color(0xFF1565C0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.post_add_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Create Internship Post',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Structure the role, work setup, compensation, and required skills before publishing.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildPostFormSection(
+                  icon: Icons.badge_outlined,
+                  title: 'Role Details',
+                  subtitle:
+                      'Give applicants a clear overview of the opportunity.',
+                  children: [
+                    TextField(
+                      controller: _titleCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Title',
+                        hintText: 'Software Engineer Intern',
+                        prefixIcon: Icon(Icons.work_outline_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _descCtrl,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        hintText: 'Role responsibilities and outcomes',
+                        prefixIcon: Icon(Icons.notes_rounded),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _aboutRoleCtrl,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'About the Role',
+                        hintText:
+                            'Team, impact, and key expectations for this role',
+                        prefixIcon: Icon(Icons.auto_stories_outlined),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildPostFormSection(
+                  icon: Icons.tune_rounded,
+                  title: 'Post Setup',
+                  subtitle:
+                      'Define the post type, work mode, location, and duration.',
+                  children: [
+                    _buildResponsiveFieldRow([
+                      DropdownButtonFormField<String>(
+                        value: _postType,
+                        decoration: const InputDecoration(
+                          labelText: 'Post Type',
+                          prefixIcon: Icon(Icons.category_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Internship',
+                            child: Text('Internship'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Job',
+                            child: Text('Job'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _postType = value);
+                        },
+                      ),
+                      TextField(
+                        controller: _locationCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Location',
+                          hintText: 'Colombo / Remote',
+                          prefixIcon: Icon(Icons.location_on_outlined),
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 12),
+                    _buildResponsiveFieldRow([
+                      DropdownButtonFormField<String>(
+                        value: _mode,
+                        decoration: const InputDecoration(
+                          labelText: 'Work Mode',
+                          prefixIcon: Icon(Icons.laptop_mac_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Remote',
+                            child: Text('Remote'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Onsite',
+                            child: Text('Onsite'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Hybrid',
+                            child: Text('Hybrid'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _mode = value);
+                        },
+                      ),
+                      DropdownButtonFormField<String>(
+                        value: _duration,
+                        decoration: const InputDecoration(
+                          labelText: 'Duration',
+                          prefixIcon: Icon(Icons.schedule_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Not specified',
+                            child: Text('Not specified'),
+                          ),
+                          DropdownMenuItem(
+                            value: '1 month',
+                            child: Text('1 month'),
+                          ),
+                          DropdownMenuItem(
+                            value: '3 months',
+                            child: Text('3 months'),
+                          ),
+                          DropdownMenuItem(
+                            value: '6 months',
+                            child: Text('6 months'),
+                          ),
+                          DropdownMenuItem(
+                            value: '12 months',
+                            child: Text('12 months'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _duration = value);
+                        },
+                      ),
+                    ]),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildPostFormSection(
+                  icon: Icons.payments_outlined,
+                  title: 'Compensation & Eligibility',
+                  subtitle:
+                      'Set stipend expectations and applicant requirements.',
+                  children: [
+                    _buildResponsiveFieldRow([
+                      TextField(
+                        controller: _compensationCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Salary/Stipend',
+                          hintText: 'LKR 45,000 / month',
+                          prefixIcon:
+                              Icon(Icons.account_balance_wallet_outlined),
+                        ),
+                      ),
+                      TextField(
+                        controller: _minGpaCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: const InputDecoration(
+                          labelText: 'Minimum GPA',
+                          hintText: '3.0',
+                          prefixIcon: Icon(Icons.school_outlined),
+                        ),
+                      ),
+                    ]),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildPostFormSection(
+                  icon: Icons.psychology_outlined,
+                  title: 'Required Skills',
+                  subtitle:
+                      'Separate skills with commas so applicants can be matched accurately.',
+                  children: [
+                    TextField(
+                      controller: _skillsCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Required Skills',
+                        hintText: 'Flutter, Firebase, REST',
+                        prefixIcon: Icon(Icons.handyman_outlined),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: _publishing ? null : _publishPost,
+                    icon: _publishing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.publish_outlined),
+                    label: Text(_publishing ? 'Publishing...' : 'Publish Post'),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(0xFF1565C0),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostFormSection({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF1565C0),
+                  size: 19,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResponsiveFieldRow(List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              Expanded(child: children[i]),
+              if (i != children.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Create Internship Post',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _titleCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  hintText: 'Software Engineer Intern',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _descCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Role responsibilities and outcomes',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _aboutRoleCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'About the Role',
-                  hintText: 'Team, impact, and key expectations for this role',
-                ),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _postType,
-                decoration: const InputDecoration(labelText: 'Post Type'),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'Internship', child: Text('Internship')),
-                  DropdownMenuItem(value: 'Job', child: Text('Job')),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _postType = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _locationCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Location',
-                  hintText: 'Colombo / Remote',
-                ),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _mode,
-                decoration: const InputDecoration(labelText: 'Work Mode'),
-                items: const [
-                  DropdownMenuItem(value: 'Remote', child: Text('Remote')),
-                  DropdownMenuItem(value: 'Onsite', child: Text('Onsite')),
-                  DropdownMenuItem(value: 'Hybrid', child: Text('Hybrid')),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _mode = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _duration,
-                decoration: const InputDecoration(labelText: 'Duration'),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'Not specified', child: Text('Not specified')),
-                  DropdownMenuItem(value: '1 month', child: Text('1 month')),
-                  DropdownMenuItem(value: '3 months', child: Text('3 months')),
-                  DropdownMenuItem(value: '6 months', child: Text('6 months')),
-                  DropdownMenuItem(
-                      value: '12 months', child: Text('12 months')),
-                ],
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _duration = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _compensationCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Salary/Stipend',
-                  hintText: 'LKR 45,000 / month',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _minGpaCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Minimum GPA',
-                  hintText: '3.0',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _skillsCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Required Skills',
-                  hintText: 'Flutter, Firebase, REST',
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _publishing ? null : _publishPost,
-                  icon: _publishing
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.publish_outlined),
-                  label: const Text('Publish Post'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        _buildCreateInternshipPostCard(),
         const SizedBox(height: 14),
         const Text(
           'Recent Posts',
@@ -1749,7 +1944,9 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = snapshot.data?.docs ?? const [];
+            final docs = (snapshot.data?.docs ??
+                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
+                .toList();
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
@@ -1975,7 +2172,9 @@ class _TokenManagementTab extends StatelessWidget {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = snapshot.data?.docs ?? const [];
+            final docs = (snapshot.data?.docs ??
+                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
+                .toList();
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
@@ -2179,9 +2378,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     _industryCtrl.text = (data['industry'] as String?) ?? '';
     _websiteCtrl.text = (data['website'] as String?) ?? '';
     _descriptionCtrl.text = (data['description'] as String?) ?? '';
-    _logoCtrl.text = (data['logoStoragePath'] as String?) ??
-        (data['logoUrl'] as String?) ??
-        '';
+    _logoCtrl.text = (data['logoUrl'] as String?) ?? '';
     _notifyNewApplications = data['notifyNewApplications'] as bool? ?? true;
     _notifyCandidateSuggestions =
         data['notifyCandidateSuggestions'] as bool? ?? true;
@@ -2201,7 +2398,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
       'industry': _industryCtrl.text.trim(),
       'website': _websiteCtrl.text.trim(),
       'description': _descriptionCtrl.text.trim(),
-      'logoStoragePath': _logoCtrl.text.trim(),
+      'logoUrl': _logoCtrl.text.trim(),
       'notifyNewApplications': _notifyNewApplications,
       'notifyCandidateSuggestions': _notifyCandidateSuggestions,
       'appearanceMode': _darkMode ? 'dark' : 'light',
@@ -2279,17 +2476,19 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         bytes,
         fileOptions: const FileOptions(upsert: true),
       );
+      final signedUrl = await storage.createSignedUrl(path, 60 * 60 * 24 * 7);
       await FirebaseFirestore.instance
           .collection('companies')
           .doc(widget.companyId)
           .set({
-        'logoStoragePath': path,
+        'logoUrl': signedUrl,
         'logoStorageBucket': _profileBucket,
+        'logoStoragePath': path,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       if (!mounted) return;
-      setState(() => _logoCtrl.text = path);
+      setState(() => _logoCtrl.text = signedUrl);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content:
             Text('Company logo uploaded to Supabase $_profileBucket bucket.'),
@@ -2337,181 +2536,34 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Company Logo Section
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFDCE3F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.image_rounded,
-                      color: Color(0xFF1565C0), size: 24),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Company Logo',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (_logoCtrl.text.trim().isNotEmpty) ...[
-                const Text(
-                  'Current Logo',
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      color: const Color(0xFFF4F7FC),
-                      child: FutureBuilder<String?>(
-                        future: _logoCtrl.text.trim().contains('http')
-                            ? Future.value(_logoCtrl.text.trim())
-                            : ImageService.getCompanyLogoUrl(
-                                _logoCtrl.text.trim()),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: SizedBox(
-                                width: 30,
-                                height: 30,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            );
-                          }
-
-                          if (snapshot.hasError || snapshot.data == null) {
-                            return const Icon(
-                              Icons.business,
-                              size: 48,
-                              color: Color(0xFF1565C0),
-                            );
-                          }
-
-                          return Image.network(
-                            snapshot.data!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
-                              Icons.business,
-                              size: 48,
-                              color: Color(0xFF1565C0),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed:
-                      _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
-                  icon: _uploadingLogo
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Upload Company Logo'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+              const Text(
+                'Company Profile',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
                 ),
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Company Profile Section
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.business_rounded,
-                      color: Color(0xFF1565C0), size: 24),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Company Profile',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               TextField(
                 controller: _nameCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Company Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.business, size: 20),
-                ),
+                decoration: const InputDecoration(labelText: 'Company Name'),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                title: const Text('Industry',
-                    style: TextStyle(color: Colors.black87, fontSize: 14)),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Industry'),
                 subtitle: Text(
                   _industryCtrl.text.trim().isEmpty
                       ? 'Select industry'
@@ -2520,82 +2572,100 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                 ),
                 trailing: const Icon(Icons.keyboard_arrow_down_rounded),
                 onTap: _pickIndustry,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Color(0xFFDCE3F0)),
-                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               TextField(
                 controller: _websiteCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Website',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.language, size: 20),
+                decoration: const InputDecoration(labelText: 'Website'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _logoCtrl,
+                onChanged: (_) => setState(() {}),
+                decoration:
+                    const InputDecoration(labelText: 'Company Logo URL'),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed:
+                      _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
+                  icon: _uploadingLogo
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined),
+                  label: const Text('Upload Company Logo (Supabase)'),
                 ),
               ),
-              const SizedBox(height: 12),
+              if (_logoCtrl.text.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Logo Preview',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      width: 96,
+                      height: 96,
+                      color: const Color(0xFFF4F7FC),
+                      child: Image.network(
+                        _logoCtrl.text.trim(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.business,
+                          size: 42,
+                          color: Color(0xFF1565C0),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
               TextField(
                 controller: _descriptionCtrl,
                 maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Company Description',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.description, size: 20),
-                  alignLabelWithHint: true,
-                ),
+                decoration:
+                    const InputDecoration(labelText: 'Company Description'),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
-
-        // Notification Preferences Section
+        const SizedBox(height: 12),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFDCE3F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.notifications_rounded,
-                      color: Color(0xFF1565C0), size: 24),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Notification Preferences',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
+              const Text(
+                'Notification Preferences',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('New applications',
-                    style: TextStyle(color: Colors.black87)),
-                subtitle: const Text(
-                    'Get notified about new applicant submissions',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                title: const Text('New applications'),
                 value: _notifyNewApplications,
                 onChanged: (value) {
                   setState(() => _notifyNewApplications = value);
@@ -2603,10 +2673,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Candidate suggestions',
-                    style: TextStyle(color: Colors.black87)),
-                subtitle: const Text('Get notified about matching candidates',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                title: const Text('Candidate suggestions'),
                 value: _notifyCandidateSuggestions,
                 onChanged: (value) {
                   setState(() => _notifyCandidateSuggestions = value);
@@ -2615,43 +2682,62 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-
-        // Legal & More Section
+        const SizedBox(height: 12),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFDCE3F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Dark appearance mode'),
+                subtitle: const Text('Preference is saved for this account.'),
+                value: _darkMode,
+                onChanged: (value) => setState(() => _darkMode = value),
+              ),
               Row(
                 children: [
-                  const Icon(Icons.gavel_rounded,
-                      color: Color(0xFF1565C0), size: 24),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Legal & Information',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const NotificationsCenterScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.inbox_outlined),
+                      label: const Text('Open Notification Inbox'),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SupabaseStoragePage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.cloud_outlined),
+                      label: const Text('Supabase Storage'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -2686,44 +2772,25 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                 ],
               ),
               const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const _TermsOfServicePage(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.description_outlined),
-                  label: const Text('Terms of Service'),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const _TermsOfServicePage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.description_outlined),
+                      label: const Text('Terms of Service'),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Save & Logout Section
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -2732,18 +2799,13 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.save_outlined),
-                  label: const Text('Save All Changes'),
+                  label: const Text('Save Settings'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1565C0),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                   ),
                 ),
               ),
@@ -2762,7 +2824,6 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
       ],
     );
   }
@@ -2852,6 +2913,7 @@ class _InterviewSchedulingDialogState
         _selectedTime!.minute,
       );
 
+      // Find or create application document
       final appQuery = await FirebaseFirestore.instance
           .collection('applications')
           .where('studentId', isEqualTo: widget.studentId)
@@ -2860,6 +2922,7 @@ class _InterviewSchedulingDialogState
           .get();
 
       if (appQuery.docs.isEmpty) {
+        // Create new application record with interview details
         await FirebaseFirestore.instance.collection('applications').add({
           'studentId': widget.studentId,
           'companyId': widget.companyId,
@@ -2875,6 +2938,7 @@ class _InterviewSchedulingDialogState
           'updatedAt': FieldValue.serverTimestamp(),
         });
       } else {
+        // Update existing application with interview details
         await appQuery.docs.first.reference.update({
           'status': 'interview_scheduled',
           'interviewDate': interviewDateTime,
@@ -2886,6 +2950,7 @@ class _InterviewSchedulingDialogState
         });
       }
 
+      // Send notification to student
       await FirebaseFirestore.instance.collection('notifications').add({
         'recipientId': widget.studentId,
         'type': 'interview_scheduled',
@@ -2957,6 +3022,8 @@ class _InterviewSchedulingDialogState
                 ),
               ),
               const SizedBox(height: 16),
+
+              // Date Picker
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Interview Date'),
@@ -2973,6 +3040,8 @@ class _InterviewSchedulingDialogState
                 onTap: _pickDate,
               ),
               const SizedBox(height: 8),
+
+              // Time Picker
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Interview Time'),
@@ -2989,6 +3058,8 @@ class _InterviewSchedulingDialogState
                 onTap: _pickTime,
               ),
               const SizedBox(height: 12),
+
+              // Interview Type Dropdown
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -3015,6 +3086,8 @@ class _InterviewSchedulingDialogState
                 ],
               ),
               const SizedBox(height: 12),
+
+              // Location/Link Input
               if (_interviewType == 'inperson')
                 TextField(
                   controller: _locationCtrl,
@@ -3034,6 +3107,8 @@ class _InterviewSchedulingDialogState
                   ),
                 ),
               const SizedBox(height: 12),
+
+              // Access Token Input
               TextField(
                 controller: _tokenCtrl,
                 decoration: const InputDecoration(
@@ -3043,6 +3118,8 @@ class _InterviewSchedulingDialogState
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -3122,11 +3199,15 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
 
         int pending = totalApps - approved - rejected;
 
+        // Calculate percentages
         final approvalRate = totalApps > 0 ? (approved / totalApps) * 100 : 0.0;
+        final rejectionRate =
+            totalApps > 0 ? (rejected / totalApps) * 100 : 0.0;
         final interviewRate =
             approved > 0 ? (interviewed / approved) * 100 : 0.0;
         final hireRate = approved > 0 ? (hired / approved) * 100 : 0.0;
 
+        // Group by job post
         final appsByPost = <String, int>{};
         for (var app in applications) {
           final postId = app['internshipId'] as String?;
@@ -3138,6 +3219,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Funnel Overview
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -3158,6 +3240,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // Stage 1: Total Applications
                   _FunnelStage(
                     label: 'Total Applications',
                     count: totalApps,
@@ -3165,6 +3248,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: const Color(0xFF1565C0),
                   ),
                   const SizedBox(height: 12),
+                  // Stage 2: Pending Review
                   _FunnelStage(
                     label: 'Pending Review',
                     count: pending,
@@ -3172,6 +3256,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: const Color(0xFFFFB020),
                   ),
                   const SizedBox(height: 12),
+                  // Stage 3: Approved
                   _FunnelStage(
                     label: 'Approved / Shortlisted',
                     count: approved,
@@ -3179,6 +3264,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: AppTheme.success,
                   ),
                   const SizedBox(height: 12),
+                  // Stage 4: Interviewed
                   _FunnelStage(
                     label: 'Interviewed',
                     count: interviewed,
@@ -3187,6 +3273,7 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: const Color(0xFF8A5BFF),
                   ),
                   const SizedBox(height: 12),
+                  // Stage 5: Hired
                   _FunnelStage(
                     label: 'Hired',
                     count: hired,
@@ -3197,6 +3284,8 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
               ),
             ),
             const SizedBox(height: 16),
+
+            // Key Metrics
             Row(
               children: [
                 Expanded(
@@ -3294,6 +3383,8 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
               ],
             ),
             const SizedBox(height: 16),
+
+            // Applications per Job Post
             if (appsByPost.isNotEmpty)
               Container(
                 width: double.infinity,
@@ -3477,6 +3568,10 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// Privacy Policy Page
+// ============================================================================
+
 class _PrivacyPolicyPage extends StatelessWidget {
   const _PrivacyPolicyPage();
 
@@ -3553,6 +3648,10 @@ class _PrivacyPolicyPage extends StatelessWidget {
     );
   }
 }
+
+// ============================================================================
+// Security Page
+// ============================================================================
 
 class _SecurityPage extends StatelessWidget {
   const _SecurityPage();
@@ -3666,6 +3765,10 @@ class _SecurityPage extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// Terms of Service Page
+// ============================================================================
+
 class _TermsOfServicePage extends StatelessWidget {
   const _TermsOfServicePage();
 
@@ -3774,224 +3877,4 @@ class _EmptyPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DashboardCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-  final String subtitleText;
-  final IconData subtitleIcon;
-  final Color subtitleColor;
-  final VoidCallback onTap;
-
-  const _DashboardCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.subtitleText,
-    required this.subtitleIcon,
-    required this.subtitleColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9), // Light slate
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: const Color(0xFF0F4C81), size: 22),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(subtitleIcon, color: subtitleColor, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  subtitleText,
-                  style: TextStyle(
-                    color: subtitleColor,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DashboardEmptyState extends StatelessWidget {
-  const _DashboardEmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DashedRectPainter(color: const Color(0xFFCBD5E1)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF8FAFC),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.inbox_rounded,
-                      size: 32, color: Color(0xFFCBD5E1)),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 4,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.search,
-                        size: 16, color: Color(0xFF0F4C81)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'No applications received yet.',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'When you receive new applications\nthat match your criteria, they will\nappear here for your review.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF64748B),
-                height: 1.5,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                // Future routing functionality could go here
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F4C81),
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Post a Job Now',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DashedRectPainter extends CustomPainter {
-  final Color color;
-  _DashedRectPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    final Path path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-          Rect.fromLTWH(0, 0, size.width, size.height),
-          const Radius.circular(16)));
-
-    const dashWidth = 6.0;
-    const dashSpace = 4.0;
-    double distance = 0.0;
-
-    for (PathMetric pathMetric in path.computeMetrics()) {
-      while (distance < pathMetric.length) {
-        canvas.drawPath(
-          pathMetric.extractPath(distance, distance + dashWidth),
-          paint,
-        );
-        distance += dashWidth + dashSpace;
-      }
-      distance = 0.0;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
