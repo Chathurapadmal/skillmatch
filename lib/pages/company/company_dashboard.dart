@@ -2758,299 +2758,659 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Company Profile',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 10),
+        _buildSettingsHeader(),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.business_center_outlined,
+          title: 'Company Profile',
+          subtitle:
+              'Keep your company identity visible to candidates and hiring workflows.',
+          children: [
+            _buildResponsiveSettingsRow([
               TextField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Company Name'),
-              ),
-              const SizedBox(height: 8),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Industry'),
-                subtitle: Text(
-                  _industryCtrl.text.trim().isEmpty
-                      ? 'Select industry'
-                      : _industryCtrl.text.trim(),
-                  style: const TextStyle(color: Color(0xFF1565C0)),
-                ),
-                trailing: const Icon(Icons.keyboard_arrow_down_rounded),
-                onTap: _pickIndustry,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _websiteCtrl,
-                decoration: const InputDecoration(labelText: 'Website'),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _logoCtrl,
-                onChanged: (_) => setState(() {}),
-                decoration:
-                    const InputDecoration(labelText: 'Company Logo URL'),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed:
-                      _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
-                  icon: _uploadingLogo
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.cloud_upload_outlined),
-                  label: const Text('Upload Company Logo (Supabase)'),
+                decoration: const InputDecoration(
+                  labelText: 'Company Name',
+                  prefixIcon: Icon(Icons.business_outlined),
                 ),
               ),
-              if (_logoCtrl.text.trim().isNotEmpty) ...[
-                const SizedBox(height: 12),
+              _buildIndustryPickerTile(),
+            ]),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _websiteCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Website',
+                hintText: 'https://company.com',
+                prefixIcon: Icon(Icons.language_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descriptionCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Company Description',
+                hintText: 'Briefly describe your company, culture, and mission',
+                prefixIcon: Icon(Icons.notes_outlined),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.image_outlined,
+          title: 'Brand Assets',
+          subtitle: 'Add or upload a company logo for a more complete profile.',
+          children: [
+            TextField(
+              controller: _logoCtrl,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                labelText: 'Company Logo URL',
+                hintText: 'Paste a hosted logo URL',
+                prefixIcon: Icon(Icons.link_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildLogoPreview(),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: OutlinedButton.icon(
+                onPressed: _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
+                icon: _uploadingLogo
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.cloud_upload_outlined),
+                label: Text(
+                  _uploadingLogo
+                      ? 'Uploading logo...'
+                      : 'Upload Company Logo (Supabase)',
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF1565C0),
+                  side: const BorderSide(color: Color(0xFFB8C7DC)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.notifications_active_outlined,
+          title: 'Notification Preferences',
+          subtitle: 'Choose the company updates you want to receive.',
+          children: [
+            _buildSettingsSwitchTile(
+              icon: Icons.assignment_ind_outlined,
+              title: 'New applications',
+              subtitle: 'Notify me when candidates apply to company posts.',
+              value: _notifyNewApplications,
+              onChanged: (value) {
+                setState(() => _notifyNewApplications = value);
+              },
+            ),
+            const SizedBox(height: 10),
+            _buildSettingsSwitchTile(
+              icon: Icons.people_alt_outlined,
+              title: 'Candidate suggestions',
+              subtitle: 'Receive updates about matched or recommended profiles.',
+              value: _notifyCandidateSuggestions,
+              onChanged: (value) {
+                setState(() => _notifyCandidateSuggestions = value);
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.tune_outlined,
+          title: 'Workspace Controls',
+          subtitle: 'Manage appearance, storage, policy pages, and account access.',
+          children: [
+            _buildSettingsSwitchTile(
+              icon: Icons.dark_mode_outlined,
+              title: 'Dark appearance mode',
+              subtitle: 'Preference is saved for this account.',
+              value: _darkMode,
+              onChanged: (value) => setState(() => _darkMode = value),
+            ),
+            const SizedBox(height: 14),
+            _buildResponsiveSettingsRow([
+              _buildSettingsActionButton(
+                icon: Icons.inbox_outlined,
+                label: 'Notification Inbox',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsCenterScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsActionButton(
+                icon: Icons.cloud_outlined,
+                label: 'Supabase Storage',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SupabaseStoragePage(),
+                    ),
+                  );
+                },
+              ),
+            ]),
+            const SizedBox(height: 10),
+            _buildResponsiveSettingsRow([
+              _buildSettingsActionButton(
+                icon: Icons.privacy_tip_outlined,
+                label: 'Privacy Policy',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const _PrivacyPolicyPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildSettingsActionButton(
+                icon: Icons.security_outlined,
+                label: 'Security',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const _SecurityPage(),
+                    ),
+                  );
+                },
+              ),
+            ]),
+            const SizedBox(height: 10),
+            _buildSettingsActionButton(
+              icon: Icons.description_outlined,
+              label: 'Terms of Service',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const _TermsOfServicePage(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildSaveSettingsButton(),
+        const SizedBox(height: 8),
+        _buildSignOutButton(),
+      ],
+    );
+  }
+
+  Widget _buildSettingsHeader() {
+    final companyName = _nameCtrl.text.trim().isEmpty
+        ? widget.initialCompanyName
+        : _nameCtrl.text.trim();
+    final industry = _industryCtrl.text.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1E3A5F).withValues(alpha: 0.16),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.22),
+              ),
+            ),
+            child: const Icon(
+              Icons.settings_suggest_outlined,
+              color: Colors.white,
+              size: 27,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text(
-                  'Logo Preview',
+                  'Company Settings',
                   style: TextStyle(
-                    color: Colors.black87,
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  companyName,
+                  style: const TextStyle(
+                    color: Colors.white70,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      color: const Color(0xFFF4F7FC),
-                      child: Image.network(
-                        _logoCtrl.text.trim(),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                          Icons.business,
-                          size: 42,
-                          color: Color(0xFF1565C0),
-                        ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildHeaderPill(
+                      icon: Icons.mail_outline,
+                      text: widget.email,
+                    ),
+                    _buildHeaderPill(
+                      icon: Icons.apartment_outlined,
+                      text: industry.isEmpty ? 'Industry not set' : industry,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderPill({required IconData icon, required String text}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsSection({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF1565C0),
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndustryPickerTile() {
+    final industry = _industryCtrl.text.trim();
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(13),
+      onTap: _pickIndustry,
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Industry',
+          prefixIcon: Icon(Icons.apartment_outlined),
+          suffixIcon: Icon(Icons.keyboard_arrow_down_rounded),
+        ),
+        child: Text(
+          industry.isEmpty ? 'Select industry' : industry,
+          style: TextStyle(
+            color: industry.isEmpty ? Colors.black45 : const Color(0xFF1565C0),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoPreview() {
+    final logoUrl = _logoCtrl.text.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: 72,
+              height: 72,
+              color: const Color(0xFFEAF1FB),
+              child: logoUrl.isEmpty
+                  ? const Icon(
+                      Icons.business,
+                      size: 34,
+                      color: Color(0xFF1565C0),
+                    )
+                  : Image.network(
+                      logoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.business,
+                        size: 34,
+                        color: Color(0xFF1565C0),
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Logo Preview',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  logoUrl.isEmpty
+                      ? 'No logo URL added yet. Upload or paste one above.'
+                      : 'Logo URL is set and will be saved with your profile.',
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12.5,
+                    height: 1.3,
                   ),
                 ),
               ],
-              const SizedBox(height: 8),
-              TextField(
-                controller: _descriptionCtrl,
-                maxLines: 3,
-                decoration:
-                    const InputDecoration(labelText: 'Company Description'),
-              ),
-            ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsSwitchTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: value
+                  ? const Color(0xFF1565C0).withValues(alpha: 0.10)
+                  : Colors.grey.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(
+              icon,
+              size: 19,
+              color: value ? const Color(0xFF1565C0) : Colors.grey,
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 12,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            activeColor: const Color(0xFF1565C0),
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        style: OutlinedButton.styleFrom(
+          alignment: Alignment.centerLeft,
+          foregroundColor: const Color(0xFF1E3A5F),
+          side: const BorderSide(color: Color(0xFFD5DEEC)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(13),
+          ),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildSaveSettingsButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: _saving ? null : _save,
+        icon: _saving
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : const Icon(Icons.save_outlined),
+        label: Text(_saving ? 'Saving settings...' : 'Save Settings'),
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: const Color(0xFF1565C0),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Notification Preferences',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('New applications'),
-                value: _notifyNewApplications,
-                onChanged: (value) {
-                  setState(() => _notifyNewApplications = value);
-                },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Candidate suggestions'),
-                value: _notifyCandidateSuggestions,
-                onChanged: (value) {
-                  setState(() => _notifyCandidateSuggestions = value);
-                },
-              ),
-            ],
+          textStyle: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignOutButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 46,
+      child: TextButton.icon(
+        onPressed: () => AuthService.signOut(),
+        icon: const Icon(Icons.logout, color: AppTheme.error),
+        label: const Text(
+          'Sign Out',
+          style: TextStyle(
+            color: AppTheme.error,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFDCE3F0)),
-          ),
-          child: Column(
-            children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Dark appearance mode'),
-                subtitle: const Text('Preference is saved for this account.'),
-                value: _darkMode,
-                onChanged: (value) => setState(() => _darkMode = value),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const NotificationsCenterScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.inbox_outlined),
-                      label: const Text('Open Notification Inbox'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SupabaseStoragePage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.cloud_outlined),
-                      label: const Text('Supabase Storage'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const _PrivacyPolicyPage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.privacy_tip_outlined),
-                      label: const Text('Privacy Policy'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const _SecurityPage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.security_outlined),
-                      label: const Text('Security'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const _TermsOfServicePage(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.description_outlined),
-                      label: const Text('Terms of Service'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _saving ? null : _save,
-                  icon: _saving
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save_outlined),
-                  label: const Text('Save Settings'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: () => AuthService.signOut(),
-                  icon: const Icon(Icons.logout, color: AppTheme.error),
-                  label: const Text(
-                    'Sign Out',
-                    style: TextStyle(color: AppTheme.error),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildResponsiveSettingsRow(List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              Expanded(child: children[i]),
+              if (i != children.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
     );
   }
 }
-
 // ============================================================================
 // Interview Scheduling Dialog
 // ============================================================================
