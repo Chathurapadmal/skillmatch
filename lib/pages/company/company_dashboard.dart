@@ -1944,9 +1944,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = (snapshot.data?.docs ??
-                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
-                .toList();
+            final docs = snapshot.data?.docs ?? const [];
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
@@ -2172,9 +2170,7 @@ class _TokenManagementTab extends StatelessWidget {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = (snapshot.data?.docs ??
-                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
-                .toList();
+            final docs = snapshot.data?.docs ?? const [];
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
