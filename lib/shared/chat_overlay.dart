@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../theme/app_theme.dart';
 
 class ChatOverlay extends StatefulWidget {
   final Widget child;
@@ -16,6 +15,11 @@ class _ChatOverlayState extends State<ChatOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+
+    // 🔥 Your custom nav height (important)
+    const double navBarHeight = 90;
+
     return Stack(
       children: [
         widget.child,
@@ -35,16 +39,15 @@ class _ChatOverlayState extends State<ChatOverlay> {
             onClose: () => setState(() => _showChat = false),
           ),
 
-        /// FLOATING BUTTON (HIDDEN WHEN CHAT OPEN)
+        /// FLOATING BUTTON (FIXED POSITION)
         if (!_showChat)
           Positioned(
-            bottom: 20,
-            right: 20,
+            right: 16,
+            bottom: safeBottom + navBarHeight,
             child: FloatingActionButton(
               onPressed: () => setState(() => _showChat = true),
               backgroundColor: const Color(0xFF4F8CFF),
-              child: const Icon(Icons.chat_bubble_outline,
-                  color: Colors.white),
+              child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
             ),
           ),
       ],
@@ -141,10 +144,12 @@ class _ChatPanelState extends State<_ChatPanel>
 
   @override
   Widget build(BuildContext context) {
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+
     return Positioned(
-      bottom: 0,
-      right: 0,
+      bottom: safeBottom, // ✅ respects system + nav
       left: 0,
+      right: 0,
       child: SlideTransition(
         position: _slideAnimation,
         child: Material(
@@ -163,7 +168,7 @@ class _ChatPanelState extends State<_ChatPanel>
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(bottom: 10 + safeBottom),
               child: Column(
                 children: [
                   /// HEADER
@@ -182,8 +187,8 @@ class _ChatPanelState extends State<_ChatPanel>
                       children: [
                         const CircleAvatar(
                           backgroundColor: Colors.white,
-                          child: Icon(Icons.smart_toy,
-                              color: Color(0xFF4F8CFF)),
+                          child:
+                              Icon(Icons.smart_toy, color: Color(0xFF4F8CFF)),
                         ),
                         const SizedBox(width: 10),
                         const Text(
@@ -194,18 +199,9 @@ class _ChatPanelState extends State<_ChatPanel>
                           ),
                         ),
                         const Spacer(),
-
-                        /// CLOSE BUTTON (IMPROVED)
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.close,
-                                color: Colors.white),
-                            onPressed: widget.onClose,
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: widget.onClose,
                         ),
                       ],
                     ),
@@ -226,8 +222,7 @@ class _ChatPanelState extends State<_ChatPanel>
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(12),
-                            constraints:
-                                const BoxConstraints(maxWidth: 280),
+                            constraints: const BoxConstraints(maxWidth: 280),
                             decoration: BoxDecoration(
                               gradient: m.fromUser
                                   ? const LinearGradient(
@@ -240,8 +235,7 @@ class _ChatPanelState extends State<_ChatPanel>
                               color: m.fromUser
                                   ? null
                                   : Colors.white.withOpacity(0.08),
-                              borderRadius:
-                                  BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
                               m.text,
@@ -258,34 +252,27 @@ class _ChatPanelState extends State<_ChatPanel>
 
                   /// INPUT
                   Container(
-                    padding:
-                        const EdgeInsets.fromLTRB(12, 10, 12, 16),
+                    padding: EdgeInsets.fromLTRB(12, 10, 12, 16 + safeBottom),
                     child: Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: _messageCtrl,
-                            style: const TextStyle(
-                                color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                             onSubmitted: (_) => _sendMessage(),
                             decoration: InputDecoration(
                               hintText: "Ask support...",
-                              hintStyle: const TextStyle(
-                                  color: Colors.white54),
+                              hintStyle: const TextStyle(color: Colors.white54),
                               filled: true,
-                              fillColor:
-                                  Colors.white.withOpacity(0.08),
+                              fillColor: Colors.white.withOpacity(0.08),
                               border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(30),
                                 borderSide: BorderSide.none,
                               ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
-
-                        /// SEND BUTTON (NEW COLOR)
                         GestureDetector(
                           onTap: _sending ? null : _sendMessage,
                           child: Container(
@@ -293,24 +280,19 @@ class _ChatPanelState extends State<_ChatPanel>
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFF4F8CFF),
-                                  Color(0xFF7B61FF)
-                                ],
+                                colors: [Color(0xFF4F8CFF), Color(0xFF7B61FF)],
                               ),
                             ),
                             child: _sending
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child:
-                                        CircularProgressIndicator(
+                                    child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Icon(Icons.send,
-                                    color: Colors.white),
+                                : const Icon(Icons.send, color: Colors.white),
                           ),
                         ),
                       ],
