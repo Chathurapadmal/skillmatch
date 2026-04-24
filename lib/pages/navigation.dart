@@ -151,7 +151,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       Icon(
                         item.icon,
                         color:
-                            isSelected ? const Color(0xFF6C63FF) : Colors.grey,
+                            isSelected ? const Color(0xFF1565C0) : Colors.grey,
                         size: isSelected ? 26 : 24,
                       ),
                       const SizedBox(height: 4),
@@ -166,7 +166,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: isSelected
-                                ? const Color(0xFF6C63FF)
+                                ? const Color(0xFF1565C0)
                                 : Colors.grey,
                             fontSize: 11,
                             fontWeight: isSelected
