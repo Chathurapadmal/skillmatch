@@ -70,8 +70,7 @@ class ApplicantDashboard extends StatelessWidget {
                 child: const CircleAvatar(
                   radius: 18,
                   backgroundColor: Color(0xFFE2E8F0),
-                  backgroundImage:
-                      NetworkImage('https://i.pravatar.cc/150?img=11'),
+                  child: Icon(Icons.person, color: Color(0xFF4A5568)),
                 ),
                 onSelected: (value) async {
                   if (value == 'profile') {
