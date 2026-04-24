@@ -658,78 +658,300 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         company.contains(candidate);
   }
 
+  Widget _buildCandidateDiscoveryHeader() {
+    final industryLabel = _loadingIndustry
+        ? 'Loading company industry...'
+        : _companyIndustry.isEmpty
+            ? 'All industries'
+            : _companyIndustry;
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.manage_search_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Candidate Discovery',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'Review applicant profiles, verified skills, CV details, and interview actions in one focused workspace.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: _buildCandidateFilterSection(
+              icon: Icons.filter_alt_outlined,
+              title: 'Discovery Filters',
+              subtitle:
+                  'Choose which profiles appear and how closely they should match your company industry.',
+              children: [
+                _buildCandidateFilterRow([
+                  DropdownButtonFormField<String>(
+                    value: _candidateScope,
+                    decoration: const InputDecoration(
+                      labelText: 'Candidate Scope',
+                      prefixIcon: Icon(Icons.people_alt_outlined),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'Applied',
+                        child: Text('Applied only'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'All',
+                        child: Text('All profiles'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _candidateScope = value);
+                    },
+                  ),
+                  DropdownButtonFormField<bool>(
+                    value: _enforceIndustryFilter,
+                    decoration: const InputDecoration(
+                      labelText: 'Industry Filter',
+                      prefixIcon: Icon(Icons.apartment_outlined),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: true,
+                        child: Text('Company industry'),
+                      ),
+                      DropdownMenuItem(
+                        value: false,
+                        child: Text('All industries'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _enforceIndustryFilter = value);
+                    },
+                  ),
+                ]),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _candidateFilterChip(
+                      icon: Icons.badge_outlined,
+                      text: _candidateScope == 'Applied'
+                          ? 'Showing applied candidates'
+                          : 'Showing all applicant profiles',
+                      color: const Color(0xFF1565C0),
+                    ),
+                    _candidateFilterChip(
+                      icon: Icons.domain_outlined,
+                      text: _enforceIndustryFilter
+                          ? 'Industry: $industryLabel'
+                          : 'Industry: all industries',
+                      color: _enforceIndustryFilter
+                          ? AppTheme.success
+                          : const Color(0xFF8A5BFF),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCandidateFilterSection({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFE),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE3EAF5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(
+                  icon,
+                  color: const Color(0xFF1565C0),
+                  size: 19,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCandidateFilterRow(List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              Expanded(child: children[i]),
+              if (i != children.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _candidateFilterChip({
+    required IconData icon,
+    required String text,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.filter_alt_outlined,
-                      size: 18, color: Color(0xFF1565C0)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _loadingIndustry
-                          ? 'Loading company industry filter...'
-                          : _companyIndustry.isEmpty
-                              ? 'Industry filter: all candidates'
-                              : 'Industry filter: $_companyIndustry',
-                      style: const TextStyle(
-                          color: Colors.black54, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _candidateScope,
-                      decoration:
-                          const InputDecoration(labelText: 'Candidate Scope'),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'Applied', child: Text('Applied only')),
-                        DropdownMenuItem(
-                            value: 'All', child: Text('All profiles')),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _candidateScope = value);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: DropdownButtonFormField<bool>(
-                      value: _enforceIndustryFilter,
-                      decoration:
-                          const InputDecoration(labelText: 'Industry Filter'),
-                      items: const [
-                        DropdownMenuItem(
-                            value: true, child: Text('Company industry')),
-                        DropdownMenuItem(
-                            value: false, child: Text('All industries')),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _enforceIndustryFilter = value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        _buildCandidateDiscoveryHeader(),
         Expanded(
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
@@ -1944,7 +2166,9 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = snapshot.data?.docs ?? const [];
+            final docs = (snapshot.data?.docs ??
+                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
+                .toList();
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
@@ -2170,7 +2394,9 @@ class _TokenManagementTab extends StatelessWidget {
               .limit(200)
               .snapshots(),
           builder: (context, snapshot) {
-            final docs = snapshot.data?.docs ?? const [];
+            final docs = (snapshot.data?.docs ??
+                    const <QueryDocumentSnapshot<Map<String, dynamic>>>[])
+                .toList();
             docs.sort((a, b) {
               final at = a.data()['createdAt'] as Timestamp?;
               final bt = b.data()['createdAt'] as Timestamp?;
