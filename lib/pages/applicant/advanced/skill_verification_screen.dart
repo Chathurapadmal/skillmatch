@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../theme/app_theme.dart';
 import '../../../services/firestore_service.dart';
 import '../../../services/ai_service.dart';
+import '../../../shared/applicant_notification_button.dart';
 import '../../../widgets/common_widgets.dart';
 
 class SkillVerificationScreen extends StatefulWidget {
@@ -282,6 +283,7 @@ class _SkillVerificationScreenState extends State<SkillVerificationScreen> {
                 }),
               )
             : null,
+        actions: const [ApplicantNotificationButton()],
       ),
       body: _loading
           ? const Center(

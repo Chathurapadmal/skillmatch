@@ -10,6 +10,7 @@ import '../../../services/firestore_service.dart';
 import '../../../services/ai_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../theme/app_theme.dart';
+import '../../../shared/applicant_notification_button.dart';
 import '../../../shared/notifications_center_screen.dart';
 import '../../../shared/chat_overlay.dart';
 import '../jobs/browse_jobs_page.dart';
@@ -171,10 +172,10 @@ class _StudentHomeTabState extends State<_StudentHomeTab> {
     final title = (internship['title'] as String?)?.trim().isNotEmpty == true
         ? internship['title'] as String
         : 'this internship';
-    final company = (internship['company'] as String?)?.trim().isNotEmpty ==
-            true
-        ? internship['company'] as String
-        : 'the company';
+    final company =
+        (internship['company'] as String?)?.trim().isNotEmpty == true
+            ? internship['company'] as String
+            : 'the company';
 
     await NotificationService.instance.createInAppNotification(
       recipientId: studentUid,
@@ -1036,10 +1037,10 @@ class _InternshipsTabState extends State<_InternshipsTab> {
     final title = (internship['title'] as String?)?.trim().isNotEmpty == true
         ? internship['title'] as String
         : 'this internship';
-    final company = (internship['company'] as String?)?.trim().isNotEmpty ==
-            true
-        ? internship['company'] as String
-        : 'the company';
+    final company =
+        (internship['company'] as String?)?.trim().isNotEmpty == true
+            ? internship['company'] as String
+            : 'the company';
 
     await NotificationService.instance.createInAppNotification(
       recipientId: studentUid,
@@ -2287,10 +2288,10 @@ class _AppliedTabState extends State<_AppliedTab> {
     final title = (internship['title'] as String?)?.trim().isNotEmpty == true
         ? internship['title'] as String
         : 'this internship';
-    final company = (internship['company'] as String?)?.trim().isNotEmpty ==
-            true
-        ? internship['company'] as String
-        : 'the company';
+    final company =
+        (internship['company'] as String?)?.trim().isNotEmpty == true
+            ? internship['company'] as String
+            : 'the company';
 
     await NotificationService.instance.createInAppNotification(
       recipientId: studentUid,
@@ -2338,14 +2339,13 @@ class _AppliedTabState extends State<_AppliedTab> {
     final userDoc =
         await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final userData = userDoc.data() ?? <String, dynamic>{};
-    final studentName = (userData['name'] as String?)?.trim().isNotEmpty ==
-            true
+    final studentName = (userData['name'] as String?)?.trim().isNotEmpty == true
         ? userData['name'] as String
         : (FirebaseAuth.instance.currentUser?.displayName ?? 'Student');
-    final studentEmail = (userData['email'] as String?)?.trim().isNotEmpty ==
-            true
-        ? userData['email'] as String
-        : (FirebaseAuth.instance.currentUser?.email ?? '');
+    final studentEmail =
+        (userData['email'] as String?)?.trim().isNotEmpty == true
+            ? userData['email'] as String
+            : (FirebaseAuth.instance.currentUser?.email ?? '');
 
     await FirebaseFirestore.instance.collection('applications').add({
       'studentId': uid,
@@ -2420,7 +2420,9 @@ class _AppliedTabState extends State<_AppliedTab> {
                 (internship['description'] as String?)?.trim().isNotEmpty ==
                         true
                     ? internship['description'] as String
-                    : ((internship['aboutRole'] as String?)?.trim().isNotEmpty ==
+                    : ((internship['aboutRole'] as String?)
+                                ?.trim()
+                                .isNotEmpty ==
                             true
                         ? internship['aboutRole'] as String
                         : 'No additional description provided.'),
@@ -2630,14 +2632,14 @@ class _AppliedTabState extends State<_AppliedTab> {
                               'Remote')
                           .trim(),
                       'mode': ((data['type'] as String?) ??
-                          (data['location'] as String?) ??
-                          'Remote')
-                        .trim(),
+                              (data['location'] as String?) ??
+                              'Remote')
+                          .trim(),
                       'salary': (data['salary'] as String?) ??
-                        (data['stipend'] as String?) ??
-                        'Negotiable',
+                          (data['stipend'] as String?) ??
+                          'Negotiable',
                       'description':
-                        ((data['description'] as String?) ?? '').trim(),
+                          ((data['description'] as String?) ?? '').trim(),
                       'tags': skills,
                       'aboutRole':
                           ((data['aboutRole'] as String?) ?? '').trim(),
@@ -3012,6 +3014,7 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
+        actions: const [ApplicantNotificationButton()],
       ),
       body: _loading
           ? const Center(

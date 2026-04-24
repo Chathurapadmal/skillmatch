@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../theme/app_theme.dart';
 import '../../../services/ai_service.dart';
+import '../../../shared/applicant_notification_button.dart';
 
 class CredentialsScreen extends StatefulWidget {
   const CredentialsScreen({super.key});
@@ -348,6 +349,7 @@ class _CredentialsScreenState extends State<CredentialsScreen> {
           title: const Text('Verifiable Credentials'),
           backgroundColor: AppTheme.bgDark,
           actions: [
+            const ApplicantNotificationButton(iconColor: AppTheme.primaryLight),
             IconButton(
               icon: const Icon(Icons.add_circle_outline,
                   color: AppTheme.primaryLight),

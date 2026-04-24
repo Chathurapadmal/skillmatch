@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:skillmatch/widgets/policy/terms_of_service_card.dart';
+import '../../../shared/applicant_notification_button.dart';
 
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
@@ -17,6 +18,7 @@ class TermsOfServiceScreen extends StatelessWidget {
           'Terms of Service',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
+        actions: const [ApplicantNotificationButton(iconColor: Colors.white)],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../shared/applicant_notification_button.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
 
@@ -63,16 +64,15 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Change Password',
-            style: TextStyle(color: textPrimary)),
+        title:
+            const Text('Change Password', style: TextStyle(color: textPrimary)),
         content: const Text(
             'A password reset email will be sent to your registered email address.',
             style: TextStyle(color: textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel',
-                  style: TextStyle(color: textMuted))),
+              child: const Text('Cancel', style: TextStyle(color: textMuted))),
           TextButton(
             onPressed: () async {
               final email = FirebaseAuth.instance.currentUser?.email ?? '';
@@ -90,8 +90,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
               }
             },
             child: const Text('Send Email',
-                style: TextStyle(
-                    color: primary, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: primary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -104,21 +103,18 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Account',
-            style: TextStyle(color: error)),
+        title: const Text('Delete Account', style: TextStyle(color: error)),
         content: const Text(
             'This will permanently delete your account and all associated data. This action cannot be undone.',
             style: TextStyle(color: textSecondary, fontSize: 13)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel',
-                  style: TextStyle(color: textMuted))),
+              child: const Text('Cancel', style: TextStyle(color: textMuted))),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Delete',
-                style: TextStyle(
-                    color: error, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: error, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -133,10 +129,10 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
           title: const Text('Privacy & Security'),
           backgroundColor: cardBg,
           foregroundColor: textPrimary,
-          elevation: 0),
+          elevation: 0,
+          actions: const [ApplicantNotificationButton()]),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: primary))
+          ? const Center(child: CircularProgressIndicator(color: primary))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -260,9 +256,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                 .entries
                 .map((e) => Column(children: [
                       if (e.key > 0)
-                        Divider(
-                            height: 1,
-                            color: border.withOpacity(0.8)),
+                        Divider(height: 1, color: border.withOpacity(0.8)),
                       e.value,
                     ]))
                 .toList()),
@@ -272,10 +266,10 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
       ValueChanged<bool> onChanged) {
     return ListTile(
       leading: Icon(icon, color: deepViolet, size: 22),
-      title: Text(title,
-          style: const TextStyle(color: textPrimary, fontSize: 14)),
-      subtitle: Text(sub,
-          style: const TextStyle(color: textMuted, fontSize: 11)),
+      title:
+          Text(title, style: const TextStyle(color: textPrimary, fontSize: 14)),
+      subtitle:
+          Text(sub, style: const TextStyle(color: textMuted, fontSize: 11)),
       trailing: Switch(
         value: val,
         activeColor: primary,
@@ -291,12 +285,10 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
       leading: Icon(icon, color: color, size: 22),
       title: Text(title,
           style: TextStyle(
-              color: color == error ? error : textPrimary,
-              fontSize: 14)),
-      subtitle: Text(sub,
-          style: const TextStyle(color: textMuted, fontSize: 11)),
-      trailing:
-          const Icon(Icons.chevron_right, color: textMuted, size: 18),
+              color: color == error ? error : textPrimary, fontSize: 14)),
+      subtitle:
+          Text(sub, style: const TextStyle(color: textMuted, fontSize: 11)),
+      trailing: const Icon(Icons.chevron_right, color: textMuted, size: 18),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
     );
