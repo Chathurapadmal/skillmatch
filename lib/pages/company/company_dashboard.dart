@@ -334,10 +334,22 @@ class _CompanyOverviewTab extends StatelessWidget {
               });
 
             void openApplicantsDetails() {
-              final items = topApplications
-                  .map((e) =>
-                      '${(e.data()['studentName'] as String? ?? 'Student')} • ${(e.data()['title'] as String? ?? 'Role')}')
-                  .toList();
+              final items = topApplications.map((e) {
+                final status =
+                    (e.data()['status'] as String? ?? '').toUpperCase();
+                return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
+              }).toList();
+
+              // ✅ SAME FIX as shortlisted
+              if (items.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No applications received yet'),
+                  ),
+                );
+                return;
+              }
+
               _showMetricDetails(
                 context,
                 title: 'Applicants',
@@ -355,6 +367,17 @@ class _CompanyOverviewTab extends StatelessWidget {
                     (e.data()['status'] as String? ?? '').toUpperCase();
                 return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
               }).toList();
+
+              // ✅ FIX: handle empty state properly
+              if (items.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No shortlisted candidates yet'),
+                  ),
+                );
+                return;
+              }
+
               _showMetricDetails(
                 context,
                 title: 'Shortlisted Candidates',
@@ -368,6 +391,17 @@ class _CompanyOverviewTab extends StatelessWidget {
                   .map((e) =>
                       '${(e.data()['title'] as String? ?? 'Internship')} • ${(e.data()['type'] as String? ?? 'Mode')}')
                   .toList();
+
+              // ✅ FIX (same as others)
+              if (items.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No active posts yet'),
+                  ),
+                );
+                return;
+              }
+
               _showMetricDetails(
                 context,
                 title: 'Active Posts',
