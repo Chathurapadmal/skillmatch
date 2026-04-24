@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -376,18 +377,15 @@ class _CompanyOverviewTab extends StatelessWidget {
             }
 
             return ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               children: [
+                // Welcome Card
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF0F294B), // Dark blue from design
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,68 +394,79 @@ class _CompanyOverviewTab extends StatelessWidget {
                         'Welcome, $companyName',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 19,
+                          fontSize: 26,
                           fontWeight: FontWeight.w700,
+                          height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 12),
                       const Text(
-                        'Track applicants, manage active posts, and move top-matched candidates forward.',
-                        style: TextStyle(color: Colors.white70),
+                        'Your recruitment overview is ready.\nTrack your applicants and manage\nyour workspace efficiency here.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 24),
+
+                // Metrics Column
+                _DashboardCard(
+                  icon: Icons.person_search_outlined,
+                  title: 'Applicants',
+                  value: '${applications.length}',
+                  subtitleText: '12% this week', // Placeholders based on design
+                  subtitleIcon: Icons.trending_up,
+                  subtitleColor: const Color(0xFF0D9488), // Teal success
+                  onTap: openApplicantsDetails,
+                ),
+                _DashboardCard(
+                  icon: Icons.star_rounded,
+                  title: 'Shortlisted',
+                  value: '$shortlisted',
+                  subtitleText: '8 ready for interview',
+                  subtitleIcon: Icons.check_circle,
+                  subtitleColor: const Color(0xFF0D9488),
+                  onTap: openShortlistedDetails,
+                ),
+                _DashboardCard(
+                  icon: Icons.work,
+                  title: 'Active Posts',
+                  value: '$activePosts',
+                  subtitleText: '3 closing soon',
+                  subtitleIcon: Icons.access_time_filled,
+                  subtitleColor: const Color(0xFF94A3B8), // Slate grey
+                  onTap: openActivePostsDetails,
+                ),
+
+                const SizedBox(height: 8),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: openApplicantsDetails,
-                        child: _MetricCard(
-                          icon: Icons.assignment_ind_outlined,
-                          label: 'Applicants',
-                          value: '${applications.length}',
-                          color: const Color(0xFF1565C0),
-                        ),
+                    const Text(
+                      'Top-Matched Candidate Workflow',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: openShortlistedDetails,
-                        child: _MetricCard(
-                          icon: Icons.check_circle_outline,
-                          label: 'Shortlisted',
-                          value: '$shortlisted',
-                          color: AppTheme.success,
-                        ),
+                    TextButton(
+                      onPressed: () {},
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF0F4C81),
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: openActivePostsDetails,
-                        child: _MetricCard(
-                          icon: Icons.work_outline,
-                          label: 'Active Posts',
-                          value: '$activePosts',
-                          color: AppTheme.warning,
-                        ),
-                      ),
+                      child: const Text('View All'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Top-Matched Candidate Workflow',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
+
                 if (isLoading)
                   const Padding(
                     padding: EdgeInsets.only(top: 18),
@@ -466,89 +475,82 @@ class _CompanyOverviewTab extends StatelessWidget {
                     ),
                   )
                 else if (topApplications.isEmpty)
-                  _EmptyPanel(
-                    icon: Icons.inbox_rounded,
-                    message: 'No applications received yet.',
-                  )
+                  const _DashboardEmptyState()
                 else
                   ...topApplications.take(5).map((doc) {
                     final data = doc.data();
                     final status =
                         (data['status'] as String? ?? 'applied').toLowerCase();
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFDCE3F0)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1565C0)
-                                  .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.person_outline,
-                                color: Color(0xFF1565C0)),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  (data['studentName'] as String?)
-                                              ?.trim()
-                                              .isNotEmpty ==
-                                          true
-                                      ? data['studentName'] as String
-                                      : 'Student Candidate',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  (data['title'] as String?) ??
-                                      'Internship role',
-                                  style: const TextStyle(color: Colors.black54),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color:
-                                  _statusColor(status).withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              status.toUpperCase(),
-                              style: TextStyle(
-                                color: _statusColor(status),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    return _buildApplicantTile(data, status);
                   }),
               ],
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildApplicantTile(Map<String, dynamic> data, String status) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFDCE3F0)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1565C0).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.person_outline, color: Color(0xFF1565C0)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  (data['studentName'] as String?)?.trim().isNotEmpty == true
+                      ? data['studentName'] as String
+                      : 'Student Candidate',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  (data['title'] as String?) ?? 'Internship role',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: _statusColor(status).withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              status.toUpperCase(),
+              style: TextStyle(
+                color: _statusColor(status),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1318,7 +1320,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     String newStatus,
     Map<String, dynamic> studentData,
   ) async {
-    // Find or create an application document for this student
     final appQuery = await FirebaseFirestore.instance
         .collection('applications')
         .where('studentId', isEqualTo: studentId)
@@ -1335,13 +1336,11 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
       return;
     }
 
-    // Update existing application
     await appQuery.docs.first.reference.update({
       'status': newStatus,
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    // Send notification to student
     await FirebaseFirestore.instance.collection('notifications').add({
       'recipientId': studentId,
       'type': 'application_status',
@@ -2242,7 +2241,6 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         bytes,
         fileOptions: const FileOptions(upsert: true),
       );
-      // Store only the path, not the signed URL (to avoid expiry issues)
       await FirebaseFirestore.instance
           .collection('companies')
           .doc(widget.companyId)
@@ -2301,7 +2299,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // ── Company Logo Section ───────────────────────────────────────────
+        // Company Logo Section
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -2426,7 +2424,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         ),
         const SizedBox(height: 16),
 
-        // ── Company Profile Section ────────────────────────────────────────
+        // Company Profile Section
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -2518,7 +2516,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         ),
         const SizedBox(height: 16),
 
-        // ── Notification Preferences Section ───────────────────────────────
+        // Notification Preferences Section
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -2581,7 +2579,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         ),
         const SizedBox(height: 16),
 
-        // ── Legal & More Section ───────────────────────────────────────────
+        // Legal & More Section
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -2670,7 +2668,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         ),
         const SizedBox(height: 16),
 
-        // ── Save & Logout Section ──────────────────────────────────────────
+        // Save & Logout Section
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -2816,7 +2814,6 @@ class _InterviewSchedulingDialogState
         _selectedTime!.minute,
       );
 
-      // Find or create application document
       final appQuery = await FirebaseFirestore.instance
           .collection('applications')
           .where('studentId', isEqualTo: widget.studentId)
@@ -2825,7 +2822,6 @@ class _InterviewSchedulingDialogState
           .get();
 
       if (appQuery.docs.isEmpty) {
-        // Create new application record with interview details
         await FirebaseFirestore.instance.collection('applications').add({
           'studentId': widget.studentId,
           'companyId': widget.companyId,
@@ -2841,7 +2837,6 @@ class _InterviewSchedulingDialogState
           'updatedAt': FieldValue.serverTimestamp(),
         });
       } else {
-        // Update existing application with interview details
         await appQuery.docs.first.reference.update({
           'status': 'interview_scheduled',
           'interviewDate': interviewDateTime,
@@ -2853,7 +2848,6 @@ class _InterviewSchedulingDialogState
         });
       }
 
-      // Send notification to student
       await FirebaseFirestore.instance.collection('notifications').add({
         'recipientId': widget.studentId,
         'type': 'interview_scheduled',
@@ -2925,8 +2919,6 @@ class _InterviewSchedulingDialogState
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Date Picker
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Interview Date'),
@@ -2943,8 +2935,6 @@ class _InterviewSchedulingDialogState
                 onTap: _pickDate,
               ),
               const SizedBox(height: 8),
-
-              // Time Picker
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Interview Time'),
@@ -2961,8 +2951,6 @@ class _InterviewSchedulingDialogState
                 onTap: _pickTime,
               ),
               const SizedBox(height: 12),
-
-              // Interview Type Dropdown
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2989,8 +2977,6 @@ class _InterviewSchedulingDialogState
                 ],
               ),
               const SizedBox(height: 12),
-
-              // Location/Link Input
               if (_interviewType == 'inperson')
                 TextField(
                   controller: _locationCtrl,
@@ -3010,8 +2996,6 @@ class _InterviewSchedulingDialogState
                   ),
                 ),
               const SizedBox(height: 12),
-
-              // Access Token Input
               TextField(
                 controller: _tokenCtrl,
                 decoration: const InputDecoration(
@@ -3021,8 +3005,6 @@ class _InterviewSchedulingDialogState
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -3102,13 +3084,11 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
 
         int pending = totalApps - approved - rejected;
 
-        // Calculate percentages
         final approvalRate = totalApps > 0 ? (approved / totalApps) * 100 : 0.0;
         final interviewRate =
             approved > 0 ? (interviewed / approved) * 100 : 0.0;
         final hireRate = approved > 0 ? (hired / approved) * 100 : 0.0;
 
-        // Group by job post
         final appsByPost = <String, int>{};
         for (var app in applications) {
           final postId = app['internshipId'] as String?;
@@ -3120,7 +3100,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Funnel Overview
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -3141,7 +3120,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Stage 1: Total Applications
                   _FunnelStage(
                     label: 'Total Applications',
                     count: totalApps,
@@ -3149,7 +3127,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: const Color(0xFF1565C0),
                   ),
                   const SizedBox(height: 12),
-                  // Stage 2: Pending Review
                   _FunnelStage(
                     label: 'Pending Review',
                     count: pending,
@@ -3157,7 +3134,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: const Color(0xFFFFB020),
                   ),
                   const SizedBox(height: 12),
-                  // Stage 3: Approved
                   _FunnelStage(
                     label: 'Approved / Shortlisted',
                     count: approved,
@@ -3165,7 +3141,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: AppTheme.success,
                   ),
                   const SizedBox(height: 12),
-                  // Stage 4: Interviewed
                   _FunnelStage(
                     label: 'Interviewed',
                     count: interviewed,
@@ -3174,7 +3149,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
                     color: const Color(0xFF8A5BFF),
                   ),
                   const SizedBox(height: 12),
-                  // Stage 5: Hired
                   _FunnelStage(
                     label: 'Hired',
                     count: hired,
@@ -3185,8 +3159,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Key Metrics
             Row(
               children: [
                 Expanded(
@@ -3284,8 +3256,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
               ],
             ),
             const SizedBox(height: 16),
-
-            // Applications per Job Post
             if (appsByPost.isNotEmpty)
               Container(
                 width: double.infinity,
@@ -3469,10 +3439,6 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// Privacy Policy Page
-// ============================================================================
-
 class _PrivacyPolicyPage extends StatelessWidget {
   const _PrivacyPolicyPage();
 
@@ -3549,10 +3515,6 @@ class _PrivacyPolicyPage extends StatelessWidget {
     );
   }
 }
-
-// ============================================================================
-// Security Page
-// ============================================================================
 
 class _SecurityPage extends StatelessWidget {
   const _SecurityPage();
@@ -3666,10 +3628,6 @@ class _SecurityPage extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// Terms of Service Page
-// ============================================================================
-
 class _TermsOfServicePage extends StatelessWidget {
   const _TermsOfServicePage();
 
@@ -3778,4 +3736,224 @@ class _EmptyPanel extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DashboardCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final String subtitleText;
+  final IconData subtitleIcon;
+  final Color subtitleColor;
+  final VoidCallback onTap;
+
+  const _DashboardCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.subtitleText,
+    required this.subtitleIcon,
+    required this.subtitleColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9), // Light slate
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: const Color(0xFF0F4C81), size: 22),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Color(0xFF0F172A),
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(subtitleIcon, color: subtitleColor, size: 14),
+                const SizedBox(width: 6),
+                Text(
+                  subtitleText,
+                  style: TextStyle(
+                    color: subtitleColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardEmptyState extends StatelessWidget {
+  const _DashboardEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _DashedRectPainter(color: const Color(0xFFCBD5E1)),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.inbox_rounded,
+                      size: 32, color: Color(0xFFCBD5E1)),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.search,
+                        size: 16, color: Color(0xFF0F4C81)),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'No applications received yet.',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'When you receive new applications\nthat match your criteria, they will\nappear here for your review.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                height: 1.5,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                // Future routing functionality could go here
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F4C81),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Post a Job Now',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedRectPainter extends CustomPainter {
+  final Color color;
+  _DashedRectPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final Path path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          const Radius.circular(16)));
+
+    const dashWidth = 6.0;
+    const dashSpace = 4.0;
+    double distance = 0.0;
+
+    for (PathMetric pathMetric in path.computeMetrics()) {
+      while (distance < pathMetric.length) {
+        canvas.drawPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          paint,
+        );
+        distance += dashWidth + dashSpace;
+      }
+      distance = 0.0;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
