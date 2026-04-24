@@ -5,13 +5,9 @@ import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.da
 import 'package:skillmatch/pages/applicant/home/home_screen.dart';
 import 'package:skillmatch/pages/applicant/home/saved_jobs_screen.dart';
 import 'package:skillmatch/pages/applicant/profile/profile_views_screen.dart';
-import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
-import 'package:skillmatch/pages/applicant/settings/help_support_screen.dart';
-import 'package:skillmatch/pages/applicant/settings/privacy_security_screen.dart';
 import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';
-import '../../shared/notifications_center_screen.dart';
+import '../../shared/applicant_notification_button.dart';
 
 class ApplicantDashboard extends StatelessWidget {
   final UserModel user;
@@ -49,109 +45,8 @@ class ApplicantDashboard extends StatelessWidget {
             ),
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications, color: Color(0xFF4A5568)),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const NotificationsCenterScreen(),
-                  ),
-                );
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0, left: 8.0),
-              child: PopupMenuButton<String>(
-                offset: const Offset(0, 45),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Color(0xFFE2E8F0),
-                  child: Icon(Icons.person, color: Color(0xFF4A5568)),
-                ),
-                onSelected: (value) async {
-                  if (value == 'profile') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfilePage()),
-                    );
-                    return;
-                  }
-                  if (value == 'help') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const HelpSupportScreen()),
-                    );
-                    return;
-                  }
-                  if (value == 'privacy') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PrivacySecurityScreen(),
-                      ),
-                    );
-                    return;
-                  }
-                  if (value == 'signout') {
-                    await AuthService.signOut();
-                  }
-                },
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    enabled: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(user.displayName,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(user.email,
-                            style: const TextStyle(
-                                color: Colors.grey, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  const PopupMenuItem(
-                    value: 'profile',
-                    child: Row(children: [
-                      Icon(Icons.person_outline),
-                      SizedBox(width: 8),
-                      Text('My Profile'),
-                    ]),
-                  ),
-                  const PopupMenuItem(
-                    value: 'help',
-                    child: Row(children: [
-                      Icon(Icons.support_agent_outlined),
-                      SizedBox(width: 8),
-                      Text('Help & Support'),
-                    ]),
-                  ),
-                  const PopupMenuItem(
-                    value: 'privacy',
-                    child: Row(children: [
-                      Icon(Icons.privacy_tip_outlined),
-                      SizedBox(width: 8),
-                      Text('Privacy & Security'),
-                    ]),
-                  ),
-                  const PopupMenuItem(
-                    value: 'signout',
-                    child: Row(children: [
-                      Icon(Icons.logout, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Sign Out', style: TextStyle(color: Colors.red)),
-                    ]),
-                  ),
-                ],
-              ),
-            ),
+            const ApplicantNotificationButton(),
+            const SizedBox(width: 8),
           ],
         ),
         body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
