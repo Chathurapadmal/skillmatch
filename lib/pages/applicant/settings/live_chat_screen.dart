@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../services/api_service.dart';
 import '../../../theme/app_theme.dart';
-import '../../../shared/applicant_notification_button.dart';
+import '../../../shared/notification_button.dart';
 
 class LiveChatScreen extends StatefulWidget {
   const LiveChatScreen({super.key});

@@ -7,7 +7,6 @@ import '../admin/admin_dashboard.dart';
 import '../models/user_model.dart';
 import 'applicant/jobs/browse_jobs_page.dart';
 import 'applicant/applicant_dashboard.dart';
-import 'applicant/home/home_screen.dart';
 import 'applicant/upload_cv_page.dart';
 import 'company/company_dashboard.dart';
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:skillmatch/pages/applicant/advanced/roadmap_screen.dart';
 import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.dart';
-import 'package:skillmatch/pages/applicant/home/home_screen.dart';
 import 'package:skillmatch/pages/applicant/home/saved_jobs_screen.dart';
 import 'package:skillmatch/pages/applicant/profile/profile_views_screen.dart';
 import '../../models/user_model.dart';
