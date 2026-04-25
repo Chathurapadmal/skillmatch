@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.skillmatchteam.skillmatch"
         minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 23
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
-import 'package:skillmatch/shared/supabase_storage_page.dart';
+import 'package:skillmatch/shared/applicant_notification_button.dart';
 import 'package:skillmatch/widgets/supabase_image_widget.dart';
 import '../../../shared/chat_overlay.dart';
 
@@ -110,9 +110,8 @@ class _ProfilePageState extends State<ProfilePage> {
       _role = (data['role'] as String?) ?? 'applicant';
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to load profile.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load profile.')));
     } finally {
       if (mounted) {
         setState(() {
@@ -169,9 +168,8 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to save profile.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save profile.')));
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -205,7 +203,6 @@ class _ProfilePageState extends State<ProfilePage> {
         fileOptions: const FileOptions(upsert: true),
       );
 
-      // Store only the path, not the signed URL (to avoid expiry issues)
       await _docRef.set({
         'avatarStoragePath': path,
         'avatarStorageBucket': _profileBucket,
@@ -213,36 +210,16 @@ class _ProfilePageState extends State<ProfilePage> {
       }, SetOptions(merge: true));
 
       if (!mounted) return;
-      // Store path in controller for reference
       setState(() => _avatarUrlCtrl.text = path);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content:
             Text('Profile image uploaded to Supabase $_profileBucket bucket.'),
       ));
     } catch (e) {
-      final message = e.toString().toLowerCase();
-      if (message.contains('bucket not found') ||
-          message.contains('statuscode: 404')) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Supabase bucket "profile" not found. Please create it in Supabase Storage.'),
-        ));
-      } else if (message.contains('statuscode: 403') ||
-          message.contains('row-level security') ||
-          message.contains('unauthorized') ||
-          message.contains('permission denied')) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Supabase policy denied upload (403). Allow INSERT/SELECT on bucket "profile" for anon and authenticated roles.'),
-        ));
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Avatar upload failed: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Avatar upload failed: $e')),
+      );
     } finally {
       if (mounted) setState(() => _uploadingAvatar = false);
     }
@@ -269,13 +246,12 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 children: [
                   TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: 'Full Name'),
-                  ),
+                      controller: nameCtrl,
+                      decoration:
+                          const InputDecoration(labelText: 'Full Name')),
                   TextField(
-                    controller: headlineCtrl,
-                    decoration: const InputDecoration(labelText: 'Headline'),
-                  ),
+                      controller: headlineCtrl,
+                      decoration: const InputDecoration(labelText: 'Headline')),
                   const SizedBox(height: 10),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -288,14 +264,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         isScrollControlled: true,
                         backgroundColor: const Color(0xFF161A3A),
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(20),
-                          ),
-                        ),
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20))),
                         builder: (_) => _ProfileIndustryPickerSheet(
-                          options: _industryOptions,
-                          selectedValue: selectedIndustry,
-                        ),
+                            options: _industryOptions,
+                            selectedValue: selectedIndustry),
                       );
                       if (selected != null) {
                         setDialogState(() => selectedIndustry = selected);
@@ -303,17 +276,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                   TextField(
-                    controller: graduationCtrl,
-                    decoration: const InputDecoration(labelText: 'Graduation'),
-                  ),
+                      controller: graduationCtrl,
+                      decoration:
+                          const InputDecoration(labelText: 'Graduation')),
                   TextField(
-                    controller: locationCtrl,
-                    decoration: const InputDecoration(labelText: 'Location'),
-                  ),
+                      controller: locationCtrl,
+                      decoration: const InputDecoration(labelText: 'Location')),
                   TextField(
-                    controller: avatarUrlCtrl,
-                    decoration: const InputDecoration(labelText: 'Avatar URL'),
-                  ),
+                      controller: avatarUrlCtrl,
+                      decoration:
+                          const InputDecoration(labelText: 'Avatar URL')),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
@@ -324,25 +296,22 @@ class _ProfilePageState extends State<ProfilePage> {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                              child: CircularProgressIndicator(strokeWidth: 2))
                           : const Icon(Icons.cloud_upload_outlined),
                       label: const Text('Upload Profile Icon (Supabase)'),
                     ),
                   ),
                   TextField(
-                    controller: bioCtrl,
-                    maxLines: 4,
-                    decoration: const InputDecoration(labelText: 'Bio'),
-                  ),
+                      controller: bioCtrl,
+                      maxLines: 4,
+                      decoration: const InputDecoration(labelText: 'Bio')),
                 ],
               ),
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel')),
               ElevatedButton(
                 onPressed: () {
                   setState(() {
@@ -367,30 +336,25 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _showAddSkillDialog() async {
     final skillCtrl = TextEditingController();
-
     await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Add Skill'),
           content: TextField(
-            controller: skillCtrl,
-            decoration: const InputDecoration(hintText: 'Enter a skill'),
-          ),
+              controller: skillCtrl,
+              decoration: const InputDecoration(hintText: 'Enter a skill')),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () {
                 final skill = skillCtrl.text.trim();
                 if (skill.isNotEmpty &&
                     !_manualSkills.contains(skill) &&
                     !_aiSkills.contains(skill)) {
-                  setState(() {
-                    _manualSkills.add(skill);
-                  });
+                  setState(() => _manualSkills.add(skill));
                 }
                 Navigator.pop(context);
               },
@@ -404,39 +368,31 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _showCertificationDialog({int? index}) async {
     final existing = index != null ? _certifications[index] : null;
-
-    final titleCtrl = TextEditingController(
-      text: existing?['title']?.toString() ?? '',
-    );
-    final issuerCtrl = TextEditingController(
-      text: existing?['issuer']?.toString() ?? '',
-    );
-    final dateCtrl = TextEditingController(
-      text: existing?['date']?.toString() ?? '',
-    );
+    final titleCtrl =
+        TextEditingController(text: existing?['title']?.toString() ?? '');
+    final issuerCtrl =
+        TextEditingController(text: existing?['issuer']?.toString() ?? '');
+    final dateCtrl =
+        TextEditingController(text: existing?['date']?.toString() ?? '');
 
     await showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(
-            index == null ? 'Add Certification' : 'Edit Certification',
-          ),
+          title:
+              Text(index == null ? 'Add Certification' : 'Edit Certification'),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                ),
+                    controller: titleCtrl,
+                    decoration: const InputDecoration(labelText: 'Title')),
                 TextField(
-                  controller: issuerCtrl,
-                  decoration: const InputDecoration(labelText: 'Issuer'),
-                ),
+                    controller: issuerCtrl,
+                    decoration: const InputDecoration(labelText: 'Issuer')),
                 TextField(
-                  controller: dateCtrl,
-                  decoration: const InputDecoration(labelText: 'Date'),
-                ),
+                    controller: dateCtrl,
+                    decoration: const InputDecoration(labelText: 'Date')),
               ],
             ),
           ),
@@ -444,17 +400,14 @@ class _ProfilePageState extends State<ProfilePage> {
             if (index != null)
               TextButton(
                 onPressed: () {
-                  setState(() {
-                    _certifications.removeAt(index);
-                  });
+                  setState(() => _certifications.removeAt(index));
                   Navigator.pop(context);
                 },
                 child: const Text('Delete'),
               ),
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () {
                 final item = {
@@ -462,9 +415,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   'issuer': issuerCtrl.text.trim(),
                   'date': dateCtrl.text.trim(),
                 };
-
                 if ((item['title'] ?? '').isEmpty) return;
-
                 setState(() {
                   if (index == null) {
                     _certifications.add(item);
@@ -484,9 +435,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _removeSkill(String skill) {
     if (_aiSkills.contains(skill)) return;
-    setState(() {
-      _manualSkills.remove(skill);
-    });
+    setState(() => _manualSkills.remove(skill));
   }
 
   Future<void> _openCvUploadPage() async {
@@ -520,7 +469,7 @@ class _ProfilePageState extends State<ProfilePage> {
         mergedCertsByKey[key] = {
           'title': title,
           'issuer': issuer,
-          'date': date,
+          'date': date
         };
       }
     }
@@ -535,30 +484,67 @@ class _ProfilePageState extends State<ProfilePage> {
     await _saveProfile();
   }
 
+  Widget _buildSmallInfoChip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.black54),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(
+                fontSize: 12,
+                color: Colors.black87,
+                fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _statCard(String number, String label) {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        padding: const EdgeInsets.symmetric(vertical: 18),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(22),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           children: [
             Text(
               number,
               style: const TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF4B52C6),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF4C30D0),
               ),
             ),
             const SizedBox(height: 6),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, letterSpacing: 0.4),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.black54,
+                letterSpacing: 0.5,
+              ),
             ),
           ],
         ),
@@ -569,17 +555,25 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildSkillChip(String skill) {
     final isAiSkill = _aiSkills.contains(skill);
     return Container(
-      margin: const EdgeInsets.only(right: 10, bottom: 12),
+      margin: const EdgeInsets.only(right: 8, bottom: 10),
       child: InputChip(
         label: Text(skill),
         selected: isAiSkill,
         onDeleted: isAiSkill ? null : () => _removeSkill(skill),
-        deleteIconColor: Colors.white,
-        backgroundColor: const Color(0xFF02141C),
-        selectedColor: const Color(0xFF4B52C6),
-        labelStyle: const TextStyle(color: Colors.white),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        side: BorderSide.none,
+        deleteIconColor: Colors.black54,
+        backgroundColor: Colors.white,
+        selectedColor: Colors.white,
+        elevation: 1,
+        shadowColor: Colors.black.withOpacity(0.1),
+        labelStyle: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+          fontSize: 13,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
       ),
     );
   }
@@ -588,27 +582,32 @@ class _ProfilePageState extends State<ProfilePage> {
     return GestureDetector(
       onTap: () => _showCertificationDialog(index: index),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(18),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFFD9DDF4),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFEEF0FA),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(
-                Icons.description_outlined,
-                color: Color(0xFF4B52C6),
-              ),
+              child: const Icon(Icons.verified_user_outlined,
+                  color: Color(0xFF4C30D0)),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -616,19 +615,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(
                     cert['title']?.toString() ?? '',
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${cert['issuer'] ?? ''}   ${cert['date'] ?? ''}',
-                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                    'Issued ${cert['date'] ?? ''}',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right),
+            const Icon(Icons.open_in_new, color: Colors.black38, size: 20),
           ],
         ),
       ),
@@ -645,32 +644,45 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFDDE5F1),
+        backgroundColor: const Color(0xFFF6F8FB),
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           centerTitle: true,
           title: const Text(
             'Profile',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+            style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 18),
           ),
-          iconTheme: const IconThemeData(color: Colors.black),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF4C30D0)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
           actions: [
+            const ApplicantNotificationButton(),
             IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const SupabaseStoragePage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.cloud_outlined),
-            ),
-            IconButton(
+              icon: const Icon(Icons.edit, color: Color(0xFF4C30D0)),
               onPressed: _showEditProfileDialog,
-              icon: const Icon(Icons.settings),
             ),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          selectedItemColor: const Color(0xFF4C30D0),
+          unselectedItemColor: Colors.grey,
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          currentIndex: 3,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Feed'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.people_outline), label: 'Network'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.work_outline), label: 'Jobs'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],
         ),
         body: _loading
@@ -678,306 +690,347 @@ class _ProfilePageState extends State<ProfilePage> {
             : Form(
                 key: _formKey,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 30),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Header Content
                       Center(
                         child: Column(
                           children: [
                             Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 Container(
-                                  width: 120,
-                                  height: 120,
+                                  width: 110,
+                                  height: 110,
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFF2447F9),
-                                      width: 3,
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF4C30D0),
+                                        Color(0xFF00C9FF)
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF4C30D0)
+                                            .withOpacity(0.3),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 5),
+                                      ),
+                                    ],
                                   ),
-                                  child: avatarUrl.isNotEmpty
-                                      ? SupabaseImageWidget(
-                                          storagePath: avatarUrl,
-                                          isCircular: true,
-                                          radius: 54,
-                                        )
-                                      : CircleAvatar(
-                                          radius: 54,
-                                          backgroundColor: Colors.white,
-                                          child: const Icon(Icons.person,
-                                              size: 55),
-                                        ),
+                                  child: ClipOval(
+                                    child: avatarUrl.isNotEmpty
+                                        ? SupabaseImageWidget(
+                                            storagePath: avatarUrl,
+                                            isCircular: true,
+                                            radius: 50,
+                                          )
+                                        : Container(
+                                            color: Colors.white,
+                                            child: const Icon(Icons.person,
+                                                size: 50, color: Colors.grey),
+                                          ),
+                                  ),
                                 ),
                                 Positioned(
-                                  right: 2,
-                                  bottom: 2,
+                                  right: 0,
+                                  bottom: 0,
                                   child: GestureDetector(
                                     onTap: _showEditProfileDialog,
                                     child: Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: const BoxDecoration(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF4C30D0),
                                         shape: BoxShape.circle,
-                                        color: Color(0xFF2447F9),
+                                        border: Border.all(
+                                            color: Colors.white, width: 2),
                                       ),
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                        size: 18,
-                                      ),
+                                      child: const Icon(Icons.edit,
+                                          color: Colors.white, size: 16),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                             Text(
                               _nameCtrl.text.isEmpty
                                   ? 'Your Name'
                                   : _nameCtrl.text,
                               style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                              ),
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
                             Text(
                               _headlineCtrl.text.isEmpty
                                   ? 'Add your headline'
                                   : _headlineCtrl.text,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF3452F2),
-                              ),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4C30D0)),
                             ),
                             const SizedBox(height: 16),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(
-                                  Icons.calendar_month,
-                                  size: 20,
-                                  color: Colors.black54,
-                                ),
+                                _buildSmallInfoChip(
+                                    Icons.school_outlined,
+                                    _graduationCtrl.text.isEmpty
+                                        ? 'Class of 2025'
+                                        : _graduationCtrl.text),
                                 const SizedBox(width: 8),
-                                Text(
-                                  _graduationCtrl.text.isEmpty
-                                      ? 'Class of 2025'
-                                      : _graduationCtrl.text,
-                                  style: const TextStyle(color: Colors.black54),
-                                ),
-                                const SizedBox(width: 28),
-                                const Icon(
-                                  Icons.location_on,
-                                  size: 20,
-                                  color: Colors.black54,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _locationCtrl.text.isEmpty
-                                      ? 'Add location'
-                                      : _locationCtrl.text,
-                                  style: const TextStyle(color: Colors.black54),
-                                ),
+                                _buildSmallInfoChip(
+                                    Icons.location_on_outlined,
+                                    _locationCtrl.text.isEmpty
+                                        ? 'Add location'
+                                        : _locationCtrl.text),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _industryCtrl.text.isEmpty
-                                  ? _industryOptions.first
-                                  : _industryCtrl.text,
-                              style: const TextStyle(
-                                color: Color(0xFF3452F2),
-                                fontWeight: FontWeight.w600,
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5F5EF),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _industryCtrl.text.isEmpty
+                                    ? _industryOptions.first
+                                    : _industryCtrl.text.toUpperCase(),
+                                style: const TextStyle(
+                                    color: Color(0xFF1F8B83),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                    letterSpacing: 0.5),
                               ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 24),
+
+                      // Actions (Edit & Upload CV/Share styled icon)
                       Row(
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 54,
+                              height: 55,
                               child: ElevatedButton(
                                 onPressed: _showEditProfileDialog,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4B52C6),
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: const Color(0xFF4C30D0),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
+                                      borderRadius: BorderRadius.circular(16)),
+                                  elevation: 5,
+                                  shadowColor:
+                                      const Color(0xFF4C30D0).withOpacity(0.5),
                                 ),
-                                child: const Text('Edit Profile'),
+                                child: const Text('Edit Profile',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white)),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 14),
-                          SizedBox(
-                            width: 54,
-                            height: 54,
-                            child: ElevatedButton(
+                          const SizedBox(width: 12),
+                          Container(
+                            height: 55,
+                            width: 55,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: IconButton(
                               onPressed: _openCvUploadPage,
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xFF4B52C6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              child: const Icon(Icons.upload_file, size: 26),
+                              icon: const Icon(Icons.share_outlined,
+                                  color: Color(0xFF4C30D0)),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 24),
+
+                      // Stats Row
                       Row(
                         children: [
                           _statCard('${_allSkills.length}', 'SKILLS'),
-                          _statCard('$_matchRate%', 'MATCH RATE'),
-                          _statCard(
-                              '${_certifications.length}', 'CERTIFICATES'),
+                          _statCard('$_matchRate%', 'MATCH'),
+                          _statCard('${_certifications.length}', 'CERTS'),
                         ],
                       ),
                       const SizedBox(height: 30),
+
+                      // Technical Skills
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Expanded(
-                            child: Text(
-                              'Technical Skills',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                          Row(
+                            children: const [
+                              Icon(Icons.bolt, color: Color(0xFF4C30D0)),
+                              SizedBox(width: 8),
+                              Text('Technical Skills',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                            ],
                           ),
-                          if (_aiVerified)
-                            Container(
+                          TextButton(
+                            onPressed: _showAddSkillDialog,
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFFEEF0FA),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: const Text(
-                                'AI Verified',
+                                  horizontal: 16, vertical: 4),
+                              minimumSize: Size.zero,
+                            ),
+                            child: const Text('+ Add',
                                 style: TextStyle(
-                                  color: Color(0xFF4B52C6),
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
+                                    color: Color(0xFF4C30D0),
+                                    fontWeight: FontWeight.bold)),
+                          )
                         ],
-                      ),
-                      const SizedBox(height: 18),
-                      Wrap(
-                        children: [
-                          ..._allSkills.map(_buildSkillChip),
-                          Container(
-                            margin:
-                                const EdgeInsets.only(right: 10, bottom: 12),
-                            child: OutlinedButton.icon(
-                              onPressed: _showAddSkillDialog,
-                              icon: const Icon(Icons.add),
-                              label: const Text('Add'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.black,
-                                backgroundColor: Colors.white.withValues(
-                                  alpha: 0.65,
-                                ),
-                                side: const BorderSide(color: Colors.black54),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Certifications',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
                       ),
                       const SizedBox(height: 16),
-                      ..._certifications.asMap().entries.map(
-                            (entry) =>
-                                _buildCertificationCard(entry.value, entry.key),
+                      Wrap(
+                        children: _allSkills.map(_buildSkillChip).toList(),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // About Me
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.person_outline,
+                                  color: Color(0xFF4C30D0)),
+                              SizedBox(width: 8),
+                              Text('About Me',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                            ],
                           ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: () => _showCertificationDialog(),
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Certification'),
-                        ),
+                          TextButton(
+                            onPressed: _showEditProfileDialog,
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFFEEF0FA),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 4),
+                              minimumSize: Size.zero,
+                            ),
+                            child: Text(
+                                _bioCtrl.text.isEmpty ? '+ Add' : 'Edit',
+                                style: const TextStyle(
+                                    color: Color(0xFF4C30D0),
+                                    fontWeight: FontWeight.bold)),
+                          )
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFB8C1CF),
-                          borderRadius: BorderRadius.circular(18),
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           _bioCtrl.text.isEmpty
-                              ? 'Add your bio here...'
+                              ? 'Write a short professional bio that highlights your goals and experience...'
                               : _bioCtrl.text,
-                          style: const TextStyle(fontSize: 15),
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: _bioCtrl.text.isEmpty
+                                  ? Colors.black45
+                                  : Colors.black87,
+                              height: 1.5),
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 30),
+
+                      // Certifications
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(Icons.verified_outlined,
+                                  color: Color(0xFF4C30D0)),
+                              SizedBox(width: 8),
+                              Text('Certifications',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          TextButton(
+                            onPressed: () => _showCertificationDialog(),
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFFEEF0FA),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 4),
+                              minimumSize: Size.zero,
+                            ),
+                            child: const Text('+ Add',
+                                style: TextStyle(
+                                    color: Color(0xFF4C30D0),
+                                    fontWeight: FontWeight.bold)),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      ..._certifications.asMap().entries.map((entry) =>
+                          _buildCertificationCard(entry.value, entry.key)),
+
+                      const SizedBox(height: 24),
+
+                      // Save Profile Button
                       SizedBox(
                         width: double.infinity,
-                        height: 52,
+                        height: 55,
                         child: ElevatedButton(
                           onPressed: _saving ? null : _saveProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4B52C6),
-                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xFF4C30D0),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                                borderRadius: BorderRadius.circular(16)),
+                            elevation: 5,
+                            shadowColor:
+                                const Color(0xFF4C30D0).withOpacity(0.5),
                           ),
                           child: _saving
                               ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
+                                  width: 24,
+                                  height: 24,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  'Save Profile',
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
+                                      strokeWidth: 2.5, color: Colors.white))
+                              : const Text('Save Profile',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Center(
-                        child: Text(
-                          'Email: $_email | Role: ${_role.toUpperCase()}',
-                          style: const TextStyle(color: Colors.black54),
-                        ),
-                      ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
