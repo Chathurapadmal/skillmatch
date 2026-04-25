@@ -3,10 +3,56 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'aiserv.dart';
+import 'api_service.dart';
 
 class AiService {
   static const String _cvBucket = 'cv';
+
+  static Future<String?> testAI() async {
+    try {
+      return await ApiService.sendMessage(
+        'Say hello for my SkillMatch app',
+      );
+    } catch (e, stack) {
+      debugPrint('AiService testAI error: $e');
+      debugPrint('$stack');
+      rethrow;
+    }
+  }
+
+  static Future<Map<String, dynamic>> extractCvProfile(String cvText) async {
+    final prompt = '''
+Extract skills and certifications from the CV text below.
+Return ONLY valid JSON in this exact shape:
+{
+  "skills": ["skill1", "skill2"],
+  "certifications": [
+    {"title": "...", "issuer": "...", "date": "..."}
+  ]
+}
+
+Rules:
+- Include only technical/professional skills.
+- Keep skills unique and short.
+- Certifications should include title, issuer, and date when available.
+- If missing, use empty string for issuer/date.
+- Do not include markdown fences.
+
+CV:
+$cvText
+''';
+
+    try {
+      final responseText = await ApiService.sendMessage(prompt);
+      final cleaned = _stripJsonFences(responseText);
+      final decoded = jsonDecode(cleaned) as Map<String, dynamic>;
+      return _normalizeCvPayload(decoded);
+    } catch (e, stack) {
+      debugPrint('AiService extractCvProfile error: $e');
+      debugPrint('$stack');
+      return _heuristicExtract(cvText);
+    }
+  }
 
   static String inferApplicantPath({
     required List<String> skills,
@@ -316,7 +362,7 @@ class AiService {
   }) async {
     try {
       final text = utf8.decode(bytes, allowMalformed: true).trim();
-      final extracted = await AIService.extractCvProfile(text);
+      final extracted = await extractCvProfile(text);
       final skills = ((extracted['skills'] as List?) ?? const <dynamic>[])
           .map((e) => e.toString().trim())
           .where((e) => e.isNotEmpty)
@@ -422,5 +468,85 @@ class AiService {
       return '${first.substring(0, 177)}...';
     }
     return first;
+  }
+
+  static String _stripJsonFences(String input) {
+    var output = input.trim();
+    if (output.startsWith('```')) {
+      output = output
+          .replaceFirst(RegExp(r'^```[a-zA-Z]*'), '')
+          .replaceFirst(RegExp(r'```$'), '')
+          .trim();
+    }
+    return output;
+  }
+
+  static Map<String, dynamic> _normalizeCvPayload(Map<String, dynamic> data) {
+    final skills = ((data['skills'] as List?) ?? const <dynamic>[])
+        .map((e) => e.toString().trim())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
+
+    final certifications =
+        ((data['certifications'] as List?) ?? const <dynamic>[])
+            .whereType<Map>()
+            .map((item) {
+              final map = Map<String, dynamic>.from(item);
+              return <String, dynamic>{
+                'title': (map['title'] ?? '').toString().trim(),
+                'issuer': (map['issuer'] ?? '').toString().trim(),
+                'date': (map['date'] ?? '').toString().trim(),
+              };
+            })
+            .where((c) => (c['title'] as String).isNotEmpty)
+            .toList();
+
+    return {'skills': skills, 'certifications': certifications};
+  }
+
+  static Map<String, dynamic> _heuristicExtract(String cvText) {
+    final lines = cvText.split(RegExp(r'\r?\n'));
+
+    const knownSkills = <String>[
+      'flutter',
+      'dart',
+      'java',
+      'kotlin',
+      'python',
+      'javascript',
+      'typescript',
+      'react',
+      'node.js',
+      'firebase',
+      'sql',
+      'aws',
+      'docker',
+      'git',
+    ];
+
+    final lowerCv = cvText.toLowerCase();
+    final skills = knownSkills
+        .where((skill) => lowerCv.contains(skill))
+        .map(
+          (skill) => skill.toUpperCase() == skill
+              ? skill
+              : skill[0].toUpperCase() + skill.substring(1),
+        )
+        .toList();
+
+    final certifications = <Map<String, dynamic>>[];
+    for (final line in lines) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) continue;
+      if (RegExp(
+        r'certification|certified|certificate',
+        caseSensitive: false,
+      ).hasMatch(trimmed)) {
+        certifications.add({'title': trimmed, 'issuer': '', 'date': ''});
+      }
+    }
+
+    return {'skills': skills, 'certifications': certifications};
   }
 }

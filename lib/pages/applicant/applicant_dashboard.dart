@@ -4,13 +4,9 @@ import 'package:skillmatch/pages/applicant/advanced/roadmap_screen.dart';
 import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/pages/applicant/home/saved_jobs_screen.dart';
 import 'package:skillmatch/pages/applicant/profile/profile_views_screen.dart';
-import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
-import 'package:skillmatch/pages/applicant/settings/help_support_screen.dart';
-import 'package:skillmatch/pages/applicant/settings/privacy_security_screen.dart';
 import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';
-import '../../shared/notifications_center_screen.dart';
+import '../../shared/applicant_notification_button.dart';
 
 class ApplicantDashboard extends StatelessWidget {
   final UserModel user;
@@ -152,6 +148,8 @@ class ApplicantDashboard extends StatelessWidget {
                 ],
               ),
             ),
+            const ApplicantNotificationButton(),
+            const SizedBox(width: 8),
           ],
         ),
         body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(

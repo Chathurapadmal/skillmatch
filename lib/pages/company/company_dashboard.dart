@@ -59,24 +59,43 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
 
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7FA),
+        backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0,
-          title: Text(
-            _selectedIndex == 0
-                ? 'Company Workspace'
-                : _selectedIndex == 1
-                    ? 'Candidate Discovery'
-                    : _selectedIndex == 2
-                        ? 'Internship Posts'
-                        : _selectedIndex == 3
-                            ? 'Access Tokens'
-                            : 'Company Settings',
-            style: const TextStyle(
-              color: Color(0xFF1E3A5F),
-              fontWeight: FontWeight.w700,
-            ),
+          elevation: 2,
+          shadowColor: const Color(0xFF1E3A5F).withValues(alpha: 0.1),
+          title: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 28,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(2),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1565C0), Color(0xFF2E86AB)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                _selectedIndex == 0
+                    ? 'Company Workspace'
+                    : _selectedIndex == 1
+                        ? 'Candidate Discovery'
+                        : _selectedIndex == 2
+                            ? 'Internship Posts'
+                            : _selectedIndex == 3
+                                ? 'Access Tokens'
+                                : 'Company Settings',
+                style: const TextStyle(
+                  color: Color(0xFF1E3A5F),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                ),
+              ),
+            ],
           ),
           actions: [
             StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -241,42 +260,57 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
           ],
         ),
         body: IndexedStack(index: _selectedIndex, children: pages),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: (index) {
-            setState(() => _selectedIndex = index);
-          },
-          indicatorColor: const Color(0xFF1565C0).withValues(alpha: 0.12),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon:
-                  Icon(Icons.dashboard_rounded, color: Color(0xFF1565C0)),
-              label: 'Dashboard',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.people_alt_outlined),
-              selectedIcon:
-                  Icon(Icons.people_alt_rounded, color: Color(0xFF1565C0)),
-              label: 'Candidates',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.work_outline_rounded),
-              selectedIcon: Icon(Icons.work_rounded, color: Color(0xFF1565C0)),
-              label: 'Posts',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.key_outlined),
-              selectedIcon: Icon(Icons.key, color: Color(0xFF1565C0)),
-              label: 'Tokens',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon:
-                  Icon(Icons.settings_rounded, color: Color(0xFF1565C0)),
-              label: 'Settings',
-            ),
-          ],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() => _selectedIndex = index);
+            },
+            backgroundColor: Colors.white,
+            elevation: 0,
+            indicatorColor: const Color(0xFF1565C0).withValues(alpha: 0.15),
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined),
+                selectedIcon:
+                    Icon(Icons.dashboard_rounded, color: Color(0xFF1565C0)),
+                label: 'Dashboard',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.people_alt_outlined),
+                selectedIcon:
+                    Icon(Icons.people_alt_rounded, color: Color(0xFF1565C0)),
+                label: 'Candidates',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.work_outline_rounded),
+                selectedIcon:
+                    Icon(Icons.work_rounded, color: Color(0xFF1565C0)),
+                label: 'Posts',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.key_outlined),
+                selectedIcon: Icon(Icons.key, color: Color(0xFF1565C0)),
+                label: 'Tokens',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon:
+                    Icon(Icons.settings_rounded, color: Color(0xFF1565C0)),
+                label: 'Settings',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -379,35 +413,82 @@ class _CompanyOverviewTab extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1E3A5F).withValues(alpha: 0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Welcome, $companyName',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Welcome Back! 👋',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  companyName,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.business_center,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 14),
                       const Text(
-                        'Track applicants, manage active posts, and move top-matched candidates forward.',
-                        style: TextStyle(color: Colors.white70),
+                        'Track applicants, manage active posts, and move top talent forward.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
@@ -415,13 +496,18 @@ class _CompanyOverviewTab extends StatelessWidget {
                         onTap: openApplicantsDetails,
                         child: _MetricCard(
                           icon: Icons.assignment_ind_outlined,
-                          label: 'Applicants',
+                          label: 'Total Applicants',
                           value: '${applications.length}',
                           color: const Color(0xFF1565C0),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1565C0), Color(0xFF1E88E5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
                         onTap: openShortlistedDetails,
@@ -430,10 +516,15 @@ class _CompanyOverviewTab extends StatelessWidget {
                           label: 'Shortlisted',
                           value: '$shortlisted',
                           color: AppTheme.success,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: GestureDetector(
                         onTap: openActivePostsDetails,
@@ -442,26 +533,37 @@ class _CompanyOverviewTab extends StatelessWidget {
                           label: 'Active Posts',
                           value: '$activePosts',
                           color: AppTheme.warning,
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFA726), Color(0xFFFF7043)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Top-Matched Candidate Workflow',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                const SizedBox(height: 28),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    'Recent Applications',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1E3A5F),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 if (isLoading)
                   const Padding(
-                    padding: EdgeInsets.only(top: 18),
+                    padding: EdgeInsets.only(top: 28),
                     child: Center(
-                      child: CircularProgressIndicator(color: AppTheme.primary),
+                      child: CircularProgressIndicator(
+                        color: AppTheme.primary,
+                        strokeWidth: 2.5,
+                      ),
                     ),
                   )
                 else if (topApplications.isEmpty)
@@ -475,28 +577,43 @@ class _CompanyOverviewTab extends StatelessWidget {
                     final status =
                         (data['status'] as String? ?? 'applied').toLowerCase();
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFDCE3F0)),
+                        border: Border.all(
+                          color: const Color(0xFFDCE3F0),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            width: 40,
-                            height: 40,
+                            width: 42,
+                            height: 42,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1565C0)
-                                  .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF1565C0), Color(0xFF1E88E5)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(11),
                             ),
-                            child: const Icon(Icons.person_outline,
-                                color: Color(0xFF1565C0)),
+                            child: const Icon(
+                              Icons.person_outline,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -510,32 +627,40 @@ class _CompanyOverviewTab extends StatelessWidget {
                                       : 'Student Candidate',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
+                                    color: Color(0xFF1E3A5F),
+                                    fontSize: 14,
                                   ),
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
                                   (data['title'] as String?) ??
-                                      'Internship role',
-                                  style: const TextStyle(color: Colors.black54),
+                                      'Internship position',
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
+                                horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color:
-                                  _statusColor(status).withValues(alpha: 0.14),
+                                  _statusColor(status).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color:
+                                    _statusColor(status).withValues(alpha: 0.2),
+                              ),
                             ),
                             child: Text(
-                              status.toUpperCase(),
+                              status.replaceAll('_', ' ').toUpperCase(),
                               style: TextStyle(
                                 color: _statusColor(status),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
@@ -571,33 +696,120 @@ class _CompanyOverviewTab extends StatelessWidget {
   }) {
     showModalBottomSheet(
       context: context,
-      showDragHandle: true,
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 10),
-              if (items.isEmpty)
-                const Text('No records found.',
-                    style: TextStyle(color: Colors.grey))
-              else
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (_, index) => ListTile(
-                      leading: const Icon(Icons.circle, size: 10),
-                      title: Text(items[index]),
-                    ),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1565C0)
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.info_outline,
+                              color: Color(0xFF1565C0),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1E3A5F),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      if (items.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Text(
+                              'No records found',
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        Expanded(
+                          child: ListView.separated(
+                            itemCount: items.length,
+                            separatorBuilder: (_, __) => Divider(
+                              height: 1,
+                              color: Colors.grey.shade200,
+                            ),
+                            itemBuilder: (_, index) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1565C0)
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Icon(
+                                      Icons.check,
+                                      size: 14,
+                                      color: Color(0xFF1565C0),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      items[index],
+                                      style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -1748,7 +1960,6 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
     await ref.delete();
   }
 
-
   Widget _buildCreateInternshipPostCard() {
     return Container(
       decoration: BoxDecoration(
@@ -2512,8 +2723,8 @@ class _TokenManagementTab extends StatelessWidget {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0)
-                              .withValues(alpha: 0.10),
+                          color:
+                              const Color(0xFF1565C0).withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(11),
                         ),
                         child: const Icon(
@@ -2899,6 +3110,7 @@ class _TokenManagementTab extends StatelessWidget {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 }
+
 class _CompanySettingsTab extends StatefulWidget {
   final String companyId;
   final String initialCompanyName;
@@ -3232,7 +3444,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
             _buildSettingsSwitchTile(
               icon: Icons.people_alt_outlined,
               title: 'Candidate suggestions',
-              subtitle: 'Receive updates about matched or recommended profiles.',
+              subtitle:
+                  'Receive updates about matched or recommended profiles.',
               value: _notifyCandidateSuggestions,
               onChanged: (value) {
                 setState(() => _notifyCandidateSuggestions = value);
@@ -3244,7 +3457,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         _buildSettingsSection(
           icon: Icons.tune_outlined,
           title: 'Workspace Controls',
-          subtitle: 'Manage appearance, storage, policy pages, and account access.',
+          subtitle:
+              'Manage appearance, storage, policy pages, and account access.',
           children: [
             _buildSettingsSwitchTile(
               icon: Icons.dark_mode_outlined,
@@ -3683,19 +3897,27 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
   }) {
     return SizedBox(
       width: double.infinity,
-      height: 44,
+      height: 46,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 18),
-        label: Text(label),
+        icon: Icon(icon, size: 18, color: const Color(0xFF1E3A5F)),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+          ),
+        ),
         style: OutlinedButton.styleFrom(
           alignment: Alignment.centerLeft,
           foregroundColor: const Color(0xFF1E3A5F),
-          side: const BorderSide(color: Color(0xFFD5DEEC)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(13),
+          side: const BorderSide(
+            color: Color(0xFFD5DEEC),
+            width: 1.2,
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
       ),
     );
@@ -3704,28 +3926,36 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
   Widget _buildSaveSettingsButton() {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 52,
       child: ElevatedButton.icon(
         onPressed: _saving ? null : _save,
         icon: _saving
             ? const SizedBox(
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                  strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : const Icon(Icons.save_outlined),
-        label: Text(_saving ? 'Saving settings...' : 'Save Settings'),
+            : const Icon(Icons.save_outlined, size: 20),
+        label: Text(
+          _saving ? 'Saving settings...' : 'Save Changes',
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 15,
+          ),
+        ),
         style: ElevatedButton.styleFrom(
-          elevation: 0,
+          elevation: _saving ? 2 : 4,
+          shadowColor: const Color(0xFF1565C0).withValues(alpha: 0.3),
           backgroundColor: const Color(0xFF1565C0),
+          disabledBackgroundColor:
+              const Color(0xFF1565C0).withValues(alpha: 0.5),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w800),
         ),
       ),
     );
@@ -3734,20 +3964,26 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
   Widget _buildSignOutButton() {
     return SizedBox(
       width: double.infinity,
-      height: 46,
+      height: 50,
       child: TextButton.icon(
         onPressed: () => AuthService.signOut(),
-        icon: const Icon(Icons.logout, color: AppTheme.error),
+        icon: const Icon(Icons.logout, size: 18, color: AppTheme.error),
         label: const Text(
           'Sign Out',
           style: TextStyle(
             color: AppTheme.error,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
+            fontSize: 15,
           ),
         ),
         style: TextButton.styleFrom(
+          backgroundColor: AppTheme.error.withValues(alpha: 0.08),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(
+              color: AppTheme.error,
+              width: 1.2,
+            ),
           ),
         ),
       ),
@@ -4153,8 +4389,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
 
         // Calculate percentages
         final approvalRate = totalApps > 0 ? (approved / totalApps) * 100 : 0.0;
-        final rejectionRate =
-            totalApps > 0 ? (rejected / totalApps) * 100 : 0.0;
         final interviewRate =
             approved > 0 ? (interviewed / approved) * 100 : 0.0;
         final hireRate = approved > 0 ? (hired / approved) * 100 : 0.0;
@@ -4478,41 +4712,75 @@ class _MetricCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final Gradient? gradient;
 
   const _MetricCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+        gradient: gradient,
+        color: gradient == null ? Colors.white : null,
+        borderRadius: BorderRadius.circular(16),
+        border: gradient == null
+            ? Border.all(color: const Color(0xFFDCE3F0))
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: gradient != null
+                ? color.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color),
-          const SizedBox(height: 6),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: gradient != null
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: gradient != null ? Colors.white : color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 10),
           Text(
             value,
             style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
+              color: gradient != null ? Colors.white : color,
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.black54,
+            style: TextStyle(
+              color: gradient != null
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : Colors.black54,
               fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -4810,20 +5078,43 @@ class _EmptyPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFDCE3F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.grey.shade400, size: 34),
-          const SizedBox(height: 8),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1565C0).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF1565C0).withValues(alpha: 0.5),
+              size: 36,
+            ),
+          ),
+          const SizedBox(height: 16),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.grey),
+            style: const TextStyle(
+              color: Colors.black54,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

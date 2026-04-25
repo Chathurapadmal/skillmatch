@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
+import 'package:skillmatch/shared/applicant_notification_button.dart';
 import 'package:skillmatch/widgets/supabase_image_widget.dart';
 import '../../../shared/chat_overlay.dart';
 
@@ -660,6 +661,7 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
+            const ApplicantNotificationButton(),
             IconButton(
               icon: const Icon(Icons.edit, color: Color(0xFF4C30D0)),
               onPressed: _showEditProfileDialog,
