@@ -1748,7 +1748,6 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
     await ref.delete();
   }
 
-
   Widget _buildCreateInternshipPostCard() {
     return Container(
       decoration: BoxDecoration(
@@ -2512,8 +2511,8 @@ class _TokenManagementTab extends StatelessWidget {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0)
-                              .withValues(alpha: 0.10),
+                          color:
+                              const Color(0xFF1565C0).withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(11),
                         ),
                         child: const Icon(
@@ -2899,6 +2898,7 @@ class _TokenManagementTab extends StatelessWidget {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 }
+
 class _CompanySettingsTab extends StatefulWidget {
   final String companyId;
   final String initialCompanyName;
@@ -3232,7 +3232,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
             _buildSettingsSwitchTile(
               icon: Icons.people_alt_outlined,
               title: 'Candidate suggestions',
-              subtitle: 'Receive updates about matched or recommended profiles.',
+              subtitle:
+                  'Receive updates about matched or recommended profiles.',
               value: _notifyCandidateSuggestions,
               onChanged: (value) {
                 setState(() => _notifyCandidateSuggestions = value);
@@ -3244,7 +3245,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         _buildSettingsSection(
           icon: Icons.tune_outlined,
           title: 'Workspace Controls',
-          subtitle: 'Manage appearance, storage, policy pages, and account access.',
+          subtitle:
+              'Manage appearance, storage, policy pages, and account access.',
           children: [
             _buildSettingsSwitchTile(
               icon: Icons.dark_mode_outlined,
@@ -4153,8 +4155,6 @@ class _CompanyAnalyticsTabState extends State<_CompanyAnalyticsTab> {
 
         // Calculate percentages
         final approvalRate = totalApps > 0 ? (approved / totalApps) * 100 : 0.0;
-        final rejectionRate =
-            totalApps > 0 ? (rejected / totalApps) * 100 : 0.0;
         final interviewRate =
             approved > 0 ? (interviewed / approved) * 100 : 0.0;
         final hireRate = approved > 0 ? (hired / approved) * 100 : 0.0;

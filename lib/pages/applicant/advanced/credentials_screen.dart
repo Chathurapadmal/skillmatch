@@ -8,7 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../theme/app_theme.dart';
 import '../../../services/ai_service.dart';
-import '../../../shared/applicant_notification_button.dart';
+import '../../../shared/notification_button.dart';
 
 class CredentialsScreen extends StatefulWidget {
   const CredentialsScreen({super.key});
