@@ -152,6 +152,8 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
               },
             ),
             PopupMenuButton<String>(
+              color: const Color(0xFFF8FBFF),
+              surfaceTintColor: Colors.transparent,
               icon: const CircleAvatar(
                 radius: 16,
                 backgroundColor: Color(0xFF1E3A5F),

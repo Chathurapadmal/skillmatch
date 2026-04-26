@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../shared/applicant_notification_button.dart';
 import 'live_chat_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
@@ -108,8 +107,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           title: const Text('Help & Support'),
           backgroundColor: cardBg,
           foregroundColor: textPrimary,
-          elevation: 0,
-          actions: const [ApplicantNotificationButton()]),
+          elevation: 0),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

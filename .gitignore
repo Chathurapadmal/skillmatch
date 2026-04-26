@@ -57,3 +57,4 @@ android/replay_pid*.log
 **/analyze_res2.txt
 **/run_web_output.txt
 **/build_output.txt
+search_results.txt

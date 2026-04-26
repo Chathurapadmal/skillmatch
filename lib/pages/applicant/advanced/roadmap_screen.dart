@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../theme/app_theme.dart';
 import '../../../services/ai_service.dart';
-import '../../../shared/applicant_notification_button.dart';
 import '../../../widgets/common_widgets.dart';
 
 class RoadmapScreen extends StatefulWidget {
@@ -56,7 +55,6 @@ class _RoadmapScreenState extends State<RoadmapScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
-        actions: const [ApplicantNotificationButton()],
       ),
       body: _isLoading
           ? const Center(

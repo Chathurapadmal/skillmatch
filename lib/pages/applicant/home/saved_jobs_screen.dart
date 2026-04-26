@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_theme.dart';
-import '../../../shared/applicant_notification_button.dart';
 
 class SavedJobsScreen extends StatelessWidget {
   const SavedJobsScreen({super.key});
@@ -28,7 +27,6 @@ class SavedJobsScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF1565C0)),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: const [ApplicantNotificationButton()],
       ),
       body: uid == null
           ? const Center(child: Text('Sign in to view saved jobs.'))

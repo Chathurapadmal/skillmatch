@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/ai_service.dart';
-import '../../shared/applicant_notification_button.dart';
 import '../../shared/chat_overlay.dart';
 
 class UploadCvPage extends StatefulWidget {
@@ -292,7 +291,6 @@ class _UploadCvPageState extends State<UploadCvPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          actions: const [ApplicantNotificationButton()],
         ),
         body: SafeArea(
           child: Column(

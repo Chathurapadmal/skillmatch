@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../services/ai_service.dart';
-import '../../../shared/applicant_notification_button.dart';
 
 class IndustryForecastScreen extends StatefulWidget {
   final String field;
@@ -57,7 +56,6 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
-        actions: const [ApplicantNotificationButton()],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

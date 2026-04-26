@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../services/api_service.dart';
 import '../../../theme/app_theme.dart';
-import '../../../shared/notification_button.dart';
 
 class LiveChatScreen extends StatefulWidget {
   const LiveChatScreen({super.key});
@@ -70,7 +69,6 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgDark,
         title: const Text('Live AI Chat Support'),
-        actions: const [ApplicantNotificationButton(iconColor: Colors.white)],
       ),
       body: Column(
         children: [

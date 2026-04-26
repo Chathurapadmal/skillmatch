@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../shared/applicant_notification_button.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
 
@@ -129,8 +128,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
           title: const Text('Privacy & Security'),
           backgroundColor: cardBg,
           foregroundColor: textPrimary,
-          elevation: 0,
-          actions: const [ApplicantNotificationButton()]),
+          elevation: 0),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: primary))
           : ListView(
