@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -251,11 +250,55 @@ $cvText
 
   static Future<Map<String, dynamic>> generateLearningRoadmap(
       String field) async {
-    final baseSkills = _defaultSkillsForField(field);
+    final normalizedField = field.trim().isEmpty ? 'IT & Software' : field;
+    final baseSkills = _defaultSkillsForField(normalizedField);
+
+    try {
+      final response = await ApiService.generateRoadmap(
+        field: normalizedField,
+        skills: baseSkills,
+      );
+
+      final steps = ((response['steps'] as List?) ?? const <dynamic>[])
+          .whereType<Map>()
+          .map((item) => {
+                'title': (item['title'] ?? 'Learning Step').toString(),
+                'description':
+                    (item['description'] ?? 'Continue building your skills.')
+                        .toString(),
+                'weeks': int.tryParse('${item['weeks']}') ?? 2,
+              })
+          .toList();
+
+      final missing = ((response['missingSkills'] as List?) ?? const [])
+          .map((e) => '$e')
+          .where((e) => e.trim().isNotEmpty)
+          .toList();
+
+      if (steps.isNotEmpty) {
+        return {
+          'targetRole':
+              (response['targetRole'] ?? 'Junior $normalizedField Specialist')
+                  .toString(),
+          'targetCompany':
+              (response['targetCompany'] ?? 'Top internship-ready teams')
+                  .toString(),
+          'currentMatch':
+              (int.tryParse('${response['currentMatch']}') ?? 58).clamp(0, 100),
+          'targetMatch':
+              (int.tryParse('${response['targetMatch']}') ?? 90).clamp(0, 100),
+          'missingSkills':
+              missing.isEmpty ? baseSkills.take(4).toList() : missing,
+          'steps': steps,
+        };
+      }
+    } catch (e, stack) {
+      debugPrint('AiService generateLearningRoadmap error: $e');
+      debugPrint('$stack');
+    }
 
     return {
-      'targetRole':
-          'Junior ${field.trim().isEmpty ? 'Professional' : field} Specialist',
+      'targetRole': 'Junior $normalizedField Specialist',
       'targetCompany': 'Top internship-ready teams',
       'currentMatch': 58,
       'targetMatch': 90,
@@ -264,7 +307,7 @@ $cvText
         {
           'title': 'Build Fundamentals',
           'description':
-              'Learn core concepts, tools, and workflows for ${field.trim().isEmpty ? 'your selected field' : field}.',
+              'Learn core concepts, tools, and workflows for $normalizedField.',
           'weeks': 2,
         },
         {
@@ -288,8 +331,42 @@ $cvText
     required String skill,
     int questionCount = 5,
   }) async {
-    final normalizedSkill = skill.trim().isEmpty ? field : skill.trim();
-    final questions = List.generate(questionCount.clamp(3, 8), (index) {
+    final normalizedField = field.trim().isEmpty ? 'IT & Software' : field;
+    final normalizedSkill =
+        skill.trim().isEmpty ? normalizedField : skill.trim();
+
+    try {
+      final response = await ApiService.generateSkillQuiz(
+        field: normalizedField,
+        skill: normalizedSkill,
+        questionCount: questionCount.clamp(3, 8),
+        skills: _defaultSkillsForField(normalizedField),
+      );
+
+      final questions = ((response['questions'] as List?) ?? const <dynamic>[])
+          .whereType<Map>()
+          .map((item) {
+            final options = ((item['options'] as List?) ?? const <dynamic>[])
+                .map((e) => '$e')
+                .toList();
+            return {
+              'q': (item['q'] ?? 'Question').toString(),
+              'options': options.take(4).toList(),
+              'correct': (int.tryParse('${item['correct']}') ?? 0).clamp(0, 3),
+            };
+          })
+          .where((q) => (q['options'] as List).length == 4)
+          .toList();
+
+      if (questions.length >= 3) {
+        return {'questions': questions};
+      }
+    } catch (e, stack) {
+      debugPrint('AiService generateSkillQuiz error: $e');
+      debugPrint('$stack');
+    }
+
+    final fallback = List.generate(questionCount.clamp(3, 8), (index) {
       final questionNo = index + 1;
       return {
         'q': '[$normalizedSkill] Question $questionNo: choose the best answer.',
@@ -303,7 +380,7 @@ $cvText
       };
     });
 
-    return {'questions': questions};
+    return {'questions': fallback};
   }
 
   static Future<Map<String, dynamic>> uploadCvToStorage({
@@ -394,7 +471,40 @@ $cvText
 
   static Future<Map<String, dynamic>> generateIndustryTrends(
       String field) async {
-    final skills = _defaultSkillsForField(field);
+    final normalizedField = field.trim().isEmpty ? 'IT & Software' : field;
+    final skills = _defaultSkillsForField(normalizedField);
+
+    try {
+      final response = await ApiService.generateTrends(
+        field: normalizedField,
+        skills: skills,
+      );
+
+      final trends = ((response['trends'] as List?) ?? const <dynamic>[])
+          .whereType<Map>()
+          .map((item) => {
+                'skill': (item['skill'] ?? 'Skill').toString(),
+                'demandPct':
+                    (int.tryParse('${item['demandPct']}') ?? 50).clamp(0, 100),
+                'yoy': (item['yoy'] ?? '+0% YoY').toString(),
+                'direction': (item['direction'] ?? 'up').toString(),
+              })
+          .toList();
+
+      if (trends.isNotEmpty) {
+        return {
+          'industry': (response['industry'] ?? normalizedField).toString(),
+          'overview': (response['overview'] ??
+                  'AI trend model indicates demand is increasing for practical, tool-based skills in $normalizedField roles.')
+              .toString(),
+          'trends': trends,
+        };
+      }
+    } catch (e, stack) {
+      debugPrint('AiService generateIndustryTrends error: $e');
+      debugPrint('$stack');
+    }
+
     final trends = <Map<String, dynamic>>[];
     for (var i = 0; i < skills.length && i < 6; i++) {
       final demand = (88 - (i * 7)).clamp(45, 95);
@@ -407,9 +517,9 @@ $cvText
     }
 
     return {
-      'industry': field,
+      'industry': normalizedField,
       'overview':
-          'AI trend model indicates demand is increasing for practical, tool-based skills in $field roles.',
+          'AI trend model indicates demand is increasing for practical, tool-based skills in $normalizedField roles.',
       'trends': trends,
     };
   }

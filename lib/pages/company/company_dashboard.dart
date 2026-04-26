@@ -14,6 +14,10 @@ import '../../shared/notifications_center_screen.dart';
 import '../../shared/supabase_storage_page.dart';
 import '../../theme/app_theme.dart';
 
+part 'company_dashboard_overview_candidate.part.dart';
+part 'company_dashboard_management_settings.part.dart';
+part 'company_dashboard_dialogs_misc.part.dart';
+
 class CompanyDashboard extends StatefulWidget {
   final UserModel user;
 
@@ -148,6 +152,8 @@ class _CompanyDashboardState extends State<CompanyDashboard> {
               },
             ),
             PopupMenuButton<String>(
+              color: const Color(0xFFF8FBFF),
+              surfaceTintColor: Colors.transparent,
               icon: const CircleAvatar(
                 radius: 16,
                 backgroundColor: Color(0xFF1E3A5F),
@@ -1638,23 +1644,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                     .map((s) => _skillPill(s, color: const Color(0xFF1565C0)))
                     .toList(),
               ),
-              if (verified.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                const Text('Verified Skills',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: verified
-                      .map((s) => _skillPill(s, color: AppTheme.success))
-                      .toList(),
-                ),
-              ],
-              if (certs.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text('Credentials: ${certs.length}'),
-              ],
             ],
           ),
         ),

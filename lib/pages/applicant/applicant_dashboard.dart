@@ -4,9 +4,13 @@ import 'package:skillmatch/pages/applicant/advanced/roadmap_screen.dart';
 import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/pages/applicant/home/saved_jobs_screen.dart';
 import 'package:skillmatch/pages/applicant/profile/profile_views_screen.dart';
+import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
+import 'package:skillmatch/pages/applicant/settings/help_support_screen.dart';
+import 'package:skillmatch/pages/applicant/settings/privacy_security_screen.dart';
+import 'package:skillmatch/services/auth_service.dart';
+import 'package:skillmatch/shared/notifications_center_screen.dart';
 import '../../models/user_model.dart';
 import '../../shared/chat_overlay.dart';
-import '../../shared/applicant_notification_button.dart';
 
 class ApplicantDashboard extends StatelessWidget {
   final UserModel user;
@@ -59,6 +63,8 @@ class ApplicantDashboard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 16.0, left: 8.0),
               child: PopupMenuButton<String>(
+                color: const Color(0xFFF8FBFF),
+                surfaceTintColor: Colors.transparent,
                 offset: const Offset(0, 45),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
