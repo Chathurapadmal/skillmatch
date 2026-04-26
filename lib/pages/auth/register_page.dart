@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -81,17 +87,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red.shade700),
+      SnackBar(
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: _navy,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _background,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+            colors: [_navy, _primary, _accent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -104,26 +118,58 @@ class _RegisterPageState extends State<RegisterPage> {
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: Column(
                   children: [
-                    // ── Header ─────────────────────────────────────────────
-                    const Icon(Icons.work_rounded,
-                        size: 64, color: Colors.white),
-                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.30),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _accent.withOpacity(0.45),
+                            blurRadius: 24,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.work_rounded,
+                        size: 54,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     const Text(
                       'SkillMatch',
                       style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
                         color: Colors.white,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Create your account and get started',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 28),
 
-                    // ── Card ───────────────────────────────────────────────
                     Card(
+                      color: Colors.white,
+                      surfaceTintColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
+                        side: const BorderSide(color: _cardBorder),
                       ),
-                      elevation: 8,
+                      elevation: 12,
+                      shadowColor: _navy.withOpacity(0.18),
                       child: Padding(
                         padding: const EdgeInsets.all(28),
                         child: Form(
@@ -135,18 +181,29 @@ class _RegisterPageState extends State<RegisterPage> {
                                 'Create Account',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  color: _navy,
+                                  letterSpacing: -0.3,
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Choose your role and complete your profile',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
 
-                              // ── Role selector ──────────────────────────
                               const Text(
                                 'I am registering as:',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 14,
+                                  color: _navy,
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -177,9 +234,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 22),
 
-                              // Full name
                               TextFormField(
                                 controller: _nameCtrl,
                                 textInputAction: TextInputAction.next,
@@ -195,7 +251,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const SizedBox(height: 14),
 
-                              // Company name (only for company role)
                               if (_selectedRole == UserRole.company) ...[
                                 TextFormField(
                                   controller: _companyCtrl,
@@ -216,8 +271,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 child: Text(
                                   'Set Professional Field',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w700,
                                     fontSize: 14,
+                                    color: _navy,
                                   ),
                                 ),
                               ),
@@ -229,10 +285,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                       await showModalBottomSheet<String>(
                                     context: context,
                                     isScrollControlled: true,
-                                    backgroundColor: const Color(0xFF161A3A),
+                                    backgroundColor: _navy,
                                     shape: const RoundedRectangleBorder(
                                       borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(20),
+                                        top: Radius.circular(24),
                                       ),
                                     ),
                                     builder: (_) => _IndustryPickerSheet(
@@ -250,7 +306,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const SizedBox(height: 14),
 
-                              // Email
                               TextFormField(
                                 controller: _emailCtrl,
                                 keyboardType: TextInputType.emailAddress,
@@ -270,7 +325,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const SizedBox(height: 14),
 
-                              // Password
                               TextFormField(
                                 controller: _passCtrl,
                                 obscureText: _obscurePass,
@@ -280,9 +334,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                   icon: Icons.lock_outline,
                                 ).copyWith(
                                   suffixIcon: IconButton(
-                                    icon: Icon(_obscurePass
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined),
+                                    icon: Icon(
+                                      _obscurePass
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      color: _navy,
+                                    ),
                                     onPressed: () => setState(
                                         () => _obscurePass = !_obscurePass),
                                   ),
@@ -296,7 +353,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const SizedBox(height: 14),
 
-                              // Confirm password
                               TextFormField(
                                 controller: _confirmCtrl,
                                 obscureText: _obscureConfirm,
@@ -307,9 +363,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                   icon: Icons.lock_outline,
                                 ).copyWith(
                                   suffixIcon: IconButton(
-                                    icon: Icon(_obscureConfirm
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined),
+                                    icon: Icon(
+                                      _obscureConfirm
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      color: _navy,
+                                    ),
                                     onPressed: () => setState(() =>
                                         _obscureConfirm = !_obscureConfirm),
                                   ),
@@ -323,15 +382,16 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const SizedBox(height: 24),
 
-                              // Register button
                               SizedBox(
-                                height: 50,
+                                height: 52,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1565C0),
+                                    backgroundColor: _primary,
                                     foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shadowColor: _primary.withOpacity(0.35),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
                                   onPressed: _loading ? null : _register,
@@ -348,25 +408,27 @@ class _RegisterPageState extends State<RegisterPage> {
                                           'Create Account',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                 ),
                               ),
                               const SizedBox(height: 16),
 
-                              // Login link
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('Already have an account? '),
+                                  const Text(
+                                    'Already have an account? ',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
                                   GestureDetector(
                                     onTap: () => Navigator.pop(context),
                                     child: const Text(
                                       'Login',
                                       style: TextStyle(
-                                        color: Color(0xFF1565C0),
-                                        fontWeight: FontWeight.bold,
+                                        color: _primary,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ),
@@ -393,15 +455,31 @@ class _RegisterPageState extends State<RegisterPage> {
   }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      labelStyle: const TextStyle(color: Colors.grey),
+      prefixIcon: Icon(icon, color: _primary),
       filled: true,
-      fillColor: Colors.grey.shade50,
+      fillColor: _background,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: _cardBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: _accent, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.red.shade400),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
+      ),
     );
   }
 }
 
-// ── Role selector tile ────────────────────────────────────────────────────────
 class _RoleTile extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -425,24 +503,35 @@ class _RoleTile extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF1565C0) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
+          color: selected ? _primary : _background,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? const Color(0xFF1565C0) : Colors.grey.shade300,
+            color: selected ? _primary : _cardBorder,
             width: 1.5,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: _primary.withOpacity(0.22),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : [],
         ),
         child: Column(
           children: [
-            Icon(icon,
-                size: 30,
-                color: selected ? Colors.white : Colors.grey.shade600),
+            Icon(
+              icon,
+              size: 30,
+              color: selected ? Colors.white : _navy,
+            ),
             const SizedBox(height: 6),
             Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: selected ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.w800,
+                color: selected ? Colors.white : _navy,
               ),
             ),
             const SizedBox(height: 2),
@@ -451,7 +540,7 @@ class _RoleTile extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
-                color: selected ? Colors.white70 : Colors.grey.shade500,
+                color: selected ? Colors.white70 : Colors.grey.shade600,
               ),
             ),
           ],
@@ -473,31 +562,37 @@ class _IndustrySelectorTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade300),
+          color: _background,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: _cardBorder),
         ),
         child: Row(
           children: [
-            const Icon(Icons.business_center_outlined,
-                color: Color(0xFF1565C0), size: 20),
+            const Icon(
+              Icons.business_center_outlined,
+              color: _primary,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 selectedValue,
                 style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  color: _navy,
                 ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: _navy,
+            ),
           ],
         ),
       ),
@@ -542,8 +637,8 @@ class _IndustryPickerSheetState extends State<_IndustryPickerSheet> {
               widget.title,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 34,
-                fontWeight: FontWeight.w700,
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 18),
@@ -552,11 +647,14 @@ class _IndustryPickerSheetState extends State<_IndustryPickerSheet> {
                 dense: true,
                 value: option,
                 groupValue: _localSelected,
-                activeColor: const Color(0xFF5B5BFF),
+                activeColor: _accent,
                 title: Text(
                   option,
-                  style:
-                      const TextStyle(color: Color(0xFFD1D4EA), fontSize: 16),
+                  style: const TextStyle(
+                    color: Color(0xFFEAF2F8),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 onChanged: (value) {
                   if (value == null) return;

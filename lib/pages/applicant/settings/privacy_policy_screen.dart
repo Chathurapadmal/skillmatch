@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme/app_theme.dart';
 import '../../../shared/applicant_notification_button.dart';
+
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
+const Color _mutedText = Color(0xFF64748B);
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -9,12 +14,18 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: _background,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        foregroundColor: _navy,
         elevation: 0,
-        title: const Text('Privacy Policy'),
+        title: const Text(
+          'Privacy Policy',
+          style: TextStyle(
+            color: _navy,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: const [ApplicantNotificationButton()],
       ),
       body: ListView(
@@ -69,7 +80,7 @@ class _PolicySection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+        border: Border.all(color: _cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +88,7 @@ class _PolicySection extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Colors.black87,
+              color: _navy,
               fontWeight: FontWeight.w700,
               fontSize: 14,
             ),
@@ -86,7 +97,7 @@ class _PolicySection extends StatelessWidget {
           Text(
             body,
             style: const TextStyle(
-              color: AppTheme.textSecondary,
+              color: _mutedText,
               fontSize: 12,
               height: 1.45,
             ),

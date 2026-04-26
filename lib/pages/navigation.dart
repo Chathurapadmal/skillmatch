@@ -116,7 +116,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         children: pages.map((entry) => entry.page).toList(),
       ),
 
-      // 🔥 FIXED CUSTOM NAV BAR
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(
