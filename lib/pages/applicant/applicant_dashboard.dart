@@ -71,7 +71,7 @@ class ApplicantDashboard extends StatelessWidget {
                 ),
                 child: const CircleAvatar(
                   radius: 16,
-                  backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                  backgroundColor: Color(0xFFE2E8F0),
                   child: Icon(Icons.person, color: Color(0xFF4A5568), size: 20),
                 ),
                 onSelected: (value) async {
@@ -154,6 +154,7 @@ class ApplicantDashboard extends StatelessWidget {
                 ],
               ),
             ),
+            const ApplicantNotificationButton(),
             const SizedBox(width: 8),
           ],
         ),

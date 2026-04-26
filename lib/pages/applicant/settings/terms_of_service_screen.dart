@@ -17,6 +17,7 @@ class TermsOfServiceScreen extends StatelessWidget {
           'Terms of Service',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
+        actions: const [ApplicantNotificationButton(iconColor: Colors.white)],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

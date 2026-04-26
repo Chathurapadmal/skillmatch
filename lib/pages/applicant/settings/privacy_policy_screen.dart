@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_theme.dart';
+import '../../../shared/applicant_notification_button.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -14,6 +15,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         foregroundColor: Colors.black87,
         elevation: 0,
         title: const Text('Privacy Policy'),
+        actions: const [ApplicantNotificationButton()],
       ),
       body: ListView(
         padding: const EdgeInsets.all(18),

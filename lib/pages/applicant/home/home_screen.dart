@@ -3020,6 +3020,7 @@ class _IndustryForecastScreenState extends State<IndustryForecastScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
+        actions: const [ApplicantNotificationButton()],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../shared/notifications_center_screen.dart';
+import '../../../shared/notification_button.dart';
 import '../../../theme/app_theme.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -56,7 +57,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       appBar: AppBar(
           title: const Text('Notifications'),
           backgroundColor: AppTheme.bgDark,
-          actions: const []),
+          actions: const [
+            ApplicantNotificationButton(iconColor: Colors.white)
+          ]),
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primary))
