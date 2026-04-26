@@ -291,7 +291,6 @@ class _UploadCvPageState extends State<UploadCvPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          actions: const [ApplicantNotificationButton()],
         ),
         body: SafeArea(
           child: Column(

@@ -660,7 +660,6 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
-            const ApplicantNotificationButton(),
             IconButton(
               icon: const Icon(Icons.edit, color: Color(0xFF4C30D0)),
               onPressed: _showEditProfileDialog,
