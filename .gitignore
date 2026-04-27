@@ -15,7 +15,7 @@ Thumbs.db
 .classpath
 .settings/
 
-# Flutter/Dart
+# Flutter / Dart generated files
 **/build/
 **/.dart_tool/
 **/ephemeral/
@@ -28,30 +28,31 @@ Thumbs.db
 **/generated/
 **/ios/Flutter/.last_build_id
 
-# Android specific
+# Android / JVM generated files
 **/.gradle/
+**/.kotlin/
+**/.cxx/
 **/local.properties
 **/captures/
-**/android/app/debug
-**/android/app/profile
-**/android/app/release
 
-# Python
-**/__pycache__/
-**/*.pyc
-**/*.pyo
-**/*.pyd
-**/venv/
-**/.env
-**/.pytest_cache/
-**/dist/
-**/build/
+# Backend / Node dependencies
+backside/node_modules/
+backside/.env
+backside/.env.*
+backside/npm-debug.log*
+backside/yarn-error.log*
 
 # Secret files
 **/google-services.json
 **/GoogleService-Info.plist
+**/*.keystore
+**/*.jks
+**/key.properties
 
-# Project specific
+# Crash and analysis logs
+hs_err_pid*.log
+android/hs_err_pid*.log
+android/replay_pid*.log
 **/analyze_output.txt
 **/analyze_res2.txt
 **/run_web_output.txt

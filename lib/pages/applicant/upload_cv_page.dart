@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/ai_service.dart';
-import '../../services/aiserv.dart';
 import '../../shared/chat_overlay.dart';
 
 class UploadCvPage extends StatefulWidget {
@@ -103,7 +102,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
 
     setState(() => _extracting = true);
     try {
-      final parsed = await AIService.extractCvProfile(cvText);
+      final parsed = await AiService.extractCvProfile(cvText);
       final extractedSkills = (parsed['skills'] as List?)
               ?.map((e) => e.toString().trim())
               .where((e) => e.isNotEmpty)

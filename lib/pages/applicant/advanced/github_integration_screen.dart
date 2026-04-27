@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../theme/app_theme.dart';
 import '../../../services/firestore_service.dart';
+import '../../../shared/applicant_notification_button.dart';
 import '../../../widgets/common_widgets.dart';
 
 class GitHubIntegrationScreen extends StatefulWidget {
@@ -190,6 +191,7 @@ class _GitHubIntegrationScreenState extends State<GitHubIntegrationScreen> {
         foregroundColor: Colors.black87,
         elevation: 0,
         actions: [
+          const ApplicantNotificationButton(),
           if (_connected)
             TextButton(
               onPressed: _disconnect,

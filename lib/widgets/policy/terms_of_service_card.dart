@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
-class TermsOfServiceScreencard extends StatelessWidget {
+class TermsOfServiceCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String body;
 
-  const TermsOfServiceScreencard(
-      {super.key, required this.icon, required this.title, required this.body});
+  const TermsOfServiceCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
 
   @override
   Widget build(BuildContext context) {
