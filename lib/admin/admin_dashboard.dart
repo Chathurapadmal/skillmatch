@@ -53,7 +53,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return ChatOverlay(
       child: Scaffold(
         backgroundColor: _AdminColors.background,
-
         appBar: AppBar(
           elevation: 0,
           toolbarHeight: 74,
@@ -129,28 +128,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                 ),
                 onSelected: (value) async {
-                  if (value == 'profile') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfilePage()),
-                    );
-                  }
-
                   if (value == 'signout') {
                     await AuthService.signOut();
                   }
                 },
                 itemBuilder: (_) => const [
-                  PopupMenuItem(
-                    value: 'profile',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person_outline_rounded),
-                        SizedBox(width: 10),
-                        Text("My Profile"),
-                      ],
-                    ),
-                  ),
                   PopupMenuItem(
                     value: 'signout',
                     child: Row(
@@ -163,16 +145,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                 ],
               ),
-              onSelected: (value) async {
-                if (value == 'signout') await AuthService.signOut();
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'signout', child: Text("Sign Out")),
-              ],
             )
           ],
         ),
-
         floatingActionButton: FloatingActionButton.extended(
           backgroundColor: _AdminColors.primary,
           elevation: 8,
@@ -189,7 +164,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
           onPressed: () {},
         ),
-
         bottomNavigationBar: widget.showInternalNavigation
             ? NavigationBar(
                 selectedIndex: _selectedIndex,
@@ -213,7 +187,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ],
               )
             : null,
-
         body: IndexedStack(
           index: _selectedIndex,
           children: [
@@ -245,20 +218,17 @@ class _OverviewTab extends StatelessWidget {
         children: [
           const _HeroHeader(
             title: "Welcome, Admin ",
-            subtitle: "Manage users, roles, and platform activity from one place.",
+            subtitle:
+                "Manage users, roles, and platform activity from one place.",
             icon: Icons.workspace_premium_rounded,
           ),
-
           const SizedBox(height: 22),
-
           const _SectionHeader(
             title: "Platform Overview",
             subtitle: "A quick snapshot of registered user categories.",
             icon: Icons.insights_rounded,
           ),
-
           const SizedBox(height: 14),
-
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('users').snapshots(),
             builder: (context, snap) {
@@ -345,26 +315,32 @@ class _UsersTabState extends State<_UsersTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.fromLTRB(16, 18, 16, 12),
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: _AdminColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: "Search users...",
+              prefixIcon: const Icon(Icons.search_rounded),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(color: _AdminColors.border),
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(color: _AdminColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: const BorderSide(color: _AdminColors.primary),
+              ),
             ),
             onChanged: (v) => setState(() => _search = v.toLowerCase()),
           ),
         ),
-
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('users').snapshots(),
