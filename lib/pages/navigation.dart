@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skillmatch/pages/company/company_dashboard.dart';
 import 'package:skillmatch/pages/dashboard_tab.dart';
 import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
 import 'package:skillmatch/pages/applicant/home/home_screen.dart';
@@ -91,7 +92,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             page: const BrowseJobsPage(),
           ),
           _NavPage(
-            label: 'Applications', // 🔥 FIXED (was My Applications)
+            label: 'Applications', //
             icon: Icons.assignment_rounded,
             page: const HomeScreen(initialTabIndex: 2),
           ),
