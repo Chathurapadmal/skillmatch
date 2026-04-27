@@ -17,24 +17,23 @@ class HelpSupportScreen extends StatefulWidget {
 class _HelpSupportScreenState extends State<HelpSupportScreen> {
   int? _openFaq;
 
-  // 🎨 New Color System
-  static const primary = Color(0xFF4052B6);
-  static const deepViolet = Color(0xFF5000D2);
+  static const primary = Color(0xFF1565C0);
+  static const deepViolet = Color(0xFF2E86AB);
 
-  static const textPrimary = Color(0xFF2C2F30);
-  static const textSecondary = Color(0xFF595C5D);
-  static const textMuted = Color(0xFF595C5D);
+  static const textPrimary = Color(0xFF1E3A5F);
+  static const textSecondary = Color(0xFF64748B);
+  static const textMuted = Color(0xFF64748B);
 
-  static const bgMain = Color(0xFFF5F6F7);
+  static const bgMain = Color(0xFFF8FAFC);
   static const cardBg = Colors.white;
 
   static const border = Color(0xFFDCE3F0);
 
-  static const info = Color(0xFF4CB9FF);
+  static const info = Color(0xFF2E86AB);
   static const error = Colors.red;
 
   static const gradient = LinearGradient(
-    colors: [Color(0xFF4052B6), Color(0xFF652FE7)],
+    colors: [Color(0xFF1E3A5F), Color(0xFF1565C0), Color(0xFF2E86AB)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

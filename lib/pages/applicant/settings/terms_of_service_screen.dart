@@ -2,20 +2,27 @@ import 'package:flutter/material.dart';
 
 import 'package:skillmatch/widgets/policy/terms_of_service_card.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _background = Color(0xFFF8FAFC);
+
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: _background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.black87,
+        backgroundColor: _primary,
+        foregroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Terms of Service',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
       ),
       body: Padding(

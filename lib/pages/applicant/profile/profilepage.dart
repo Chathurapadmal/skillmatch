@@ -7,6 +7,18 @@ import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
 import 'package:skillmatch/widgets/supabase_image_widget.dart';
 import '../../../shared/chat_overlay.dart';
 
+class _ProfileColors {
+  static const Color primary = Color(0xFF1565C0);
+  static const Color navy = Color(0xFF1E3A5F);
+  static const Color background = Color(0xFFF5F7FB);
+  static const Color border = Color(0xFFDCE3F0);
+  static const Color purple = Color(0xFF8A5BFF);
+  static const Color success = Color(0xFF18C17C);
+  static const Color warning = Color(0xFFFFB020);
+  static const Color textMuted = Color(0xFF6B7280);
+  static const Color softBlue = Color(0xFFEAF3FF);
+}
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -110,7 +122,8 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load profile.')));
+        const SnackBar(content: Text('Failed to load profile.')),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -168,7 +181,8 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save profile.')));
+        const SnackBar(content: Text('Failed to save profile.')),
+      );
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -210,10 +224,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (!mounted) return;
       setState(() => _avatarUrlCtrl.text = path);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content:
-            Text('Profile image uploaded to Supabase $_profileBucket bucket.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Profile image uploaded to Supabase $_profileBucket bucket.'),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -238,128 +254,391 @@ class _ProfilePageState extends State<ProfilePage> {
     await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder: (context, setDialogState) {
-          return AlertDialog(
-            title: const Text('Edit Profile'),
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextField(
-                      controller: nameCtrl,
-                      decoration:
-                          const InputDecoration(labelText: 'Full Name')),
-                  TextField(
-                      controller: headlineCtrl,
-                      decoration: const InputDecoration(labelText: 'Headline')),
-                  const SizedBox(height: 10),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Professional Field'),
-                    subtitle: Text(selectedIndustry),
-                    trailing: const Icon(Icons.keyboard_arrow_down_rounded),
-                    onTap: () async {
-                      final selected = await showModalBottomSheet<String>(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: const Color(0xFF161A3A),
-                        shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(20))),
-                        builder: (_) => _ProfileIndustryPickerSheet(
-                            options: _industryOptions,
-                            selectedValue: selectedIndustry),
-                      );
-                      if (selected != null) {
-                        setDialogState(() => selectedIndustry = selected);
-                      }
-                    },
-                  ),
-                  TextField(
-                      controller: graduationCtrl,
-                      decoration:
-                          const InputDecoration(labelText: 'Graduation')),
-                  TextField(
-                      controller: locationCtrl,
-                      decoration: const InputDecoration(labelText: 'Location')),
-                  TextField(
-                      controller: avatarUrlCtrl,
-                      decoration:
-                          const InputDecoration(labelText: 'Avatar URL')),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed:
-                          _uploadingAvatar ? null : _uploadAvatarToSupabase,
-                      icon: _uploadingAvatar
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.cloud_upload_outlined),
-                      label: const Text('Upload Profile Icon (Supabase)'),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 24,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.14),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
                     ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              _ProfileColors.navy,
+                              _ProfileColors.primary,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(26),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.16),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.edit_rounded,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Edit Profile',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  SizedBox(height: 3),
+                                  Text(
+                                    'Update your public applicant details',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
+                          children: [
+                            _DialogSection(
+                              title: 'Basic Information',
+                              icon: Icons.person_outline_rounded,
+                              child: Column(
+                                children: [
+                                  _ProfileFormField(
+                                    controller: nameCtrl,
+                                    label: 'Full Name',
+                                    icon: Icons.badge_outlined,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _ProfileFormField(
+                                    controller: headlineCtrl,
+                                    label: 'Headline',
+                                    icon: Icons.work_outline_rounded,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _ProfilePickerTile(
+                                    title: 'Professional Field',
+                                    value: selectedIndustry,
+                                    icon: Icons.category_outlined,
+                                    onTap: () async {
+                                      final selected =
+                                          await showModalBottomSheet<String>(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.white,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(24),
+                                          ),
+                                        ),
+                                        builder: (_) =>
+                                            _ProfileIndustryPickerSheet(
+                                          options: _industryOptions,
+                                          selectedValue: selectedIndustry,
+                                        ),
+                                      );
+                                      if (selected != null) {
+                                        setDialogState(
+                                          () => selectedIndustry = selected,
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _DialogSection(
+                              title: 'Profile Details',
+                              icon: Icons.info_outline_rounded,
+                              child: Column(
+                                children: [
+                                  _ProfileFormField(
+                                    controller: graduationCtrl,
+                                    label: 'Graduation',
+                                    icon: Icons.school_outlined,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _ProfileFormField(
+                                    controller: locationCtrl,
+                                    label: 'Location',
+                                    icon: Icons.location_on_outlined,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _ProfileFormField(
+                                    controller: avatarUrlCtrl,
+                                    label: 'Avatar URL',
+                                    icon: Icons.image_outlined,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _uploadingAvatar
+                                          ? null
+                                          : _uploadAvatarToSupabase,
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: _ProfileColors.primary,
+                                        side: const BorderSide(
+                                          color: _ProfileColors.border,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 13,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                        ),
+                                      ),
+                                      icon: _uploadingAvatar
+                                          ? const SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: _ProfileColors.primary,
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.cloud_upload_outlined,
+                                            ),
+                                      label: const Text(
+                                        'Upload Profile Icon',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _DialogSection(
+                              title: 'Bio',
+                              icon: Icons.notes_rounded,
+                              child: _ProfileFormField(
+                                controller: bioCtrl,
+                                label: 'Bio',
+                                icon: Icons.short_text_rounded,
+                                maxLines: 4,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: _ProfileColors.navy,
+                                      side: const BorderSide(
+                                        color: _ProfileColors.border,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Cancel',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _nameCtrl.text = nameCtrl.text.trim();
+                                        _headlineCtrl.text =
+                                            headlineCtrl.text.trim();
+                                        _industryCtrl.text = selectedIndustry;
+                                        _graduationCtrl.text =
+                                            graduationCtrl.text.trim();
+                                        _locationCtrl.text =
+                                            locationCtrl.text.trim();
+                                        _avatarUrlCtrl.text =
+                                            avatarUrlCtrl.text.trim();
+                                        _bioCtrl.text = bioCtrl.text.trim();
+                                      });
+                                      Navigator.pop(context);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: _ProfileColors.primary,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Save',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  TextField(
-                      controller: bioCtrl,
-                      maxLines: 4,
-                      decoration: const InputDecoration(labelText: 'Bio')),
-                ],
+                ),
               ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel')),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _nameCtrl.text = nameCtrl.text.trim();
-                    _headlineCtrl.text = headlineCtrl.text.trim();
-                    _industryCtrl.text = selectedIndustry;
-                    _graduationCtrl.text = graduationCtrl.text.trim();
-                    _locationCtrl.text = locationCtrl.text.trim();
-                    _avatarUrlCtrl.text = avatarUrlCtrl.text.trim();
-                    _bioCtrl.text = bioCtrl.text.trim();
-                  });
-                  Navigator.pop(context);
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        });
+            );
+          },
+        );
       },
     );
   }
 
   Future<void> _showAddSkillDialog() async {
     final skillCtrl = TextEditingController();
+
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Skill'),
-          content: TextField(
-              controller: skillCtrl,
-              decoration: const InputDecoration(hintText: 'Enter a skill')),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () {
-                final skill = skillCtrl.text.trim();
-                if (skill.isNotEmpty &&
-                    !_manualSkills.contains(skill) &&
-                    !_aiSkills.contains(skill)) {
-                  setState(() => _manualSkills.add(skill));
-                }
-                Navigator.pop(context);
-              },
-              child: const Text('Add'),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 22),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-          ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _DialogHeader(
+                  title: 'Add Skill',
+                  subtitle: 'Add a manual skill to your profile',
+                  icon: Icons.bolt_rounded,
+                ),
+                const SizedBox(height: 18),
+                _ProfileFormField(
+                  controller: skillCtrl,
+                  label: 'Enter a skill',
+                  icon: Icons.add_circle_outline_rounded,
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _ProfileColors.navy,
+                          side: const BorderSide(
+                            color: _ProfileColors.border,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final skill = skillCtrl.text.trim();
+                          if (skill.isNotEmpty &&
+                              !_manualSkills.contains(skill) &&
+                              !_aiSkills.contains(skill)) {
+                            setState(() => _manualSkills.add(skill));
+                          }
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _ProfileColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'Add',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -377,56 +656,129 @@ class _ProfilePageState extends State<ProfilePage> {
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title:
-              Text(index == null ? 'Add Certification' : 'Edit Certification'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                    controller: titleCtrl,
-                    decoration: const InputDecoration(labelText: 'Title')),
-                TextField(
-                    controller: issuerCtrl,
-                    decoration: const InputDecoration(labelText: 'Issuer')),
-                TextField(
-                    controller: dateCtrl,
-                    decoration: const InputDecoration(labelText: 'Date')),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 22),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
               ],
             ),
-          ),
-          actions: [
-            if (index != null)
-              TextButton(
-                onPressed: () {
-                  setState(() => _certifications.removeAt(index));
-                  Navigator.pop(context);
-                },
-                child: const Text('Delete'),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _DialogHeader(
+                    title: index == null
+                        ? 'Add Certification'
+                        : 'Edit Certification',
+                    subtitle: 'Keep your achievements organized',
+                    icon: Icons.verified_outlined,
+                  ),
+                  const SizedBox(height: 18),
+                  _ProfileFormField(
+                    controller: titleCtrl,
+                    label: 'Title',
+                    icon: Icons.workspace_premium_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                  _ProfileFormField(
+                    controller: issuerCtrl,
+                    label: 'Issuer',
+                    icon: Icons.business_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                  _ProfileFormField(
+                    controller: dateCtrl,
+                    label: 'Date',
+                    icon: Icons.calendar_today_outlined,
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      if (index != null) ...[
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() => _certifications.removeAt(index));
+                              Navigator.pop(context);
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _ProfileColors.navy,
+                            side: const BorderSide(
+                              color: _ProfileColors.border,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final item = {
+                              'title': titleCtrl.text.trim(),
+                              'issuer': issuerCtrl.text.trim(),
+                              'date': dateCtrl.text.trim(),
+                            };
+                            if ((item['title'] ?? '').isEmpty) return;
+                            setState(() {
+                              if (index == null) {
+                                _certifications.add(item);
+                              } else {
+                                _certifications[index] = item;
+                              }
+                            });
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _ProfileColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: const Text(
+                            'Save',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () {
-                final item = {
-                  'title': titleCtrl.text.trim(),
-                  'issuer': issuerCtrl.text.trim(),
-                  'date': dateCtrl.text.trim(),
-                };
-                if ((item['title'] ?? '').isEmpty) return;
-                setState(() {
-                  if (index == null) {
-                    _certifications.add(item);
-                  } else {
-                    _certifications[index] = item;
-                  }
-                });
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
             ),
-          ],
+          ),
         );
       },
     );
@@ -468,7 +820,7 @@ class _ProfilePageState extends State<ProfilePage> {
         mergedCertsByKey[key] = {
           'title': title,
           'issuer': issuer,
-          'date': date
+          'date': date,
         };
       }
     }
@@ -485,22 +837,24 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildSmallInfoChip(IconData icon, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.black54),
+          Icon(icon, size: 14, color: Colors.white),
           const SizedBox(width: 6),
           Text(
             text,
             style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500),
+              fontSize: 12,
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -511,16 +865,16 @@ class _ProfilePageState extends State<ProfilePage> {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _ProfileColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              spreadRadius: 1,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.035),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -529,9 +883,9 @@ class _ProfilePageState extends State<ProfilePage> {
             Text(
               number,
               style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF4C30D0),
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+                color: _ProfileColors.primary,
               ),
             ),
             const SizedBox(height: 6),
@@ -540,8 +894,8 @@ class _ProfilePageState extends State<ProfilePage> {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Colors.black54,
+                fontWeight: FontWeight.w700,
+                color: _ProfileColors.textMuted,
                 letterSpacing: 0.5,
               ),
             ),
@@ -553,25 +907,33 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildSkillChip(String skill) {
     final isAiSkill = _aiSkills.contains(skill);
+
     return Container(
       margin: const EdgeInsets.only(right: 8, bottom: 10),
       child: InputChip(
         label: Text(skill),
         selected: isAiSkill,
+        showCheckmark: false,
+        avatar: isAiSkill
+            ? const Icon(
+                Icons.auto_awesome_rounded,
+                size: 16,
+                color: _ProfileColors.primary,
+              )
+            : null,
         onDeleted: isAiSkill ? null : () => _removeSkill(skill),
-        deleteIconColor: Colors.black54,
+        deleteIconColor: _ProfileColors.textMuted,
         backgroundColor: Colors.white,
-        selectedColor: Colors.white,
-        elevation: 1,
-        shadowColor: Colors.black.withOpacity(0.1),
-        labelStyle: const TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.w500,
+        selectedColor: _ProfileColors.softBlue,
+        elevation: 0,
+        labelStyle: TextStyle(
+          color: isAiSkill ? _ProfileColors.primary : _ProfileColors.navy,
+          fontWeight: FontWeight.w700,
           fontSize: 13,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: _ProfileColors.border),
         ),
       ),
     );
@@ -582,15 +944,16 @@ class _ProfilePageState extends State<ProfilePage> {
       onTap: () => _showCertificationDialog(index: index),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _ProfileColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.035),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -600,13 +963,15 @@ class _ProfilePageState extends State<ProfilePage> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF0FA),
-                borderRadius: BorderRadius.circular(14),
+                color: _ProfileColors.primary.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: const Icon(Icons.verified_user_outlined,
-                  color: Color(0xFF4C30D0)),
+              child: const Icon(
+                Icons.verified_user_outlined,
+                color: _ProfileColors.primary,
+              ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -614,21 +979,179 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(
                     cert['title']?.toString() ?? '',
                     style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: _ProfileColors.navy,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Issued ${cert['date'] ?? ''}',
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: _ProfileColors.textMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.open_in_new, color: Colors.black38, size: 20),
+            const Icon(
+              Icons.open_in_new_rounded,
+              color: _ProfileColors.textMuted,
+              size: 20,
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(String avatarUrl) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            _ProfileColors.navy,
+            _ProfileColors.primary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: _ProfileColors.primary.withOpacity(0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 112,
+                height: 112,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.22),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.28),
+                    width: 1,
+                  ),
+                ),
+                child: ClipOval(
+                  child: avatarUrl.isNotEmpty
+                      ? SupabaseImageWidget(
+                          storagePath: avatarUrl,
+                          isCircular: true,
+                          radius: 50,
+                        )
+                      : Container(
+                          color: Colors.white,
+                          child: const Icon(
+                            Icons.person_rounded,
+                            size: 52,
+                            color: _ProfileColors.textMuted,
+                          ),
+                        ),
+                ),
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: GestureDetector(
+                  onTap: _showEditProfileDialog,
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _ProfileColors.primary),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.14),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.edit_rounded,
+                      color: _ProfileColors.primary,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _nameCtrl.text.isEmpty ? 'Your Name' : _nameCtrl.text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 23,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            _headlineCtrl.text.isEmpty ? 'Add your headline' : _headlineCtrl.text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white70,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildSmallInfoChip(
+                Icons.school_outlined,
+                _graduationCtrl.text.isEmpty
+                    ? 'Class of 2025'
+                    : _graduationCtrl.text,
+              ),
+              _buildSmallInfoChip(
+                Icons.location_on_outlined,
+                _locationCtrl.text.isEmpty ? 'Add location' : _locationCtrl.text,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.16),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: Colors.white.withOpacity(0.18)),
+            ),
+            child: Text(
+              _industryCtrl.text.isEmpty
+                  ? _industryOptions.first
+                  : _industryCtrl.text.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+                letterSpacing: 0.6,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -643,209 +1166,158 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF6F8FB),
+        backgroundColor: _ProfileColors.background,
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
           centerTitle: true,
           title: const Text(
             'Profile',
             style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 18),
+              color: _ProfileColors.navy,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF4C30D0)),
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: _ProfileColors.navy,
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.edit, color: Color(0xFF4C30D0)),
+              icon: const Icon(
+                Icons.edit_rounded,
+                color: _ProfileColors.primary,
+              ),
               onPressed: _showEditProfileDialog,
             ),
           ],
         ),
-        
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 16,
+                offset: const Offset(0, -6),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            selectedItemColor: _ProfileColors.primary,
+            unselectedItemColor: _ProfileColors.textMuted,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            elevation: 0,
+            currentIndex: 3,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view_outlined),
+                activeIcon: Icon(Icons.grid_view_rounded),
+                label: 'Feed',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.people_outline_rounded),
+                activeIcon: Icon(Icons.people_rounded),
+                label: 'Network',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.work_outline_rounded),
+                activeIcon: Icon(Icons.work_rounded),
+                label: 'Jobs',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline_rounded),
+                activeIcon: Icon(Icons.person_rounded),
+                label: 'Profile',
+              ),
+            ],
+          ),
+        ),
         body: _loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: _ProfileColors.primary,
+                ),
+              )
             : Form(
                 key: _formKey,
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header Content
-                      Center(
-                        child: Column(
-                          children: [
-                            Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  width: 110,
-                                  height: 110,
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF4C30D0),
-                                        Color(0xFF00C9FF)
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF4C30D0)
-                                            .withOpacity(0.3),
-                                        blurRadius: 15,
-                                        offset: const Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipOval(
-                                    child: avatarUrl.isNotEmpty
-                                        ? SupabaseImageWidget(
-                                            storagePath: avatarUrl,
-                                            isCircular: true,
-                                            radius: 50,
-                                          )
-                                        : Container(
-                                            color: Colors.white,
-                                            child: const Icon(Icons.person,
-                                                size: 50, color: Colors.grey),
-                                          ),
-                                  ),
-                                ),
-                                Positioned(
-                                  right: 0,
-                                  bottom: 0,
-                                  child: GestureDetector(
-                                    onTap: _showEditProfileDialog,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF4C30D0),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: Colors.white, width: 2),
-                                      ),
-                                      child: const Icon(Icons.edit,
-                                          color: Colors.white, size: 16),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              _nameCtrl.text.isEmpty
-                                  ? 'Your Name'
-                                  : _nameCtrl.text,
-                              style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _headlineCtrl.text.isEmpty
-                                  ? 'Add your headline'
-                                  : _headlineCtrl.text,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4C30D0)),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildSmallInfoChip(
-                                    Icons.school_outlined,
-                                    _graduationCtrl.text.isEmpty
-                                        ? 'Class of 2025'
-                                        : _graduationCtrl.text),
-                                const SizedBox(width: 8),
-                                _buildSmallInfoChip(
-                                    Icons.location_on_outlined,
-                                    _locationCtrl.text.isEmpty
-                                        ? 'Add location'
-                                        : _locationCtrl.text),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE5F5EF),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                _industryCtrl.text.isEmpty
-                                    ? _industryOptions.first
-                                    : _industryCtrl.text.toUpperCase(),
-                                style: const TextStyle(
-                                    color: Color(0xFF1F8B83),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 11,
-                                    letterSpacing: 0.5),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      _buildProfileHeader(avatarUrl),
+                      const SizedBox(height: 20),
 
-                      // Actions (Edit & Upload CV/Share styled icon)
                       Row(
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 55,
-                              child: ElevatedButton(
+                              height: 54,
+                              child: ElevatedButton.icon(
                                 onPressed: _showEditProfileDialog,
+                                icon: const Icon(Icons.edit_rounded),
+                                label: const Text('Edit Profile'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4C30D0),
+                                  backgroundColor: _ProfileColors.primary,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
-                                  elevation: 5,
-                                  shadowColor:
-                                      const Color(0xFF4C30D0).withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
-                                child: const Text('Edit Profile',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white)),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Container(
-                            height: 55,
-                            width: 55,
+                            height: 54,
+                            width: 54,
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: _ProfileColors.border),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.035),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
                             ),
                             child: IconButton(
                               onPressed: _openCvUploadPage,
-                              icon: const Icon(Icons.share_outlined,
-                                  color: Color(0xFF4C30D0)),
+                              icon: const Icon(
+                                Icons.upload_file_rounded,
+                                color: _ProfileColors.primary,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
 
-                      // Stats Row
+                      const SizedBox(height: 20),
+
                       Row(
                         children: [
                           _statCard('${_allSkills.length}', 'SKILLS'),
@@ -853,170 +1325,494 @@ class _ProfilePageState extends State<ProfilePage> {
                           _statCard('${_certifications.length}', 'CERTS'),
                         ],
                       ),
-                      const SizedBox(height: 30),
 
-                      // Technical Skills
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(Icons.bolt, color: Color(0xFF4C30D0)),
-                              SizedBox(width: 8),
-                              Text('Technical Skills',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          TextButton(
-                            onPressed: _showAddSkillDialog,
-                            style: TextButton.styleFrom(
-                              backgroundColor: const Color(0xFFEEF0FA),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 4),
-                              minimumSize: Size.zero,
-                            ),
-                            child: const Text('+ Add',
-                                style: TextStyle(
-                                    color: Color(0xFF4C30D0),
-                                    fontWeight: FontWeight.bold)),
-                          )
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        children: _allSkills.map(_buildSkillChip).toList(),
-                      ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 22),
 
-                      // About Me
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(Icons.person_outline,
-                                  color: Color(0xFF4C30D0)),
-                              SizedBox(width: 8),
-                              Text('About Me',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          TextButton(
-                            onPressed: _showEditProfileDialog,
-                            style: TextButton.styleFrom(
-                              backgroundColor: const Color(0xFFEEF0FA),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 4),
-                              minimumSize: Size.zero,
-                            ),
-                            child: Text(
-                                _bioCtrl.text.isEmpty ? '+ Add' : 'Edit',
-                                style: const TextStyle(
-                                    color: Color(0xFF4C30D0),
-                                    fontWeight: FontWeight.bold)),
-                          )
-                        ],
+                      _ProfileSection(
+                        title: 'Technical Skills',
+                        subtitle: 'Skills added manually and extracted from CV.',
+                        icon: Icons.bolt_rounded,
+                        actionLabel: '+ Add',
+                        onActionTap: _showAddSkillDialog,
+                        child: _allSkills.isEmpty
+                            ? const _EmptyPanel(
+                                icon: Icons.bolt_outlined,
+                                message: 'No skills added yet.',
+                              )
+                            : Wrap(
+                                children: _allSkills.map(_buildSkillChip).toList(),
+                              ),
                       ),
-                      const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          _bioCtrl.text.isEmpty
-                              ? 'Write a short professional bio that highlights your goals and experience...'
-                              : _bioCtrl.text,
-                          style: TextStyle(
+
+                      const SizedBox(height: 18),
+
+                      _ProfileSection(
+                        title: 'About Me',
+                        subtitle: 'A short professional summary for recruiters.',
+                        icon: Icons.person_outline_rounded,
+                        actionLabel: _bioCtrl.text.isEmpty ? '+ Add' : 'Edit',
+                        onActionTap: _showEditProfileDialog,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: _ProfileColors.background,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: _ProfileColors.border),
+                          ),
+                          child: Text(
+                            _bioCtrl.text.isEmpty
+                                ? 'Write a short professional bio that highlights your goals and experience...'
+                                : _bioCtrl.text,
+                            style: TextStyle(
                               fontSize: 14,
                               color: _bioCtrl.text.isEmpty
-                                  ? Colors.black45
-                                  : Colors.black87,
-                              height: 1.5),
+                                  ? _ProfileColors.textMuted
+                                  : _ProfileColors.navy,
+                              height: 1.55,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 30),
 
-                      // Certifications
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(Icons.verified_outlined,
-                                  color: Color(0xFF4C30D0)),
-                              SizedBox(width: 8),
-                              Text('Certifications',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          TextButton(
-                            onPressed: () => _showCertificationDialog(),
-                            style: TextButton.styleFrom(
-                              backgroundColor: const Color(0xFFEEF0FA),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 4),
-                              minimumSize: Size.zero,
-                            ),
-                            child: const Text('+ Add',
-                                style: TextStyle(
-                                    color: Color(0xFF4C30D0),
-                                    fontWeight: FontWeight.bold)),
-                          )
-                        ],
+                      const SizedBox(height: 18),
+
+                      _ProfileSection(
+                        title: 'Certifications',
+                        subtitle: 'Showcase courses, awards, and credentials.',
+                        icon: Icons.verified_outlined,
+                        actionLabel: '+ Add',
+                        onActionTap: () => _showCertificationDialog(),
+                        child: _certifications.isEmpty
+                            ? const _EmptyPanel(
+                                icon: Icons.verified_outlined,
+                                message: 'No certifications added yet.',
+                              )
+                            : Column(
+                                children: _certifications
+                                    .asMap()
+                                    .entries
+                                    .map(
+                                      (entry) => _buildCertificationCard(
+                                        entry.value,
+                                        entry.key,
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
                       ),
-                      const SizedBox(height: 16),
-                      ..._certifications.asMap().entries.map((entry) =>
-                          _buildCertificationCard(entry.value, entry.key)),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 22),
 
-                      // Save Profile Button
                       SizedBox(
                         width: double.infinity,
                         height: 55,
                         child: ElevatedButton(
                           onPressed: _saving ? null : _saveProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4C30D0),
+                            backgroundColor: _ProfileColors.primary,
+                            disabledBackgroundColor:
+                                _ProfileColors.primary.withOpacity(0.45),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            elevation: 5,
-                            shadowColor:
-                                const Color(0xFF4C30D0).withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                           child: _saving
                               ? const SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2.5, color: Colors.white))
-                              : const Text('Save Profile',
+                                    strokeWidth: 2.5,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Save Profile',
                                   style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
                         ),
                       ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
               ),
+      ),
+    );
+  }
+}
+
+class _ProfileSection extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String actionLabel;
+  final VoidCallback onActionTap;
+  final Widget child;
+
+  const _ProfileSection({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.actionLabel,
+    required this.onActionTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _ProfileColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.035),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: _ProfileColors.primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  icon,
+                  color: _ProfileColors.primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: _ProfileColors.navy,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: _ProfileColors.textMuted,
+                        fontSize: 12,
+                        height: 1.3,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: onActionTap,
+                style: TextButton.styleFrom(
+                  foregroundColor: _ProfileColors.primary,
+                  backgroundColor: _ProfileColors.primary.withOpacity(0.08),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 13,
+                    vertical: 7,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Text(
+                  actionLabel,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyPanel extends StatelessWidget {
+  final IconData icon;
+  final String message;
+
+  const _EmptyPanel({
+    required this.icon,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 28),
+      decoration: BoxDecoration(
+        color: _ProfileColors.background,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _ProfileColors.border),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: _ProfileColors.primary.withOpacity(0.45),
+            size: 34,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: _ProfileColors.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DialogHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const _DialogHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: _ProfileColors.primary.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Icon(
+            icon,
+            color: _ProfileColors.primary,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: _ProfileColors.navy,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: _ProfileColors.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DialogSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _DialogSection({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _ProfileColors.background,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _ProfileColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: _ProfileColors.primary, size: 19),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: _ProfileColors.navy,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileFormField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final int maxLines;
+
+  const _ProfileFormField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    this.maxLines = 1,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: _ProfileColors.primary),
+        filled: true,
+        fillColor: Colors.white,
+        labelStyle: const TextStyle(
+          color: _ProfileColors.textMuted,
+          fontWeight: FontWeight.w600,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _ProfileColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(
+            color: _ProfileColors.primary,
+            width: 1.4,
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfilePickerTile extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ProfilePickerTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _ProfileColors.border),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: _ProfileColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: _ProfileColors.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        color: _ProfileColors.navy,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: _ProfileColors.textMuted,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1050,36 +1846,76 @@ class _ProfileIndustryPickerSheetState
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+              child: Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: _ProfileColors.border,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             const Text(
               'Set Professional Field',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 34,
-                fontWeight: FontWeight.w700,
+                color: _ProfileColors.navy,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 6),
+            const Text(
+              'Choose the category that best matches your profile.',
+              style: TextStyle(
+                color: _ProfileColors.textMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 16),
             ...widget.options.map((option) {
-              return RadioListTile<String>(
-                dense: true,
-                value: option,
-                groupValue: _localSelected,
-                activeColor: const Color(0xFF5B5BFF),
-                title: Text(
-                  option,
-                  style:
-                      const TextStyle(color: Color(0xFFD1D4EA), fontSize: 16),
+              final selected = option == _localSelected;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? _ProfileColors.primary.withOpacity(0.08)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: selected
+                        ? _ProfileColors.primary
+                        : _ProfileColors.border,
+                  ),
                 ),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _localSelected = value);
-                  Navigator.pop(context, value);
-                },
+                child: RadioListTile<String>(
+                  value: option,
+                  groupValue: _localSelected,
+                  activeColor: _ProfileColors.primary,
+                  title: Text(
+                    option,
+                    style: TextStyle(
+                      color: selected
+                          ? _ProfileColors.primary
+                          : _ProfileColors.navy,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() => _localSelected = value);
+                    Navigator.pop(context, value);
+                  },
+                ),
               );
             }),
           ],

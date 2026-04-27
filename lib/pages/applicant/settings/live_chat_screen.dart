@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../../services/api_service.dart';
-import '../../../theme/app_theme.dart';
 import '../../../shared/notification_button.dart';
+
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
+const Color _mutedText = Color(0xFF64748B);
 
 class LiveChatScreen extends StatefulWidget {
   const LiveChatScreen({super.key});
@@ -66,11 +72,13 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: _background,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgDark,
+        backgroundColor: _background,
+        foregroundColor: _navy,
+        elevation: 0,
         title: const Text('Live AI Chat Support'),
-        actions: const [ApplicantNotificationButton(iconColor: Colors.white)],
+        actions: const [ApplicantNotificationButton(iconColor: _navy)],
       ),
       body: Column(
         children: [
@@ -80,8 +88,9 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final m = _messages[index];
-                final bubbleColor =
-                    m.fromUser ? AppTheme.primary : const Color(0xFF1C1C44);
+                final bubbleColor = m.fromUser ? _primary : Colors.white;
+                final bubbleBorder = m.fromUser ? _accent : _cardBorder;
+                final textColor = m.fromUser ? Colors.white : _navy;
 
                 return Align(
                   alignment:
@@ -94,16 +103,12 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                     decoration: BoxDecoration(
                       color: bubbleColor,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: m.fromUser
-                            ? AppTheme.primaryLight
-                            : const Color(0xFF323273),
-                      ),
+                      border: Border.all(color: bubbleBorder),
                     ),
                     child: Text(
                       m.text,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 13,
                         height: 1.4,
                       ),
@@ -116,8 +121,8 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
           Container(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
             decoration: const BoxDecoration(
-              color: Color(0xFF131333),
-              border: Border(top: BorderSide(color: Color(0xFF2D2D5E))),
+              color: Colors.white,
+              border: Border(top: BorderSide(color: _cardBorder)),
             ),
             child: SafeArea(
               top: false,
@@ -126,29 +131,26 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: _messageCtrl,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: _navy),
                       minLines: 1,
                       maxLines: 4,
                       onSubmitted: (_) => _sendMessage(),
                       decoration: InputDecoration(
                         hintText: 'Ask support... ',
-                        hintStyle: const TextStyle(color: AppTheme.textMuted),
+                        hintStyle: const TextStyle(color: _mutedText),
                         filled: true,
-                        fillColor: const Color(0xFF1D1D46),
+                        fillColor: _background,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xFF313173)),
+                          borderSide: const BorderSide(color: _cardBorder),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xFF313173)),
+                          borderSide: const BorderSide(color: _cardBorder),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppTheme.primaryLight),
+                          borderSide: const BorderSide(color: _accent),
                         ),
                       ),
                     ),
@@ -161,7 +163,7 @@ class _LiveChatScreenState extends State<LiveChatScreen> {
                       onPressed: _sending ? null : _sendMessage,
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.zero,
-                        backgroundColor: AppTheme.primary,
+                        backgroundColor: _primary,
                       ),
                       child: _sending
                           ? const SizedBox(

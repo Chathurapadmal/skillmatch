@@ -10,6 +10,12 @@ import 'package:flutter/material.dart';
 import '../../services/ai_service.dart';
 import '../../shared/chat_overlay.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
+
 class UploadCvPage extends StatefulWidget {
   final String initialCvText;
   final bool returnResultOnExtract;
@@ -224,7 +230,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
     final userDocRef = FirebaseFirestore.instance.collection('users').doc(uid);
     final existing = await userDocRef.get();
     final existingSkills =
-        ((existing.data()?['skills'] as List?) ?? const <dynamic>[]) // manual
+        ((existing.data()?['skills'] as List?) ?? const <dynamic>[])
             .map((e) => '$e')
             .toList();
 
@@ -278,16 +284,16 @@ class _UploadCvPageState extends State<UploadCvPage> {
   Widget build(BuildContext context) {
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F8FC),
+        backgroundColor: _background,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          iconTheme: const IconThemeData(color: Colors.black),
+          iconTheme: const IconThemeData(color: _navy),
           title: const Text(
             'Upload CV',
             style: TextStyle(
-              color: Colors.black,
+              color: _navy,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -300,7 +306,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 30),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF5B5FFF), Color(0xFF7C3AED)],
+                    colors: [_navy, _primary, _accent],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -394,11 +400,11 @@ class _UploadCvPageState extends State<UploadCvPage> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(22),
                             border: Border.all(
-                              color: const Color(0xFF7C3AED).withOpacity(0.4),
+                              color: _accent.withOpacity(0.4),
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.deepPurple.withOpacity(0.15),
+                                color: _primary.withOpacity(0.15),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
@@ -407,15 +413,14 @@ class _UploadCvPageState extends State<UploadCvPage> {
                           child: Column(
                             children: [
                               _uploading
-                                  ? const CircularProgressIndicator()
+                                  ? const CircularProgressIndicator(
+                                      color: _primary,
+                                    )
                                   : Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: const BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [
-                                            Color(0xFF5B5FFF),
-                                            Color(0xFF7C3AED)
-                                          ],
+                                          colors: [_primary, _accent],
                                         ),
                                         shape: BoxShape.circle,
                                       ),
@@ -429,6 +434,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
                               const Text(
                                 "Upload your CV",
                                 style: TextStyle(
+                                  color: _navy,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
                                 ),
@@ -452,10 +458,10 @@ class _UploadCvPageState extends State<UploadCvPage> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.grey.shade300),
+                            border: Border.all(color: _cardBorder),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
+                                color: _navy.withOpacity(0.06),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
@@ -465,8 +471,10 @@ class _UploadCvPageState extends State<UploadCvPage> {
                             controller: _cvTextCtrl,
                             maxLines: null,
                             expands: true,
+                            style: const TextStyle(color: _navy),
                             decoration: const InputDecoration(
                               hintText: "Paste your CV text here...",
+                              hintStyle: TextStyle(color: Colors.grey),
                               border: InputBorder.none,
                             ),
                           ),
@@ -482,7 +490,7 @@ class _UploadCvPageState extends State<UploadCvPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF5B5FFF), Color(0xFF7C3AED)],
+                              colors: [_primary, _accent],
                             ),
                             borderRadius: BorderRadius.circular(18),
                           ),

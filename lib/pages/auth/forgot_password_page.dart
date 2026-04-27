@@ -3,6 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
 
@@ -37,7 +42,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AuthService.friendlyError(e)),
-          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: _navy,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     } finally {
@@ -48,38 +57,54 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _background,
       body: Stack(
         children: [
-          
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF4052B6),
-                  Color(0xFF652FE7),
-                ],
+                colors: [_navy, _primary, _accent],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
           ),
 
-
           Positioned(
             top: -80,
             right: -60,
             child: Container(
-              height: 200,
-              width: 200,
+              height: 220,
+              width: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF652FE7).withOpacity(0.3),
-                boxShadow: const [
+                color: _accent.withOpacity(0.25),
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0xFF652FE7),
-                    blurRadius: 40,
+                    color: _accent.withOpacity(0.65),
+                    blurRadius: 45,
+                    spreadRadius: 12,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: -90,
+            left: -70,
+            child: Container(
+              height: 210,
+              width: 210,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _primary.withOpacity(0.18),
+                boxShadow: [
+                  BoxShadow(
+                    color: _primary.withOpacity(0.35),
+                    blurRadius: 50,
                     spreadRadius: 10,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -88,37 +113,56 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 420),
                   child: Column(
                     children: [
-                      // 🔙 Back button
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded,
-                              color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
+                        child: Container(
+                          height: 44,
+                          width: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.14),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.24),
+                            ),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: Colors.white,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
-                  
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: BorderRadius.circular(30),
                         child: BackdropFilter(
-                          filter:
-                              ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(28),
+                              color: Colors.white.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(30),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withOpacity(0.34),
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _navy.withOpacity(0.20),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 18),
+                                ),
+                              ],
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(26),
@@ -144,29 +188,39 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-    
           Container(
-            width: 70,
-            height: 70,
+            width: 74,
+            height: 74,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.16),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.28),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _accent.withOpacity(0.38),
+                  blurRadius: 24,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
             child: const Icon(
               Icons.lock_reset_rounded,
-              size: 36,
+              size: 38,
               color: Colors.white,
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 22),
 
           const Text(
             'Reset Password',
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontSize: 25,
+              fontWeight: FontWeight.w900,
               color: Colors.white,
+              letterSpacing: -0.3,
             ),
           ),
 
@@ -175,26 +229,47 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           const Text(
             'Enter your email and we will send a reset link.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              height: 1.35,
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 26),
 
-  
           TextFormField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
             onFieldSubmitted: (_) => _send(),
+            style: const TextStyle(color: _navy),
             decoration: InputDecoration(
               labelText: 'Email',
-              labelStyle: const TextStyle(color: Colors.black87),
-              prefixIcon:
-                  const Icon(Icons.alternate_email_rounded),
+              labelStyle: const TextStyle(color: Colors.black54),
+              prefixIcon: const Icon(
+                Icons.alternate_email_rounded,
+                color: _primary,
+              ),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.9),
+              fillColor: Colors.white.withOpacity(0.94),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(
+                  color: _accent,
+                  width: 1.5,
+                ),
+              ),
+              errorStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
             validator: (v) {
@@ -208,38 +283,42 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
           const SizedBox(height: 24),
 
-          
           GestureDetector(
             onTap: _loading ? null : _send,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              height: 52,
+              height: 54,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF4052B6),
-                    Color(0xFF652FE7),
-                  ],
+                  colors: [_primary, _accent],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF652FE7)
-                        .withOpacity(0.6),
-                    blurRadius: 25,
-                    spreadRadius: 2,
+                    color: _primary.withOpacity(0.45),
+                    blurRadius: 28,
+                    spreadRadius: 1,
                   ),
                 ],
               ),
               child: Center(
                 child: _loading
-                    ? const CircularProgressIndicator(
-                        color: Colors.white)
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
                     : const Text(
                         'Send Reset Link',
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 15,
                         ),
                       ),
               ),
@@ -254,17 +333,33 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.check_circle_rounded,
-            size: 64, color: Colors.green),
+        Container(
+          width: 74,
+          height: 74,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.16),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.28),
+            ),
+          ),
+          child: const Icon(
+            Icons.check_circle_rounded,
+            size: 42,
+            color: Colors.white,
+          ),
+        ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 22),
 
         const Text(
           'Email Sent!',
           style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white),
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: -0.3,
+          ),
         ),
 
         const SizedBox(height: 8),
@@ -273,7 +368,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           'Check your inbox at ${_emailCtrl.text.trim()}',
           textAlign: TextAlign.center,
           style: const TextStyle(
-              color: Colors.white70, fontSize: 13),
+            color: Colors.white70,
+            fontSize: 14,
+            height: 1.35,
+          ),
         ),
 
         const SizedBox(height: 24),
@@ -281,22 +379,30 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Container(
-            height: 50,
+            height: 52,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF4052B6),
-                  Color(0xFF652FE7),
-                ],
+                colors: [_primary, _accent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: _primary.withOpacity(0.38),
+                  blurRadius: 24,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
             child: const Text(
               'Back to Login',
               style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+              ),
             ),
           ),
         ),

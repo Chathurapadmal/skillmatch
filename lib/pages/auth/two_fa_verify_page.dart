@@ -6,6 +6,10 @@ import '../../services/backup_code_service.dart';
 import '../../services/firestore_user_service.dart';
 import '../../services/totp_service.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TwoFAVerifyPage
 // ─────────────────────────────────────────────────────────────────────────────
@@ -114,9 +118,16 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(''),
+        backgroundColor: _navy,
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: _navy,
       ),
     );
   }
@@ -129,7 +140,7 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+            colors: [_navy, _primary, _accent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -155,14 +166,13 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                           width: 70,
                           height: 70,
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF1A237E).withValues(alpha: 0.1),
+                            color: _primary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.phonelink_lock_rounded,
                             size: 36,
-                            color: Color(0xFF1A237E),
+                            color: _primary,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -172,6 +182,7 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
+                            color: _navy,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -203,6 +214,7 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                                 fontSize: 28,
                                 letterSpacing: 12,
                                 fontWeight: FontWeight.bold,
+                                color: _navy,
                               ),
                               decoration: const InputDecoration(
                                 hintText: '000000',
@@ -234,6 +246,7 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                                 fontSize: 18,
                                 letterSpacing: 3,
                                 fontFamily: 'monospace',
+                                color: _navy,
                               ),
                               decoration: const InputDecoration(
                                 hintText: 'XXXXX-XXXXX',
@@ -258,7 +271,7 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                           height: 50,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1A237E),
+                              backgroundColor: _primary,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -302,7 +315,7 @@ class _TwoFAVerifyPageState extends State<TwoFAVerifyPage> {
                                 : "Don't have your phone? Use a backup code",
                             textAlign: TextAlign.center,
                             style: const TextStyle(
-                              color: Color(0xFF1A237E),
+                              color: _primary,
                             ),
                           ),
                         ),

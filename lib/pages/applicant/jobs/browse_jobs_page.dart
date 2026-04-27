@@ -6,6 +6,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../services/api_service.dart';
 import '../../../theme/app_theme.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
+const Color _softBlue = Color(0xFFEAF3FA);
+const Color _mutedText = Color(0xFF64748B);
+
 class BrowseJobsPage extends StatefulWidget {
   const BrowseJobsPage({super.key});
 
@@ -221,7 +229,10 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open job link.')),
+        const SnackBar(
+          content: Text('Could not open job link.'),
+          backgroundColor: _navy,
+        ),
       );
     }
   }
@@ -626,7 +637,9 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: _primary),
+      );
     }
 
     if (_error != null) {
@@ -685,6 +698,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
     }
 
     return RefreshIndicator(
+      color: _primary,
       onRefresh: _searchJobs,
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),

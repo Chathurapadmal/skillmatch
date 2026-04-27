@@ -6,6 +6,16 @@ import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../shared/chat_overlay.dart';
 
+class _AdminColors {
+  static const Color primary = Color(0xFF1565C0);
+  static const Color navy = Color(0xFF1E3A5F);
+  static const Color background = Color(0xFFF5F7FB);
+  static const Color border = Color(0xFFDCE3F0);
+  static const Color purple = Color(0xFF8A5BFF);
+  static const Color success = Color(0xFF18C17C);
+  static const Color warning = Color(0xFFFFB020);
+}
+
 class AdminDashboard extends StatefulWidget {
   final UserModel user;
   final bool showInternalNavigation;
@@ -42,31 +52,116 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7FA),
+        backgroundColor: _AdminColors.background,
 
-        /// 🔥 PREMIUM APPBAR
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
           elevation: 0,
+          toolbarHeight: 74,
+          backgroundColor: Colors.transparent,
           flexibleSpace: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF5F2EEA), Color(0xFF7B61FF)],
+                colors: [_AdminColors.navy, _AdminColors.primary],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
           ),
-          title: const Text(
-            "Admin Panel",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.admin_panel_settings_rounded,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Admin Panel",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    "System management dashboard",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           actions: [
-            PopupMenuButton<String>(
-              icon: const CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person, color: Color(0xFF7B61FF)),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: PopupMenuButton<String>(
+                offset: const Offset(0, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                icon: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: _AdminColors.primary,
+                    ),
+                  ),
+                ),
+                onSelected: (value) async {
+                  if (value == 'profile') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfilePage()),
+                    );
+                  }
+
+                  if (value == 'signout') {
+                    await AuthService.signOut();
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_outline_rounded),
+                        SizedBox(width: 10),
+                        Text("My Profile"),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'signout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout_rounded),
+                        SizedBox(width: 10),
+                        Text("Sign Out"),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               onSelected: (value) async {
                 if (value == 'signout') await AuthService.signOut();
@@ -78,15 +173,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ],
         ),
 
-        /// ✨ FAB
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: const Color(0xFF7B61FF),
+        floatingActionButton: FloatingActionButton.extended(
+          backgroundColor: _AdminColors.primary,
           elevation: 8,
-          child: const Icon(Icons.auto_awesome),
+          icon: const Icon(
+            Icons.auto_awesome_rounded,
+            color: Colors.white,
+          ),
+          label: const Text(
+            "Quick Action",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           onPressed: () {},
         ),
 
-        /// 🧭 NAVBAR
         bottomNavigationBar: widget.showInternalNavigation
             ? NavigationBar(
                 selectedIndex: _selectedIndex,
@@ -136,65 +239,39 @@ class _OverviewTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🎉 PREMIUM BANNER
-          Container(
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF5F2EEA), Color(0xFF7B61FF)],
-              ),
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.deepPurple.withOpacity(0.25),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                )
-              ],
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Welcome, Admin 👋",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  "Manage users, roles, and system analytics",
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
+          const _HeroHeader(
+            title: "Welcome, Admin ",
+            subtitle: "Manage users, roles, and platform activity from one place.",
+            icon: Icons.workspace_premium_rounded,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 22),
 
-          const Text(
-            "Platform Overview",
-            style: TextStyle(fontWeight: FontWeight.bold),
+          const _SectionHeader(
+            title: "Platform Overview",
+            subtitle: "A quick snapshot of registered user categories.",
+            icon: Icons.insights_rounded,
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          /// 📊 COUNTS
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('users').snapshots(),
             builder: (context, snap) {
-              int total = 0, applicants = 0, companies = 0, admins = 0;
+              int total = 0;
+              int applicants = 0;
+              int companies = 0;
+              int admins = 0;
 
               if (snap.hasData) {
                 for (final doc in snap.data!.docs) {
                   final d = doc.data() as Map<String, dynamic>;
                   total++;
+
                   switch (d['role']) {
                     case 'company':
                       companies++;
@@ -212,17 +289,34 @@ class _OverviewTab extends StatelessWidget {
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+                childAspectRatio: 1.25,
                 children: [
                   _CountCard(
-                      "Total Users", total, Icons.people, Colors.deepPurple),
+                    "Total Users",
+                    total,
+                    Icons.people_alt_rounded,
+                    _AdminColors.primary,
+                  ),
                   _CountCard(
-                      "Applicants", applicants, Icons.person, Colors.teal),
+                    "Applicants",
+                    applicants,
+                    Icons.person_rounded,
+                    _AdminColors.success,
+                  ),
                   _CountCard(
-                      "Companies", companies, Icons.business, Colors.blue),
-                  _CountCard("Admins", admins, Icons.admin_panel_settings,
-                      Colors.orange),
+                    "Companies",
+                    companies,
+                    Icons.business_rounded,
+                    _AdminColors.purple,
+                  ),
+                  _CountCard(
+                    "Admins",
+                    admins,
+                    Icons.admin_panel_settings_rounded,
+                    _AdminColors.warning,
+                  ),
                 ],
               );
             },
@@ -251,18 +345,19 @@ class _UsersTabState extends State<_UsersTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        /// 🔍 SEARCH
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: "Search users...",
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: _AdminColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
@@ -270,24 +365,33 @@ class _UsersTabState extends State<_UsersTab> {
           ),
         ),
 
-        /// 👥 USER LIST
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('users').snapshots(),
             builder: (context, snap) {
               if (!snap.hasData) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: _AdminColors.primary,
+                  ),
+                );
               }
 
               final docs = snap.data!.docs.where((doc) {
                 if (_search.isEmpty) return true;
+
                 final d = doc.data() as Map<String, dynamic>;
                 final name = (d['displayName'] ?? "").toLowerCase();
                 final email = (d['email'] ?? "").toLowerCase();
                 return name.contains(_search) || email.contains(_search);
               }).toList();
 
+              if (docs.isEmpty) {
+                return const _EmptyState();
+              }
+
               return ListView.builder(
+                padding: const EdgeInsets.fromLTRB(0, 4, 0, 100),
                 itemCount: docs.length,
                 itemBuilder: (context, i) {
                   final d = docs[i].data() as Map<String, dynamic>;
@@ -300,6 +404,150 @@ class _UsersTabState extends State<_UsersTab> {
                 },
               );
             },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// HERO HEADER
+////////////////////////////////////////////////////////////
+
+class _HeroHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const _HeroHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [_AdminColors.navy, _AdminColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: _AdminColors.primary.withOpacity(0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 18),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.16),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.18),
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// SECTION HEADER
+////////////////////////////////////////////////////////////
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: _AdminColors.primary.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            icon,
+            color: _AdminColors.primary,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: _AdminColors.navy,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  height: 1.3,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -324,25 +572,46 @@ class _UserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final roleColor = role == 'admin'
+        ? _AdminColors.primary
+        : role == 'company'
+            ? _AdminColors.purple
+            : _AdminColors.success;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _AdminColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          )
+            color: Colors.black.withOpacity(0.045),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: Colors.grey.shade200,
-            child: Text(name.isNotEmpty ? name[0] : "?"),
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: roleColor.withOpacity(0.12),
+            ),
+            child: CircleAvatar(
+              radius: 22,
+              backgroundColor: roleColor.withOpacity(0.16),
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : "?",
+                style: TextStyle(
+                  color: roleColor,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -356,25 +625,18 @@ class _UserTile extends StatelessWidget {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
             decoration: BoxDecoration(
-              color: role == 'admin'
-                  ? Colors.deepPurple.shade100
-                  : role == 'company'
-                      ? Colors.blue.shade100
-                      : Colors.green.shade100,
-              borderRadius: BorderRadius.circular(20),
+              color: roleColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(30),
             ),
             child: Text(
               role.toUpperCase(),
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: role == 'admin'
-                    ? Colors.deepPurple
-                    : role == 'company'
-                        ? Colors.blue
-                        : Colors.green,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.3,
+                color: roleColor,
               ),
             ),
           ),
@@ -401,40 +663,117 @@ class _CountCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withOpacity(0.15), color.withOpacity(0.05)],
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _AdminColors.border),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          )
+            color: color.withOpacity(0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.2),
-            child: Icon(icon, color: color),
+          Container(
+            padding: const EdgeInsets.all(11),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "$count",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-              Text(label, style: const TextStyle(color: Colors.grey)),
-            ],
+          const Spacer(),
+          Text(
+            "$count",
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// EMPTY STATE
+////////////////////////////////////////////////////////////
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: _AdminColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: _AdminColors.primary.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                Icons.search_off_rounded,
+                size: 38,
+                color: _AdminColors.primary.withOpacity(0.55),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "No users found",
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                color: _AdminColors.navy,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Try searching with another name or email.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
