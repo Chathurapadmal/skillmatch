@@ -666,23 +666,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF4C30D0),
-          unselectedItemColor: Colors.grey,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          currentIndex: 3,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Feed'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.people_outline), label: 'Network'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.work_outline), label: 'Jobs'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-        ),
+        
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : Form(
