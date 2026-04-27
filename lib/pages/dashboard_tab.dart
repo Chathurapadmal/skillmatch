@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import '../services/aiserv.dart';
+import '../services/ai_service.dart';
 import '../shared/chat_overlay.dart';
+
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
 
 class DashboardTab extends StatefulWidget {
   final bool firebaseEnabled;
@@ -79,7 +84,7 @@ class _DashboardTabState extends State<DashboardTab> {
     });
 
     try {
-      final result = await AIService.testAI().timeout(
+      final result = await AiService.testAI().timeout(
         const Duration(seconds: 45),
         onTimeout: () => throw Exception(
           'Request timed out after 45s — this is usually App Check token/API propagation. Retry in 2-3 minutes.',
@@ -115,19 +120,20 @@ class _DashboardTabState extends State<DashboardTab> {
   Widget build(BuildContext context) {
     return ChatOverlay(
       child: Scaffold(
+        backgroundColor: _background,
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
           title: const Text(
             'Dashboard',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: _navy),
           ),
         ),
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+              colors: [_navy, _primary, _accent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -167,7 +173,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1565C0),
+                      foregroundColor: _primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 14,
@@ -178,7 +184,10 @@ class _DashboardTabState extends State<DashboardTab> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: _primary,
+                            ),
                           )
                         : const Text(
                             "Test AI",
@@ -189,7 +198,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1565C0),
+                      foregroundColor: _primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 14,

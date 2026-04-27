@@ -5,7 +5,7 @@ import 'package:skillmatch/pages/applicant/home/home_screen.dart';
 
 import '../admin/admin_dashboard.dart';
 import '../models/user_model.dart';
-import 'applicant/Browsjobs/browsjob.dart';
+import 'applicant/jobs/browse_jobs_page.dart';
 import 'applicant/applicant_dashboard.dart';
 import 'applicant/upload_cv_page.dart';
 import 'company/company_dashboard.dart';
@@ -116,7 +116,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         children: pages.map((entry) => entry.page).toList(),
       ),
 
-      // 🔥 FIXED CUSTOM NAV BAR
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(
@@ -151,7 +150,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                       Icon(
                         item.icon,
                         color:
-                            isSelected ? const Color(0xFF6C63FF) : Colors.grey,
+                            isSelected ? const Color(0xFF1565C0) : Colors.grey,
                         size: isSelected ? 26 : 24,
                       ),
                       const SizedBox(height: 4),
@@ -166,7 +165,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: isSelected
-                                ? const Color(0xFF6C63FF)
+                                ? const Color(0xFF1565C0)
                                 : Colors.grey,
                             fontSize: 11,
                             fontWeight: isSelected

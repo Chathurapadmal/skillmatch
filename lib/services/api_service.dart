@@ -75,10 +75,13 @@ class ApiService {
     }
 
     final candidates = <String>[
-      if (kIsWeb) _defaultLocalBaseUrl else ...switch (defaultTargetPlatform) {
-        TargetPlatform.android || TargetPlatform.iOS => _androidCandidates,
-        _ => <String>[_defaultLocalBaseUrl],
-      },
+      if (kIsWeb)
+        _defaultLocalBaseUrl
+      else
+        ...switch (defaultTargetPlatform) {
+          TargetPlatform.android || TargetPlatform.iOS => _androidCandidates,
+          _ => <String>[_defaultLocalBaseUrl],
+        },
     ];
 
     for (final candidate in candidates) {
@@ -126,6 +129,73 @@ class ApiService {
     } catch (e) {
       throw Exception('Error connecting to API: $e');
     }
+  }
+
+  static Future<Map<String, dynamic>> _postJson(
+    String path,
+    Map<String, dynamic> payload,
+  ) async {
+    final url = Uri.parse('${await _baseUrl}$path');
+
+    try {
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 25));
+
+      final decoded = jsonDecode(response.body);
+      final body = decoded is Map<String, dynamic>
+          ? decoded
+          : <String, dynamic>{'data': decoded};
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          (body['error'] ?? 'Request failed (${response.statusCode})')
+              .toString(),
+        );
+      }
+
+      return body;
+    } catch (e) {
+      throw Exception('Error calling $path: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> generateRoadmap({
+    required String field,
+    List<String> skills = const [],
+  }) {
+    return _postJson('/api/roadmap', {
+      'field': field,
+      'skills': skills,
+    });
+  }
+
+  static Future<Map<String, dynamic>> generateTrends({
+    required String field,
+    List<String> skills = const [],
+  }) {
+    return _postJson('/api/trends', {
+      'field': field,
+      'skills': skills,
+    });
+  }
+
+  static Future<Map<String, dynamic>> generateSkillQuiz({
+    required String field,
+    required String skill,
+    int questionCount = 5,
+    List<String> skills = const [],
+  }) {
+    return _postJson('/api/skill-quiz', {
+      'field': field,
+      'skill': skill,
+      'questionCount': questionCount,
+      'skills': skills,
+    });
   }
 
   static Future<JobSearchResponse> fetchJobs({

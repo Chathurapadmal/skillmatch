@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:skillmatch/pages/applicant/advanced/roadmap_screen.dart';
 import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.dart';
-import 'package:skillmatch/pages/applicant/home/home_screen.dart';
 import 'package:skillmatch/pages/applicant/home/saved_jobs_screen.dart';
 import 'package:skillmatch/pages/applicant/profile/profile_views_screen.dart';
 import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
 import 'package:skillmatch/pages/applicant/settings/help_support_screen.dart';
 import 'package:skillmatch/pages/applicant/settings/privacy_security_screen.dart';
+import 'package:skillmatch/services/auth_service.dart';
+import 'package:skillmatch/shared/notifications_center_screen.dart';
 import '../../models/user_model.dart';
-import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';
-import '../../shared/notifications_center_screen.dart';
+
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _softBlue = Color(0xFFEAF3FA);
+const Color _darkText = Color(0xFF1E3A5F);
+const Color _mutedText = Color(0xFF64748B);
 
 class ApplicantDashboard extends StatelessWidget {
   final UserModel user;
@@ -36,22 +43,22 @@ class ApplicantDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7FA),
+        backgroundColor: _background,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: _background,
           elevation: 0,
           title: const Text(
             'SkillMatch',
             style: TextStyle(
-              color: Color(0xFF1565C0),
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
+              color: _primary,
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
+              letterSpacing: -0.5,
             ),
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.notifications_outlined,
-                  color: Colors.black87),
+              icon: const Icon(Icons.notifications, color: _navy),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -61,89 +68,116 @@ class ApplicantDashboard extends StatelessWidget {
                 );
               },
             ),
-            PopupMenuButton<String>(
-              icon: const CircleAvatar(
-                radius: 16,
-                backgroundColor: Color(0xFF1565C0),
-                child: Icon(Icons.person, color: Colors.white, size: 18),
-              ),
-              onSelected: (value) async {
-                if (value == 'profile') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfilePage()),
-                  );
-                  return;
-                }
-                if (value == 'help') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const HelpSupportScreen()),
-                  );
-                  return;
-                }
-                if (value == 'privacy') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PrivacySecurityScreen(),
-                    ),
-                  );
-                  return;
-                }
-                if (value == 'signout') {
-                  await AuthService.signOut();
-                }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  enabled: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(user.displayName,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Text(user.email,
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0, left: 8.0),
+              child: PopupMenuButton<String>(
+                color: const Color(0xFFF8FBFF),
+                surfaceTintColor: Colors.transparent,
+                offset: const Offset(0, 45),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, color: _navy, size: 20),
+                ),
+                onSelected: (value) async {
+                  if (value == 'profile') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfilePage()),
+                    );
+                    return;
+                  }
+                  if (value == 'help') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const HelpSupportScreen(),
+                      ),
+                    );
+                    return;
+                  }
+                  if (value == 'privacy') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PrivacySecurityScreen(),
+                      ),
+                    );
+                    return;
+                  }
+                  if (value == 'signout') {
+                    await AuthService.signOut();
+                  }
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    enabled: false,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.displayName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          user.email,
                           style: const TextStyle(
-                              color: Colors.grey, fontSize: 12)),
-                    ],
+                            color: _mutedText,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const PopupMenuDivider(),
-                const PopupMenuItem(
-                  value: 'profile',
-                  child: Row(children: [
-                    Icon(Icons.person_outline),
-                    SizedBox(width: 8),
-                    Text('My Profile'),
-                  ]),
-                ),
-                const PopupMenuItem(
-                  value: 'help',
-                  child: Row(children: [
-                    Icon(Icons.support_agent_outlined),
-                    SizedBox(width: 8),
-                    Text('Help & Support'),
-                  ]),
-                ),
-                const PopupMenuItem(
-                  value: 'privacy',
-                  child: Row(children: [
-                    Icon(Icons.privacy_tip_outlined),
-                    SizedBox(width: 8),
-                    Text('Privacy & Security'),
-                  ]),
-                ),
-                const PopupMenuItem(
-                  value: 'signout',
-                  child: Row(children: [
-                    Icon(Icons.logout, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Sign Out', style: TextStyle(color: Colors.red)),
-                  ]),
-                ),
-              ],
+                  const PopupMenuDivider(),
+                  const PopupMenuItem(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_outline, color: _navy),
+                        SizedBox(width: 8),
+                        Text('My Profile'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'help',
+                    child: Row(
+                      children: [
+                        Icon(Icons.support_agent_outlined, color: _navy),
+                        SizedBox(width: 8),
+                        Text('Help & Support'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'privacy',
+                    child: Row(
+                      children: [
+                        Icon(Icons.privacy_tip_outlined, color: _navy),
+                        SizedBox(width: 8),
+                        Text('Privacy & Security'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'signout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text(
+                          'Sign Out',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(width: 8),
           ],
@@ -172,169 +206,164 @@ class ApplicantDashboard extends StatelessWidget {
                   .where('studentId', isEqualTo: user.uid)
                   .snapshots(),
               builder: (context, _) {
-
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Welcome banner ─────────────────────────────────────────────
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          color: _primary,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Welcome back, ${user.displayName.split(' ').first}! 👋',
+                              'Welcome back,\n${user.displayName.split(' ').first}!',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 26,
                                 fontWeight: FontWeight.bold,
+                                height: 1.2,
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 12),
                             const Text(
-                              'Your career journey continues here.',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // ── Quick stats ────────────────────────────────────────────────
-                      SizedBox(
-                        height: 110,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: _StatCard(
-                                icon: Icons.bookmark_outline,
-                                label: 'Saved',
-                                value: '$savedCount',
-                                color: const Color(0xFF1565C0),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const SavedJobsScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              flex: 1,
-                              child: _StatCard(
-                                icon: Icons.visibility_outlined,
-                                label: 'Profile Views',
-                                value: '$profileViews',
-                                color: const Color(0xFF1565C0),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const ProfileViewsScreen(),
-                                    ),
-                                  );
-                                },
+                              'You\'ve got 3 new job matches\nwaiting for you today.',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                                height: 1.4,
                               ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // ── Actions ────────────────────────────────────────────────────
+                      _StatCard(
+                        title: 'SAVED JOBS',
+                        count: '$savedCount',
+                        trendText: '+4 this week',
+                        isPositive: true,
+                        actionText: 'View list',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SavedJobsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _StatCard(
+                        title: 'PROFILE VIEWS',
+                        count: '$profileViews',
+                        trendText: '+12% vs last month',
+                        isPositive: true,
+                        actionText: 'See who viewed',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileViewsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 32),
                       const Text(
                         'Quick Actions',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: _darkText,
+                        ),
                       ),
-                      const SizedBox(height: 14),
-                      Column(
+                      const SizedBox(height: 16),
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _ActionCard(
-                                  icon: Icons.map_outlined,
-                                  label: 'Roadmap',
-                                  color: const Color(0xFF1565C0),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const RoadmapScreen(
-                                          field: 'IT & Software',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _ActionCard(
-                                  icon: Icons.trending_up,
-                                  label: 'Trends',
-                                  color: const Color(0xFF2B6CB0),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const IndustryForecastScreen(
-                                          field: 'IT & Software',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: _ActionCard(
-                              icon: Icons.psychology_outlined,
-                              label: 'Skill Match AI',
-                              color: Colors.teal,
+                          Expanded(
+                            child: _PrimaryActionCard(
+                              icon: Icons.map,
+                              label: 'Career\nRoadmap',
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        const SkillVerificationScreen(),
+                                    builder: (_) => const RoadmapScreen(
+                                      field: 'IT & Software',
+                                    ),
                                   ),
                                 );
                               },
                             ),
                           ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _SecondaryActionCard(
+                              icon: Icons.payments_outlined,
+                              label: 'Salary\nTrends',
+                              onTap: () {},
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-
-                      // ── Recommended jobs (real data only) ─────────────────────────
-                      const Text(
-                        'Recommended Jobs',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: _SecondaryFullWidthActionCard(
+                          icon: Icons.auto_awesome,
+                          label: 'Skill Match AI',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const SkillVerificationScreen(),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Recommended Jobs',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: _darkText,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {},
+                            child: const Row(
+                              children: [
+                                Text(
+                                  'See All',
+                                  style: TextStyle(
+                                    color: _primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: _primary,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                       StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                         stream: FirebaseFirestore.instance
                             .collection('internships')
@@ -347,8 +376,8 @@ class ApplicantDashboard extends StatelessWidget {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
                               child: Center(
-                                child: CircularProgressIndicator(
-                                    color: Color(0xFF1565C0)),
+                                child:
+                                    CircularProgressIndicator(color: _primary),
                               ),
                             );
                           }
@@ -362,6 +391,7 @@ class ApplicantDashboard extends StatelessWidget {
                             final tags = ((data['skills'] as List?) ?? const [])
                                 .map((e) => '$e')
                                 .toList();
+
                             return {
                               'title':
                                   (data['title'] as String?) ?? 'Internship',
@@ -371,8 +401,10 @@ class ApplicantDashboard extends StatelessWidget {
                                       (data['location'] as String?) ??
                                       'Remote')
                                   .trim(),
-                              'aboutRole':
-                                  ((data['aboutRole'] as String?) ?? '').trim(),
+                              'jobType':
+                                  (data['jobType'] as String?) ?? 'Full-time',
+                              'salary': (data['salary'] as String?) ??
+                                  '\$120k - \$150k',
                               'industry':
                                   ((data['industry'] as String?) ?? '').trim(),
                               'match': _calculateMatch(tags, studentSkills),
@@ -385,25 +417,28 @@ class ApplicantDashboard extends StatelessWidget {
                                 jobIndustry == normalizedIndustry;
                           }).toList();
 
-                          mapped.sort((a, b) =>
-                              (b['match'] as int).compareTo(a['match'] as int));
+                          mapped.sort(
+                            (a, b) => (b['match'] as int)
+                                .compareTo(a['match'] as int),
+                          );
 
                           if (mapped.isEmpty) {
                             return const Text(
                               'No active jobs found for your profile right now.',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: _mutedText),
                             );
                           }
 
                           return Column(
                             children: mapped.take(5).map((item) {
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.only(bottom: 16),
                                 child: _JobCard(
                                   title: item['title'] as String,
                                   company: item['company'] as String,
                                   location: item['location'] as String,
-                                  aboutRole: item['aboutRole'] as String,
+                                  jobType: item['jobType'] as String,
+                                  salary: item['salary'] as String,
                                   matchRate: item['match'] as int,
                                 ),
                               );
@@ -411,6 +446,7 @@ class ApplicantDashboard extends StatelessWidget {
                           );
                         },
                       ),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 );
@@ -423,73 +459,122 @@ class ApplicantDashboard extends StatelessWidget {
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-  final VoidCallback? onTap;
+  final String title;
+  final String count;
+  final String trendText;
+  final bool isPositive;
+  final String actionText;
+  final VoidCallback onTap;
 
   const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-    this.onTap,
+    required this.title,
+    required this.count,
+    required this.trendText,
+    required this.isPositive,
+    required this.actionText,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: _navy.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 26),
-          const SizedBox(height: 6),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          Text(
+            title,
+            style: const TextStyle(
+              color: _mutedText,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text(
+                count,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: _darkText,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isPositive ? const Color(0xFFE6F7F8) : Colors.red[50],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isPositive ? Icons.trending_up : Icons.trending_down,
+                      color: isPositive ? _accent : Colors.red,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      trendText,
+                      style: TextStyle(
+                        color: isPositive ? _accent : Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: onTap,
+            child: Row(
+              children: [
+                Text(
+                  actionText,
+                  style: const TextStyle(
+                    color: _primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.arrow_forward, color: _primary, size: 16),
+              ],
+            ),
+          ),
         ],
-      ),
-    );
-
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: card,
-        ),
       ),
     );
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _PrimaryActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
   final VoidCallback onTap;
 
-  const _ActionCard({
+  const _PrimaryActionCard({
     required this.icon,
     required this.label,
-    required this.color,
     required this.onTap,
   });
 
@@ -498,15 +583,129 @@ class _ActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        height: 140,
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: _primary,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: _primary.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SecondaryActionCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SecondaryActionCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 140,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: _navy.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: _softBlue,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: _primary, size: 24),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                color: _darkText,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SecondaryFullWidthActionCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SecondaryFullWidthActionCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: _navy.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -515,17 +714,18 @@ class _ActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: _softBlue,
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: color, size: 22),
+              child: Icon(icon, color: _primary, size: 24),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                label,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: const TextStyle(
+                color: _darkText,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -539,80 +739,148 @@ class _JobCard extends StatelessWidget {
   final String title;
   final String company;
   final String location;
-  final String aboutRole;
+  final String jobType;
+  final String salary;
   final int matchRate;
 
   const _JobCard({
     required this.title,
     required this.company,
     required this.location,
-    required this.aboutRole,
+    required this.jobType,
+    required this.salary,
     required this.matchRate,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = matchRate >= 80
-        ? Colors.green
-        : matchRate >= 60
-            ? Colors.orange
-            : Colors.red;
-
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: _navy.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            backgroundColor: const Color(0xFF1565C0).withValues(alpha: 0.1),
-            child: const Icon(Icons.business, color: Color(0xFF1565C0)),
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: _accent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+              child: Icon(Icons.business, color: Colors.white, size: 26),
+            ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
-                Text('$company · $location',
-                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                if (aboutRole.trim().isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    aboutRole.trim(),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _darkText,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _softBlue,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.flash_on,
+                            color: _primary,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$matchRate% Match',
+                            style: const TextStyle(
+                              color: _primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  company,
+                  style: const TextStyle(
+                    color: _mutedText,
+                    fontSize: 14,
                   ),
-                ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _JobInfoPill(icon: Icons.location_on, text: location),
+                    const SizedBox(width: 16),
+                    _JobInfoPill(icon: Icons.access_time_filled, text: jobType),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _JobInfoPill(icon: Icons.payments, text: salary),
               ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '$matchRate%',
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _JobInfoPill extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _JobInfoPill({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: _mutedText, size: 16),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(
+            color: _mutedText,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

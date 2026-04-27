@@ -3,6 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../../shared/applicant_notification_button.dart';
+
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
+const Color _softBlue = Color(0xFFEAF3FA);
+const Color _mutedText = Color(0xFF64748B);
 
 class SavedJobsScreen extends StatelessWidget {
   const SavedJobsScreen({super.key});
@@ -12,24 +20,30 @@ class SavedJobsScreen extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: _background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Saved Jobs',
           style: TextStyle(
-            color: Color(0xFF1565C0),
+            color: _primary,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1565C0)),
+          icon: const Icon(Icons.arrow_back, color: _primary),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: const [ApplicantNotificationButton()],
       ),
       body: uid == null
-          ? const Center(child: Text('Sign in to view saved jobs.'))
+          ? const Center(
+              child: Text(
+                'Sign in to view saved jobs.',
+                style: TextStyle(color: _mutedText),
+              ),
+            )
           : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: FirebaseFirestore.instance
                   .collection('users')
@@ -54,7 +68,7 @@ class SavedJobsScreen extends StatelessWidget {
                         ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          color: AppTheme.primary,
+                          color: _primary,
                         ),
                       );
                     }
@@ -71,7 +85,7 @@ class SavedJobsScreen extends StatelessWidget {
                           child: Text(
                             'No saved jobs yet. Tap the bookmark on a job card to save it here.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.black54),
+                            style: TextStyle(color: _mutedText),
                           ),
                         ),
                       );
@@ -123,7 +137,7 @@ class SavedJobsScreen extends StatelessWidget {
                                     Text(
                                       title,
                                       style: const TextStyle(
-                                        color: Colors.black87,
+                                        color: _navy,
                                         fontSize: 22,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -132,7 +146,8 @@ class SavedJobsScreen extends StatelessWidget {
                                     Text(
                                       '$company • $location',
                                       style: const TextStyle(
-                                          color: Colors.black54),
+                                        color: _mutedText,
+                                      ),
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
@@ -140,7 +155,7 @@ class SavedJobsScreen extends StatelessWidget {
                                           ? 'No additional description provided.'
                                           : description,
                                       style: const TextStyle(
-                                        color: Colors.black54,
+                                        color: _mutedText,
                                         height: 1.4,
                                       ),
                                     ),
@@ -149,7 +164,7 @@ class SavedJobsScreen extends StatelessWidget {
                                       const Text(
                                         'Required Skills',
                                         style: TextStyle(
-                                          color: Colors.black87,
+                                          color: _navy,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -168,15 +183,14 @@ class SavedJobsScreen extends StatelessWidget {
                                                   vertical: 6,
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color:
-                                                      const Color(0xFFE8F0FF),
+                                                  color: _softBlue,
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                 ),
                                                 child: Text(
                                                   skill,
                                                   style: const TextStyle(
-                                                    color: Color(0xFF1565C0),
+                                                    color: _primary,
                                                     fontSize: 12,
                                                   ),
                                                 ),
@@ -230,7 +244,7 @@ class _SavedJobCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: _navy.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -239,27 +253,39 @@ class _SavedJobCard extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: const Color(0xFF1565C0).withValues(alpha: 0.1),
-              child: const Icon(Icons.bookmark, color: Color(0xFF1565C0)),
+              backgroundColor: _primary.withValues(alpha: 0.1),
+              child: const Icon(Icons.bookmark, color: _primary),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _navy,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('$company · $location',
-                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(
+                    '$company · $location',
+                    style: const TextStyle(
+                      color: _mutedText,
+                      fontSize: 13,
+                    ),
+                  ),
                   if (description.trim().isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Text(
                       description.trim(),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          const TextStyle(color: Colors.black54, fontSize: 12),
+                      style: const TextStyle(
+                        color: _mutedText,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                   if (skills.isNotEmpty) ...[
@@ -269,7 +295,7 @@ class _SavedJobCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.black45,
+                        color: _mutedText,
                         fontSize: 12,
                       ),
                     ),
@@ -277,8 +303,11 @@ class _SavedJobCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 16, color: Colors.black38),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: _mutedText,
+            ),
           ],
         ),
       ),

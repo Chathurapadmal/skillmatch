@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../shared/applicant_notification_button.dart';
 import 'live_chat_screen.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
@@ -16,24 +17,23 @@ class HelpSupportScreen extends StatefulWidget {
 class _HelpSupportScreenState extends State<HelpSupportScreen> {
   int? _openFaq;
 
-  // 🎨 New Color System
-  static const primary = Color(0xFF4052B6);
-  static const deepViolet = Color(0xFF5000D2);
+  static const primary = Color(0xFF1565C0);
+  static const deepViolet = Color(0xFF2E86AB);
 
-  static const textPrimary = Color(0xFF2C2F30);
-  static const textSecondary = Color(0xFF595C5D);
-  static const textMuted = Color(0xFF595C5D);
+  static const textPrimary = Color(0xFF1E3A5F);
+  static const textSecondary = Color(0xFF64748B);
+  static const textMuted = Color(0xFF64748B);
 
-  static const bgMain = Color(0xFFF5F6F7);
+  static const bgMain = Color(0xFFF8FAFC);
   static const cardBg = Colors.white;
 
   static const border = Color(0xFFDCE3F0);
 
-  static const info = Color(0xFF4CB9FF);
+  static const info = Color(0xFF2E86AB);
   static const error = Colors.red;
 
   static const gradient = LinearGradient(
-    colors: [Color(0xFF4052B6), Color(0xFF652FE7)],
+    colors: [Color(0xFF1E3A5F), Color(0xFF1565C0), Color(0xFF2E86AB)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -107,7 +107,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           title: const Text('Help & Support'),
           backgroundColor: cardBg,
           foregroundColor: textPrimary,
-          elevation: 0),
+          elevation: 0,
+          actions: const [ApplicantNotificationButton()]),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -167,14 +168,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 duration: const Duration(milliseconds: 250),
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: isOpen
-                      ? primary.withOpacity(0.08)
-                      : cardBg,
+                  color: isOpen ? primary.withOpacity(0.08) : cardBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isOpen
-                        ? primary.withOpacity(0.3)
-                        : border,
+                    color: isOpen ? primary.withOpacity(0.3) : border,
                   ),
                 ),
                 child: Column(children: [
@@ -185,9 +182,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                       Expanded(
                         child: Text(faq.q,
                             style: TextStyle(
-                                color: isOpen
-                                    ? deepViolet
-                                    : textPrimary,
+                                color: isOpen ? deepViolet : textPrimary,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600)),
                       ),
@@ -201,9 +196,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           left: 16, right: 16, bottom: 14),
                       child: Text(faq.a,
                           style: const TextStyle(
-                              color: textSecondary,
-                              fontSize: 12,
-                              height: 1.6)),
+                              color: textSecondary, fontSize: 12, height: 1.6)),
                     ),
                 ]),
               ).animate().fade(delay: Duration(milliseconds: i * 40)),
@@ -246,8 +239,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           const SizedBox(height: 24),
           Center(
             child: Text('SkillMatch Pro v1.0.0  •  © 2025 SkillMatch',
-                style:
-                    const TextStyle(color: textMuted, fontSize: 11)),
+                style: const TextStyle(color: textMuted, fontSize: 11)),
           ),
         ],
       ),
@@ -283,8 +275,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               style: TextStyle(
                   color: color, fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
-          Text(sub,
-              style: const TextStyle(color: textMuted, fontSize: 11)),
+          Text(sub, style: const TextStyle(color: textMuted, fontSize: 11)),
         ]),
       ),
     );
@@ -294,12 +285,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       {required VoidCallback onTap}) {
     return ListTile(
       leading: Icon(icon, color: deepViolet, size: 20),
-      title: Text(title,
-          style: const TextStyle(color: textPrimary, fontSize: 13)),
-      subtitle: Text(sub,
-          style: const TextStyle(color: textMuted, fontSize: 11)),
-      trailing:
-          const Icon(Icons.chevron_right, color: textMuted, size: 18),
+      title:
+          Text(title, style: const TextStyle(color: textPrimary, fontSize: 13)),
+      subtitle:
+          Text(sub, style: const TextStyle(color: textMuted, fontSize: 11)),
+      trailing: const Icon(Icons.chevron_right, color: textMuted, size: 18),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
     );

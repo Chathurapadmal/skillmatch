@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'firebase_options.dart';
 import 'package:skillmatch/pages/splash_screen.dart';
+import 'package:skillmatch/theme/skillmatch_theme.dart';
 
 bool get _supportsFirebaseOnCurrentPlatform {
   if (kIsWeb) return true;
@@ -70,10 +71,7 @@ class SkillMatchApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SkillMatch',
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF1565C0),
-        useMaterial3: true,
-      ),
+      theme: SkillMatchTheme.light(),
       home: startupMessage != null
           ? _ErrorScreen(message: startupMessage!)
           : const SplashScreen(),
