@@ -65,3 +65,7 @@ android/hs_err_pid25612.log
 android/replay_pid9084.log
 android/replay_pid25612.log
 android/hs_err_pid11284.log
+
+# Node.js
+**/node_modules/
+search_results.txt
