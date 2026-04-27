@@ -905,11 +905,17 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                   }).toList();
 
                   if (filtered.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(20),
-                      child: _EmptyPanel(
-                        icon: Icons.people_outline,
-                        message: 'No candidate profiles match this filter yet.',
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height * 0.22,
+                        ),
+                        child: const _EmptyPanel(
+                          icon: Icons.people_outline,
+                          message:
+                              'No candidate profiles match this filter yet.',
+                        ),
                       ),
                     );
                   }
@@ -1395,7 +1401,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     String newStatus,
     Map<String, dynamic> studentData,
   ) async {
-    // Find or create an application document for this student
     final appQuery = await FirebaseFirestore.instance
         .collection('applications')
         .where('studentId', isEqualTo: studentId)
@@ -1412,13 +1417,11 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
       return;
     }
 
-    // Update existing application
     await appQuery.docs.first.reference.update({
       'status': newStatus,
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    // Send notification to student
     await FirebaseFirestore.instance.collection('notifications').add({
       'recipientId': studentId,
       'type': 'application_status',
