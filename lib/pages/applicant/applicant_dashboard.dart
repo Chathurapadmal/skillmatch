@@ -71,7 +71,7 @@ class ApplicantDashboard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 16.0, left: 8.0),
               child: PopupMenuButton<String>(
-                color: const Color(0xFFF8FBFF),
+                color: _background,
                 surfaceTintColor: Colors.transparent,
                 offset: const Offset(0, 45),
                 shape: RoundedRectangleBorder(
@@ -120,7 +120,10 @@ class ApplicantDashboard extends StatelessWidget {
                       children: [
                         Text(
                           user.displayName,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: _navy,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           user.email,
@@ -139,7 +142,7 @@ class ApplicantDashboard extends StatelessWidget {
                       children: [
                         Icon(Icons.person_outline, color: _navy),
                         SizedBox(width: 8),
-                        Text('My Profile'),
+                        Text('My Profile', style: TextStyle(color: _navy)),
                       ],
                     ),
                   ),
@@ -149,7 +152,7 @@ class ApplicantDashboard extends StatelessWidget {
                       children: [
                         Icon(Icons.support_agent_outlined, color: _navy),
                         SizedBox(width: 8),
-                        Text('Help & Support'),
+                        Text('Help & Support', style: TextStyle(color: _navy)),
                       ],
                     ),
                   ),
@@ -159,7 +162,10 @@ class ApplicantDashboard extends StatelessWidget {
                       children: [
                         Icon(Icons.privacy_tip_outlined, color: _navy),
                         SizedBox(width: 8),
-                        Text('Privacy & Security'),
+                        Text(
+                          'Privacy & Security',
+                          style: TextStyle(color: _navy),
+                        ),
                       ],
                     ),
                   ),
@@ -519,7 +525,7 @@ class _StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPositive ? const Color(0xFFE6F7F8) : Colors.red[50],
+                  color: isPositive ? _softBlue : Colors.red[50],
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
