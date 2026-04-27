@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
+import 'package:skillmatch/admin/admin_profile_page.dart';
 
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -38,6 +38,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   static const List<_NavItem> _navItems = [
     _NavItem(icon: Icons.dashboard_rounded, label: 'Overview'),
     _NavItem(icon: Icons.people_rounded, label: 'Users'),
+    _NavItem(icon: Icons.manage_accounts_rounded, label: 'User Controls'),
   ];
 
   @override
@@ -162,7 +163,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ),
                 ],
               ),
-            ),
+              onSelected: (value) async {
+                if (value == 'signout') await AuthService.signOut();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'signout', child: Text("Sign Out")),
+              ],
+            )
           ],
         ),
 
@@ -184,38 +191,26 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
 
         bottomNavigationBar: widget.showInternalNavigation
-            ? Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 18,
-                      offset: const Offset(0, -6),
-                    ),
-                  ],
-                ),
-                child: NavigationBar(
-                  selectedIndex: _selectedIndex,
-                  backgroundColor: Colors.white,
-                  indicatorColor: _AdminColors.primary.withOpacity(0.14),
-                  labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                  onDestinationSelected: (i) {
-                    setState(() => _selectedIndex = i);
-                  },
-                  destinations: const [
-                    NavigationDestination(
-                      icon: Icon(Icons.dashboard_outlined),
-                      selectedIcon: Icon(Icons.dashboard_rounded),
-                      label: "Overview",
-                    ),
-                    NavigationDestination(
-                      icon: Icon(Icons.people_outline_rounded),
-                      selectedIcon: Icon(Icons.people_rounded),
-                      label: "Users",
-                    ),
-                  ],
-                ),
+            ? NavigationBar(
+                selectedIndex: _selectedIndex,
+                indicatorColor: const Color(0xFF7B61FF).withOpacity(0.2),
+                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                onDestinationSelected: (i) =>
+                    setState(() => _selectedIndex = i),
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.dashboard_rounded),
+                    label: "Overview",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.people_rounded),
+                    label: "Users",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.manage_accounts_rounded),
+                    label: "User Controls",
+                  ),
+                ],
               )
             : null,
 
@@ -224,6 +219,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           children: [
             _OverviewTab(adminUser: widget.user),
             const _UsersTab(),
+            AdminProfilePage(adminUser: widget.user),
           ],
         ),
       ),
@@ -363,37 +359,9 @@ class _UsersTabState extends State<_UsersTab> {
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _SectionHeader(
-                title: "User Management",
-                subtitle: "Search and review user accounts by name or email.",
-                icon: Icons.manage_accounts_rounded,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: "Search users...",
-                  prefixIcon: const Icon(
-                    Icons.search_rounded,
-                    color: _AdminColors.primary,
-                  ),
-                  filled: true,
-                  fillColor: _AdminColors.background,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                ),
-                onChanged: (v) {
-                  setState(() => _search = v.toLowerCase());
-                },
-              ),
-            ],
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            onChanged: (v) => setState(() => _search = v.toLowerCase()),
           ),
         ),
 
@@ -415,7 +383,6 @@ class _UsersTabState extends State<_UsersTab> {
                 final d = doc.data() as Map<String, dynamic>;
                 final name = (d['displayName'] ?? "").toLowerCase();
                 final email = (d['email'] ?? "").toLowerCase();
-
                 return name.contains(_search) || email.contains(_search);
               }).toList();
 
@@ -646,35 +613,17 @@ class _UserTile extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 14),
-
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name.isNotEmpty ? name : "Unnamed User",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                    color: _AdminColors.navy,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  email,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(email,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ),
-
-          const SizedBox(width: 12),
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
             decoration: BoxDecoration(
@@ -838,8 +787,5 @@ class _NavItem {
   final IconData icon;
   final String label;
 
-  const _NavItem({
-    required this.icon,
-    required this.label,
-  });
+  const _NavItem({required this.icon, required this.label});
 }

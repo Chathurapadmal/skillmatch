@@ -64,7 +64,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             icon: Icons.home_rounded,
             page: const DashboardTab(),
           ),
-          ...commonPages,
+          _NavPage(
+            label: 'User Controls',
+            icon: Icons.manage_accounts_rounded,
+            page: AdminDashboard(
+              user: widget.user,
+              showInternalNavigation: false,
+              initialTabIndex: 2,
+            ),
+          ),
         ];
 
       case UserRole.company:

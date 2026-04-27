@@ -57,4 +57,21 @@ android/replay_pid*.log
 **/analyze_res2.txt
 **/run_web_output.txt
 **/build_output.txt
+hs_err_pid20352.log
+android/hs_err_pid17872.log
+android/replay_pid17872.log
+hs_err_pid21012.log
+android/hs_err_pid9084.log
+android/hs_err_pid25612.log
+android/replay_pid9084.log
+android/replay_pid25612.log
+android/hs_err_pid11284.log
+
+# Node.js
+**/node_modules/
 search_results.txt
+android/build.gradle
+android/build.gradle.kts
+android/settings.gradle
+android/app/build.gradle
+

@@ -199,9 +199,17 @@ class _ChatPanelState extends State<_ChatPanel>
                           ),
                         ),
                         const Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: widget.onClose,
+
+                        /// CLOSE BUTTON (IMPROVED)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: widget.onClose,
+                          ),
                         ),
                       ],
                     ),
@@ -252,7 +260,7 @@ class _ChatPanelState extends State<_ChatPanel>
 
                   /// INPUT
                   Container(
-                    padding: EdgeInsets.fromLTRB(12, 10, 12, 16 + safeBottom),
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
                     child: Row(
                       children: [
                         Expanded(
