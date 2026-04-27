@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
+import 'package:skillmatch/admin/admin_profile_page.dart';
 
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -28,6 +28,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   static const List<_NavItem> _navItems = [
     _NavItem(icon: Icons.dashboard_rounded, label: 'Overview'),
     _NavItem(icon: Icons.people_rounded, label: 'Users'),
+    _NavItem(icon: Icons.manage_accounts_rounded, label: 'User Controls'),
   ];
 
   @override
@@ -68,16 +69,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 child: Icon(Icons.person, color: Color(0xFF7B61FF)),
               ),
               onSelected: (value) async {
-                if (value == 'profile') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfilePage()),
-                  );
-                }
                 if (value == 'signout') await AuthService.signOut();
               },
               itemBuilder: (_) => const [
-                PopupMenuItem(value: 'profile', child: Text("My Profile")),
                 PopupMenuItem(value: 'signout', child: Text("Sign Out")),
               ],
             )
@@ -96,10 +90,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
         bottomNavigationBar: widget.showInternalNavigation
             ? NavigationBar(
                 selectedIndex: _selectedIndex,
-                indicatorColor:
-                    const Color(0xFF7B61FF).withOpacity(0.2),
-                labelBehavior:
-                    NavigationDestinationLabelBehavior.alwaysShow,
+                indicatorColor: const Color(0xFF7B61FF).withOpacity(0.2),
+                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
                 onDestinationSelected: (i) =>
                     setState(() => _selectedIndex = i),
                 destinations: const [
@@ -111,6 +103,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     icon: Icon(Icons.people_rounded),
                     label: "Users",
                   ),
+                  NavigationDestination(
+                    icon: Icon(Icons.manage_accounts_rounded),
+                    label: "User Controls",
+                  ),
                 ],
               )
             : null,
@@ -120,6 +116,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           children: [
             _OverviewTab(adminUser: widget.user),
             const _UsersTab(),
+            AdminProfilePage(adminUser: widget.user),
           ],
         ),
       ),
@@ -190,8 +187,7 @@ class _OverviewTab extends StatelessWidget {
 
           /// 📊 COUNTS
           StreamBuilder<QuerySnapshot>(
-            stream:
-                FirebaseFirestore.instance.collection('users').snapshots(),
+            stream: FirebaseFirestore.instance.collection('users').snapshots(),
             builder: (context, snap) {
               int total = 0, applicants = 0, companies = 0, admins = 0;
 
@@ -219,10 +215,14 @@ class _OverviewTab extends StatelessWidget {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 children: [
-                  _CountCard("Total Users", total, Icons.people, Colors.deepPurple),
-                  _CountCard("Applicants", applicants, Icons.person, Colors.teal),
-                  _CountCard("Companies", companies, Icons.business, Colors.blue),
-                  _CountCard("Admins", admins, Icons.admin_panel_settings, Colors.orange),
+                  _CountCard(
+                      "Total Users", total, Icons.people, Colors.deepPurple),
+                  _CountCard(
+                      "Applicants", applicants, Icons.person, Colors.teal),
+                  _CountCard(
+                      "Companies", companies, Icons.business, Colors.blue),
+                  _CountCard("Admins", admins, Icons.admin_panel_settings,
+                      Colors.orange),
                 ],
               );
             },
@@ -266,17 +266,14 @@ class _UsersTabState extends State<_UsersTab> {
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            onChanged: (v) =>
-                setState(() => _search = v.toLowerCase()),
+            onChanged: (v) => setState(() => _search = v.toLowerCase()),
           ),
         ),
 
         /// 👥 USER LIST
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .snapshots(),
+            stream: FirebaseFirestore.instance.collection('users').snapshots(),
             builder: (context, snap) {
               if (!snap.hasData) {
                 return const Center(child: CircularProgressIndicator());
@@ -287,15 +284,13 @@ class _UsersTabState extends State<_UsersTab> {
                 final d = doc.data() as Map<String, dynamic>;
                 final name = (d['displayName'] ?? "").toLowerCase();
                 final email = (d['email'] ?? "").toLowerCase();
-                return name.contains(_search) ||
-                    email.contains(_search);
+                return name.contains(_search) || email.contains(_search);
               }).toList();
 
               return ListView.builder(
                 itemCount: docs.length,
                 itemBuilder: (context, i) {
-                  final d =
-                      docs[i].data() as Map<String, dynamic>;
+                  final d = docs[i].data() as Map<String, dynamic>;
 
                   return _UserTile(
                     name: d['displayName'] ?? "",
@@ -350,17 +345,16 @@ class _UserTile extends StatelessWidget {
             child: Text(name.isNotEmpty ? name[0] : "?"),
           ),
           const SizedBox(width: 12),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(email,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
           ),
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
