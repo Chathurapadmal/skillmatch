@@ -19,6 +19,13 @@ const Color _background = Color(0xFFF8FAFC);
 const Color _softBlue = Color(0xFFEAF3FA);
 const Color _darkText = Color(0xFF1E3A5F);
 const Color _mutedText = Color(0xFF64748B);
+const Color _cardBorder = Color(0xFFDCE3F0);
+
+const LinearGradient _mainGradient = LinearGradient(
+  colors: [_navy, _primary, _accent],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+);
 
 class ApplicantDashboard extends StatelessWidget {
   final UserModel user;
@@ -45,20 +52,51 @@ class ApplicantDashboard extends StatelessWidget {
       child: Scaffold(
         backgroundColor: _background,
         appBar: AppBar(
-          backgroundColor: _background,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
           elevation: 0,
-          title: const Text(
-            'SkillMatch',
-            style: TextStyle(
-              color: _primary,
-              fontWeight: FontWeight.w800,
-              fontSize: 22,
-              letterSpacing: -0.5,
-            ),
+          titleSpacing: 18,
+          title: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  gradient: _mainGradient,
+                  borderRadius: BorderRadius.circular(13),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _primary.withOpacity(0.22),
+                      blurRadius: 14,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.work_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'SkillMatch',
+                style: TextStyle(
+                  color: _primary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 22,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.notifications, color: _navy),
+              style: IconButton.styleFrom(
+                backgroundColor: _softBlue,
+                foregroundColor: _navy,
+              ),
+              icon: const Icon(Icons.notifications_none_rounded),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -71,16 +109,22 @@ class ApplicantDashboard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 16.0, left: 8.0),
               child: PopupMenuButton<String>(
-                color: _background,
+                color: Colors.white,
                 surfaceTintColor: Colors.transparent,
+                elevation: 8,
                 offset: const Offset(0, 45),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, color: _navy, size: 20),
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: _softBlue,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _cardBorder),
+                  ),
+                  child: const Icon(Icons.person, color: _navy, size: 20),
                 ),
                 onSelected: (value) async {
                   if (value == 'profile') {
@@ -122,7 +166,7 @@ class ApplicantDashboard extends StatelessWidget {
                           user.displayName,
                           style: const TextStyle(
                             color: _navy,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                         Text(
@@ -185,7 +229,6 @@ class ApplicantDashboard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
           ],
         ),
         body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -214,83 +257,69 @@ class ApplicantDashboard extends StatelessWidget {
               builder: (context, _) {
                 return SingleChildScrollView(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: _primary,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome back,\n${user.displayName.split(' ').first}!',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                height: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'You\'ve got 3 new job matches\nwaiting for you today.',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
+                      _DashboardHero(
+                        name: user.displayName,
+                        industry:
+                            industry.isEmpty ? 'Career Dashboard' : industry,
                       ),
                       const SizedBox(height: 24),
-                      _StatCard(
-                        title: 'SAVED JOBS',
-                        count: '$savedCount',
-                        trendText: '+4 this week',
-                        isPositive: true,
-                        actionText: 'View list',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SavedJobsScreen(),
+                      _SectionHeader(
+                        title: 'Profile Snapshot',
+                        subtitle: 'Your saved roles and profile activity',
+                        icon: Icons.insights_rounded,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              title: 'SAVED JOBS',
+                              count: '$savedCount',
+                              trendText: '+4 this week',
+                              isPositive: true,
+                              actionText: 'View list',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const SavedJobsScreen(),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      _StatCard(
-                        title: 'PROFILE VIEWS',
-                        count: '$profileViews',
-                        trendText: '+12% vs last month',
-                        isPositive: true,
-                        actionText: 'See who viewed',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ProfileViewsScreen(),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              title: 'PROFILE VIEWS',
+                              count: '$profileViews',
+                              trendText: '+12% vs last month',
+                              isPositive: true,
+                              actionText: 'See who viewed',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ProfileViewsScreen(),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'Quick Actions',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: _darkText,
-                        ),
+                      const SizedBox(height: 28),
+                      _SectionHeader(
+                        title: 'Quick Actions',
+                        subtitle: 'Jump into tools that improve your profile',
+                        icon: Icons.bolt_rounded,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -309,7 +338,7 @@ class ApplicantDashboard extends StatelessWidget {
                               },
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: _SecondaryActionCard(
                               icon: Icons.payments_outlined,
@@ -319,52 +348,63 @@ class ApplicantDashboard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: _SecondaryFullWidthActionCard(
-                          icon: Icons.auto_awesome,
-                          label: 'Skill Match AI',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const SkillVerificationScreen(),
-                              ),
-                            );
-                          },
-                        ),
+                      const SizedBox(height: 14),
+                      _SecondaryFullWidthActionCard(
+                        icon: Icons.auto_awesome,
+                        label: 'Skill Match AI',
+                        subtitle: 'Verify skills and improve your matches',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SkillVerificationScreen(),
+                            ),
+                          );
+                        },
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 30),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Recommended Jobs',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: _darkText,
+                          const Expanded(
+                            child: _SectionHeader(
+                              title: 'Recommended Jobs',
+                              subtitle: 'Best matches based on your profile',
+                              icon: Icons.work_outline_rounded,
+                              compact: true,
                             ),
                           ),
+                          const SizedBox(width: 12),
                           GestureDetector(
                             onTap: () {},
-                            child: const Row(
-                              children: [
-                                Text(
-                                  'See All',
-                                  style: TextStyle(
-                                    color: _primary,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 7,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _softBlue,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'See All',
+                                    style: TextStyle(
+                                      color: _primary,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                    ),
                                   ),
-                                ),
-                                Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: _primary,
-                                  size: 18,
-                                ),
-                              ],
+                                  SizedBox(width: 3),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: _primary,
+                                    size: 17,
+                                  ),
+                                ],
+                              ),
                             ),
                           )
                         ],
@@ -380,7 +420,7 @@ class ApplicantDashboard extends StatelessWidget {
                           if (internshipSnapshot.connectionState ==
                               ConnectionState.waiting) {
                             return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.symmetric(vertical: 24),
                               child: Center(
                                 child:
                                     CircularProgressIndicator(color: _primary),
@@ -429,16 +469,25 @@ class ApplicantDashboard extends StatelessWidget {
                           );
 
                           if (mapped.isEmpty) {
-                            return const Text(
-                              'No active jobs found for your profile right now.',
-                              style: TextStyle(color: _mutedText),
+                            return Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(18),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: _cardBorder),
+                              ),
+                              child: const Text(
+                                'No active jobs found for your profile right now.',
+                                style: TextStyle(color: _mutedText),
+                              ),
                             );
                           }
 
                           return Column(
                             children: mapped.take(5).map((item) {
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.only(bottom: 14),
                                 child: _JobCard(
                                   title: item['title'] as String,
                                   company: item['company'] as String,
@@ -465,6 +514,178 @@ class ApplicantDashboard extends StatelessWidget {
   }
 }
 
+class _DashboardHero extends StatelessWidget {
+  final String name;
+  final String industry;
+
+  const _DashboardHero({
+    required this.name,
+    required this.industry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final firstName = name.split(' ').first;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: _mainGradient,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: _primary.withOpacity(0.24),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -24,
+            top: -28,
+            child: Container(
+              width: 118,
+              height: 118,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 32,
+            bottom: -40,
+            child: Container(
+              width: 92,
+              height: 92,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.06),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: Colors.white.withOpacity(0.20)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      industry,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Welcome back,\n$firstName!',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 27,
+                  fontWeight: FontWeight.w900,
+                  height: 1.15,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'You\'ve got 3 new job matches\nwaiting for you today.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool compact;
+
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (!compact) ...[
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: _softBlue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: _primary, size: 20),
+          ),
+          const SizedBox(width: 10),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: _darkText,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: _mutedText,
+                  fontSize: 12.5,
+                  height: 1.25,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _StatCard extends StatelessWidget {
   final String title;
   final String count;
@@ -485,85 +706,104 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      constraints: const BoxConstraints(minHeight: 154),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
-            color: _navy.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: _navy.withOpacity(0.045),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _softBlue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              title.contains('SAVED')
+                  ? Icons.bookmark_rounded
+                  : Icons.visibility_rounded,
+              color: _primary,
+              size: 19,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             title,
             style: const TextStyle(
               color: _mutedText,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.7,
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Text(
-                count,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: _darkText,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isPositive ? _softBlue : Colors.red[50],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isPositive ? Icons.trending_up : Icons.trending_down,
-                      color: isPositive ? _accent : Colors.red,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      trendText,
-                      style: TextStyle(
-                        color: isPositive ? _accent : Colors.red,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const SizedBox(height: 6),
+          Text(
+            count,
+            style: const TextStyle(
+              fontSize: 31,
+              fontWeight: FontWeight.w900,
+              color: _darkText,
+              height: 1,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            decoration: BoxDecoration(
+              color: isPositive ? _softBlue : Colors.red[50],
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isPositive ? Icons.trending_up : Icons.trending_down,
+                  color: isPositive ? _accent : Colors.red,
+                  size: 13,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  trendText,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isPositive ? _accent : Colors.red,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
           GestureDetector(
             onTap: onTap,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   actionText,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: _primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_forward, color: _primary, size: 16),
+                const Icon(Icons.arrow_forward, color: _primary, size: 15),
               ],
             ),
           ),
@@ -589,16 +829,16 @@ class _PrimaryActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 140,
-        padding: const EdgeInsets.all(20),
+        height: 142,
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: _primary,
-          borderRadius: BorderRadius.circular(16),
+          gradient: _mainGradient,
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: _primary.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: _primary.withOpacity(0.22),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -609,8 +849,9 @@ class _PrimaryActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(color: Colors.white.withOpacity(0.20)),
               ),
               child: Icon(icon, color: Colors.white, size: 24),
             ),
@@ -619,7 +860,7 @@ class _PrimaryActionCard extends StatelessWidget {
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w900,
                 height: 1.2,
               ),
             ),
@@ -646,16 +887,17 @@ class _SecondaryActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 140,
-        padding: const EdgeInsets.all(20),
+        height: 142,
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _cardBorder),
           boxShadow: [
             BoxShadow(
-              color: _navy.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: _navy.withOpacity(0.045),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -667,7 +909,7 @@ class _SecondaryActionCard extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: _softBlue,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(13),
               ),
               child: Icon(icon, color: _primary, size: 24),
             ),
@@ -676,7 +918,7 @@ class _SecondaryActionCard extends StatelessWidget {
               style: const TextStyle(
                 color: _darkText,
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w900,
                 height: 1.2,
               ),
             ),
@@ -690,11 +932,13 @@ class _SecondaryActionCard extends StatelessWidget {
 class _SecondaryFullWidthActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String subtitle;
   final VoidCallback onTap;
 
   const _SecondaryFullWidthActionCard({
     required this.icon,
     required this.label,
+    required this.subtitle,
     required this.onTap,
   });
 
@@ -703,36 +947,62 @@ class _SecondaryFullWidthActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _cardBorder),
           boxShadow: [
             BoxShadow(
-              color: _navy.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: _navy.withOpacity(0.045),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: _softBlue,
-                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [_primary, _accent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: Icon(icon, color: _primary, size: 24),
+              child: Icon(icon, color: Colors.white, size: 24),
             ),
-            const SizedBox(width: 16),
-            Text(
-              label,
-              style: const TextStyle(
-                color: _darkText,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: _darkText,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: _mutedText,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: _mutedText,
+              size: 16,
             ),
           ],
         ),
@@ -761,15 +1031,16 @@ class _JobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
-            color: _navy.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: _navy.withOpacity(0.045),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -777,23 +1048,26 @@ class _JobCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: _accent,
-              borderRadius: BorderRadius.circular(10),
+              gradient: const LinearGradient(
+                colors: [_primary, _accent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(15),
             ),
             child: const Center(
               child: Icon(Icons.business, color: Colors.white, size: 26),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
@@ -801,20 +1075,21 @@ class _JobCard extends StatelessWidget {
                         title,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
                           color: _darkText,
+                          height: 1.2,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
+                        horizontal: 9,
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: _softBlue,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -822,14 +1097,14 @@ class _JobCard extends StatelessWidget {
                           const Icon(
                             Icons.flash_on,
                             color: _primary,
-                            size: 14,
+                            size: 13,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 3),
                           Text(
-                            '$matchRate% Match',
+                            '$matchRate%',
                             style: const TextStyle(
                               color: _primary,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w900,
                               fontSize: 12,
                             ),
                           ),
@@ -838,24 +1113,25 @@ class _JobCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   company,
                   style: const TextStyle(
                     color: _mutedText,
-                    fontSize: 14,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     _JobInfoPill(icon: Icons.location_on, text: location),
-                    const SizedBox(width: 16),
                     _JobInfoPill(icon: Icons.access_time_filled, text: jobType),
+                    _JobInfoPill(icon: Icons.payments, text: salary),
                   ],
                 ),
-                const SizedBox(height: 8),
-                _JobInfoPill(icon: Icons.payments, text: salary),
               ],
             ),
           ),
@@ -873,20 +1149,28 @@ class _JobInfoPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: _mutedText, size: 16),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: const TextStyle(
-            color: _mutedText,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: _background,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _cardBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: _accent, size: 14),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: const TextStyle(
+              color: _mutedText,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
