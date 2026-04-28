@@ -137,6 +137,43 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Check if email is verified
+    if (!_user.emailVerified) {
+      if (!mounted) return;
+      final shouldVerify = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Email Verification Required'),
+          content: const Text(
+            'You need to verify your email before editing your profile. Would you like to verify now?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Later'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Verify Email'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldVerify == true) {
+        if (!mounted) return;
+        await _user.sendEmailVerification();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verification email sent. Check your inbox.'),
+            backgroundColor: _ProfileColors.primary,
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _saving = true);
 
     final displayName = _nameCtrl.text.trim();

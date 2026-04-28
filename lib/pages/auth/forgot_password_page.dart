@@ -2,6 +2,9 @@ import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import '../../services/otp_email_service.dart';
+import '../../services/email_service.dart';
+import 'otp_verification_page.dart';
 
 const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
@@ -21,6 +24,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   bool _loading = false;
   bool _sent = false;
+  String _userEmail = '';
 
   @override
   void dispose() {
@@ -34,9 +38,40 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     setState(() => _loading = true);
 
     try {
-      await AuthService.sendPasswordResetEmail(_emailCtrl.text);
+      final email = _emailCtrl.text.trim();
+      
+      // Generate and send OTP
+      await OtpEmailService.sendOtpToEmail(
+        email: email,
+        purpose: 'password_reset',
+      );
+
+      // Send OTP via email
+      await EmailService.sendOtpEmail(
+        to: email,
+        otp: 'Check your app for OTP',
+        purpose: 'password_reset',
+      );
+
       if (!mounted) return;
-      setState(() => _sent = true);
+      
+      setState(() {
+        _userEmail = email;
+        _sent = true;
+      });
+
+      // Navigate to OTP verification
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationPage(
+            email: email,
+            purpose: 'password_reset',
+            onSuccess: _onOtpVerified,
+          ),
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -49,9 +84,44 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
         ),
       );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: _navy,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _onOtpVerified() {
+    // OTP verified, now send password reset email from Firebase
+    AuthService.sendPasswordResetEmail(_userEmail).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Password reset email sent. Check your email.',
+          ),
+          backgroundColor: _primary,
+        ),
+      );
+      // Navigate back to login
+      Navigator.popUntil(context, (route) => route.isFirst);
+    }).catchError((e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
   }
 
   @override

@@ -3,6 +3,7 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -15,6 +16,24 @@ const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
   console.error('Missing OPENAI_API_KEY in backside/.env');
   process.exit(1);
+}
+
+// Email configuration
+const GMAIL_EMAIL = process.env.GMAIL_EMAIL || 'contact.skillmatchteam@gmail.com';
+const GMAIL_PASSWORD = process.env.GMAIL_APP_PASSWORD || '';
+
+let transporter = null;
+
+if (GMAIL_EMAIL && GMAIL_PASSWORD) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: GMAIL_EMAIL,
+      pass: GMAIL_PASSWORD,
+    },
+  });
+} else {
+  console.warn('Email configuration not complete. Email sending will be disabled.');
 }
 
 const openai = new OpenAI({ apiKey });
@@ -63,6 +82,35 @@ async function generateJson({ systemPrompt, userPrompt }) {
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
+});
+
+// Email sending endpoint
+app.post('/api/send-email', async (req, res) => {
+  const { to, subject, text, html } = req.body ?? {};
+
+  if (!to || !subject || (!text && !html)) {
+    return res.status(400).json({ error: 'to, subject, and text or html are required' });
+  }
+
+  if (!transporter) {
+    return res.status(500).json({ error: 'Email service is not configured' });
+  }
+
+  try {
+    await transporter.sendMail({
+      from: GMAIL_EMAIL,
+      to: to.trim(),
+      subject: subject.trim(),
+      text: text?.trim(),
+      html: html?.trim(),
+    });
+
+    res.json({ ok: true, message: 'Email sent successfully' });
+  } catch (error) {
+    const errorMsg = error?.message || String(error);
+    console.error('Email sending error:', errorMsg);
+    res.status(500).json({ error: `Failed to send email: ${errorMsg}` });
+  }
 });
 
 // Route

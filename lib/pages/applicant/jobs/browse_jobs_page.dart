@@ -362,8 +362,47 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
       }
 
       final uid = FirebaseAuth.instance.currentUser?.uid;
+      final currentUser = FirebaseAuth.instance.currentUser;
+      
       if (uid == null) {
         throw Exception('Please sign in to apply for this job.');
+      }
+
+      // Check if email is verified
+      if (currentUser != null && !currentUser.emailVerified) {
+        if (!mounted) return;
+        final shouldVerify = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Email Verification Required'),
+            content: const Text(
+              'You need to verify your email before applying for jobs. Would you like to verify now?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Later'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Verify Email'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldVerify == true) {
+          if (!mounted) return;
+          await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Verification email sent. Check your inbox.'),
+              backgroundColor: _primary,
+            ),
+          );
+        }
+        return;
       }
 
       final internshipId = _extractInternshipId(job);

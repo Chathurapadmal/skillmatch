@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../services/totp_service.dart';
 
 const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
@@ -39,6 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   bool _obscurePass = true;
   bool _obscureConfirm = true;
+  bool _enableTwoFa = false;
 
   @override
   void dispose() {
@@ -67,9 +69,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
+        // Set up 2FA if user chose to enable it
+        if (_enableTwoFa) {
+          try {
+            final secret = TotpService.generateSecret();
+            await TotpService.saveSecretLocally(secret);
+          } catch (e) {
+            print('2FA setup warning: $e');
+            // Don't fail registration if 2FA setup fails
+          }
+        }
+
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'industry': _selectedIndustry,
           'field': _selectedIndustry,
+          'twoFactorEnabled': _enableTwoFa,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       }
@@ -379,6 +393,51 @@ class _RegisterPageState extends State<RegisterPage> {
                                   }
                                   return null;
                                 },
+                              ),
+                              const SizedBox(height: 24),
+
+                              // 2FA Option
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: _background,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: _cardBorder),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      value: _enableTwoFa,
+                                      onChanged: (value) => setState(
+                                        () => _enableTwoFa = value ?? false,
+                                      ),
+                                      activeColor: _primary,
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: const [
+                                          Text(
+                                            'Enable 2-Factor Authentication',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                              color: _navy,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            'Protect your account with an authenticator app (recommended)',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 24),
 
