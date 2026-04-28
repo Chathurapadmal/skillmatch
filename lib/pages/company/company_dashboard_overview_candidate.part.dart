@@ -54,6 +54,7 @@ class _CompanyOverviewTab extends StatelessWidget {
                   .map((e) =>
                       '${(e.data()['studentName'] as String? ?? 'Student')} • ${(e.data()['title'] as String? ?? 'Role')}')
                   .toList();
+
               _showMetricDetails(
                 context,
                 title: 'Applicants',
@@ -71,6 +72,7 @@ class _CompanyOverviewTab extends StatelessWidget {
                     (e.data()['status'] as String? ?? '').toUpperCase();
                 return '${(e.data()['studentName'] as String? ?? 'Student')} • $status';
               }).toList();
+
               _showMetricDetails(
                 context,
                 title: 'Shortlisted Candidates',
@@ -84,6 +86,7 @@ class _CompanyOverviewTab extends StatelessWidget {
                   .map((e) =>
                       '${(e.data()['title'] as String? ?? 'Internship')} • ${(e.data()['type'] as String? ?? 'Mode')}')
                   .toList();
+
               _showMetricDetails(
                 context,
                 title: 'Active Posts',
@@ -259,6 +262,7 @@ class _CompanyOverviewTab extends StatelessWidget {
                     final data = doc.data();
                     final status =
                         (data['status'] as String? ?? 'applied').toLowerCase();
+
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),
@@ -328,7 +332,9 @@ class _CompanyOverviewTab extends StatelessWidget {
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color:
                                   _statusColor(status).withValues(alpha: 0.12),
@@ -515,6 +521,13 @@ class _CandidateDiscoveryTab extends StatefulWidget {
 }
 
 class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
+  static const Color _navy = Color(0xFF1E3A5F);
+  static const Color _primaryBlue = Color(0xFF1565C0);
+  static const Color _accentBlue = Color(0xFF2E86AB);
+  static const Color _softBlue = Color(0xFFEAF3FA);
+  static const Color _cardBorder = Color(0xFFDCE3F0);
+  static const Color _mutedText = Color(0xFF64748B);
+
   String _companyIndustry = '';
   bool _loadingIndustry = true;
   String _candidateScope = 'Applied';
@@ -553,166 +566,137 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
         company.contains(candidate);
   }
 
-  Widget _buildCandidateDiscoveryHeader() {
-    final industryLabel = _loadingIndustry
-        ? 'Loading company industry...'
-        : _companyIndustry.isEmpty
-            ? 'All industries'
-            : _companyIndustry;
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+  InputDecoration _candidateInputDecoration({
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      prefixIcon: Icon(icon, color: _navy, size: 22),
+      filled: true,
+      fillColor: Colors.white,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      floatingLabelBehavior: FloatingLabelBehavior.never,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(
+          color: Colors.white.withValues(alpha: 0.35),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(
+          color: Color(0xFF64B5F6),
+          width: 1.4,
+        ),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(
+          color: Colors.white.withValues(alpha: 0.35),
+        ),
+      ),
+    );
+  }
+
+  Widget _filterDropdownShell({
+    required String label,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 5),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.88),
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
+
+  Widget _buildCandidateDiscoveryHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+      child: _buildCandidateFilterSection(
+        icon: Icons.filter_alt_outlined,
+        title: 'Discovery Filters',
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF1E3A5F), Color(0xFF2E86AB)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          _buildCandidateFilterRow([
+            _filterDropdownShell(
+              label: 'Candidate Scope',
+              child: DropdownButtonFormField<String>(
+                value: _candidateScope,
+                decoration: _candidateInputDecoration(
+                  icon: Icons.people_alt_outlined,
+                ),
+                dropdownColor: Colors.white,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: _navy,
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'Applied',
+                    child: Text('Applied only'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'All',
+                    child: Text('All profiles'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _candidateScope = value);
+                },
               ),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.manage_search_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+            _filterDropdownShell(
+              label: 'Industry Filter',
+              child: DropdownButtonFormField<bool>(
+                value: _enforceIndustryFilter,
+                decoration: _candidateInputDecoration(
+                  icon: Icons.apartment_outlined,
                 ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Candidate Discovery',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        'Review applicant profiles, verified skills, CV details, and interview actions in one focused workspace.',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
+                dropdownColor: Colors.white,
+                style: const TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                 ),
-              ],
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: _navy,
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: true,
+                    child: Text('Company industry'),
+                  ),
+                  DropdownMenuItem(
+                    value: false,
+                    child: Text('All industries'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _enforceIndustryFilter = value);
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: _buildCandidateFilterSection(
-              icon: Icons.filter_alt_outlined,
-              title: 'Discovery Filters',
-              subtitle:
-                  'Choose which profiles appear and how closely they should match your company industry.',
-              children: [
-                _buildCandidateFilterRow([
-                  DropdownButtonFormField<String>(
-                    value: _candidateScope,
-                    decoration: const InputDecoration(
-                      labelText: 'Candidate Scope',
-                      prefixIcon: Icon(Icons.people_alt_outlined),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Applied',
-                        child: Text('Applied only'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'All',
-                        child: Text('All profiles'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() => _candidateScope = value);
-                    },
-                  ),
-                  DropdownButtonFormField<bool>(
-                    value: _enforceIndustryFilter,
-                    decoration: const InputDecoration(
-                      labelText: 'Industry Filter',
-                      prefixIcon: Icon(Icons.apartment_outlined),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: true,
-                        child: Text('Company industry'),
-                      ),
-                      DropdownMenuItem(
-                        value: false,
-                        child: Text('All industries'),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() => _enforceIndustryFilter = value);
-                    },
-                  ),
-                ]),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _candidateFilterChip(
-                      icon: Icons.badge_outlined,
-                      text: _candidateScope == 'Applied'
-                          ? 'Showing applied candidates'
-                          : 'Showing all applicant profiles',
-                      color: const Color(0xFF1565C0),
-                    ),
-                    _candidateFilterChip(
-                      icon: Icons.domain_outlined,
-                      text: _enforceIndustryFilter
-                          ? 'Industry: $industryLabel'
-                          : 'Industry: all industries',
-                      color: _enforceIndustryFilter
-                          ? AppTheme.success
-                          : const Color(0xFF8A5BFF),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+          ]),
         ],
       ),
     );
@@ -721,64 +705,65 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
   Widget _buildCandidateFilterSection({
     required IconData icon,
     required String title,
-    required String subtitle,
     required List<Widget> children,
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFE),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE3EAF5)),
+        gradient: const LinearGradient(
+          colors: [_navy, _accentBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white24,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _navy.withValues(alpha: 0.14),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1565C0).withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(11),
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.20),
+                  ),
                 ),
                 child: Icon(
                   icon,
-                  color: const Color(0xFF1565C0),
+                  color: Colors.white,
                   size: 19,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        color: Colors.black54,
-                        fontSize: 12.5,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           ...children,
         ],
       ),
@@ -812,36 +797,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     );
   }
 
-  Widget _candidateFilterChip({
-    required IconData icon,
-    required String text,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.11),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.16)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -857,19 +812,24 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
             builder: (context, appSnapshot) {
               final apps = appSnapshot.data?.docs ?? const [];
               final appByStudent = <String, Map<String, dynamic>>{};
+
               for (final doc in apps) {
                 final data = doc.data();
                 final studentId = (data['studentId'] as String? ?? '').trim();
                 if (studentId.isEmpty) continue;
+
                 final existing = appByStudent[studentId];
                 final currentAt = data['updatedAt'] as Timestamp? ??
                     data['appliedAt'] as Timestamp?;
+
                 if (existing == null) {
                   appByStudent[studentId] = {...data, '_docId': doc.id};
                   continue;
                 }
+
                 final existingAt = existing['updatedAt'] as Timestamp? ??
                     existing['appliedAt'] as Timestamp?;
+
                 if ((currentAt?.millisecondsSinceEpoch ?? 0) >=
                     (existingAt?.millisecondsSinceEpoch ?? 0)) {
                   appByStudent[studentId] = {...data, '_docId': doc.id};
@@ -967,7 +927,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFFDCE3F0)),
+                            border: Border.all(color: _cardBorder),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -975,7 +935,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                               Row(
                                 children: [
                                   CircleAvatar(
-                                    backgroundColor: const Color(0xFF1565C0),
+                                    backgroundColor: _primaryBlue,
                                     backgroundImage:
                                         (data['avatarUrl'] as String?)
                                                     ?.trim()
@@ -1006,7 +966,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                               ? data['displayName'] as String
                                               : 'Student Profile',
                                           style: const TextStyle(
-                                            color: Colors.black87,
+                                            color: _navy,
                                             fontWeight: FontWeight.w700,
                                             fontSize: 15,
                                           ),
@@ -1015,7 +975,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                           (data['email'] as String?) ??
                                               'No email',
                                           style: const TextStyle(
-                                            color: Colors.grey,
+                                            color: _mutedText,
                                             fontSize: 12,
                                           ),
                                         ),
@@ -1025,7 +985,9 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                   if (verified.isNotEmpty)
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 5),
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppTheme.success
                                             .withValues(alpha: 0.12),
@@ -1047,12 +1009,14 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                 alignment: Alignment.centerLeft,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: hasApplied
                                         ? _statusColor(appStatus)
                                             .withValues(alpha: 0.12)
-                                        : Colors.grey.withValues(alpha: 0.12),
+                                        : _mutedText.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -1062,7 +1026,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                     style: TextStyle(
                                       color: hasApplied
                                           ? _statusColor(appStatus)
-                                          : Colors.grey,
+                                          : _mutedText,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 11,
                                     ),
@@ -1098,7 +1062,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                 const Text(
                                   'Skills and CV-extracted skills',
                                   style: TextStyle(
-                                    color: Colors.black54,
+                                    color: _mutedText,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 12,
                                   ),
@@ -1109,10 +1073,12 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                   runSpacing: 8,
                                   children: allSkills
                                       .take(12)
-                                      .map((skill) => _skillPill(
-                                            skill,
-                                            color: const Color(0xFF1565C0),
-                                          ))
+                                      .map(
+                                        (skill) => _skillPill(
+                                          skill,
+                                          color: _primaryBlue,
+                                        ),
+                                      )
                                       .toList(),
                                 ),
                               ],
@@ -1121,7 +1087,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                 const Text(
                                   'Verified badges',
                                   style: TextStyle(
-                                    color: Colors.black54,
+                                    color: _mutedText,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 12,
                                   ),
@@ -1131,8 +1097,12 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                   spacing: 8,
                                   runSpacing: 8,
                                   children: verified
-                                      .map((skill) => _skillPill(skill,
-                                          color: AppTheme.success))
+                                      .map(
+                                        (skill) => _skillPill(
+                                          skill,
+                                          color: AppTheme.success,
+                                        ),
+                                      )
                                       .toList(),
                                 ),
                               ],
@@ -1163,10 +1133,12 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: githubSkills
-                                        .map((skill) => _skillPill(
-                                              skill,
-                                              color: const Color(0xFF24292F),
-                                            ))
+                                        .map(
+                                          (skill) => _skillPill(
+                                            skill,
+                                            color: const Color(0xFF24292F),
+                                          ),
+                                        )
                                         .toList(),
                                   ),
                                 ],
@@ -1195,12 +1167,12 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                               )
                                           : null,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF8A5BFF),
+                                        backgroundColor: _accentBlue,
                                         foregroundColor: Colors.white,
                                       ),
                                       icon: const Icon(
-                                          Icons.calendar_today_outlined),
+                                        Icons.calendar_today_outlined,
+                                      ),
                                       label: const Text('Schedule'),
                                     ),
                                   ),
@@ -1219,7 +1191,8 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                                           data,
                                         ),
                                         icon: const Icon(
-                                            Icons.check_circle_outline),
+                                          Icons.check_circle_outline,
+                                        ),
                                         label: const Text('Approve'),
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: AppTheme.success,
@@ -1303,8 +1276,10 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text((data['displayName'] as String?) ?? 'Student'),
-                        Text((data['email'] as String?) ?? '',
-                            style: const TextStyle(color: Colors.grey)),
+                        Text(
+                          (data['email'] as String?) ?? '',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
                       ],
                     ),
                   ),
@@ -1314,23 +1289,33 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
               Text('Age: ${(data['age'] ?? 'Not set')}'),
               const SizedBox(height: 6),
               Text(
-                  'Industry: ${((data['industry'] ?? data['field']) as String? ?? 'Not set').trim()}'),
+                'Industry: ${((data['industry'] ?? data['field']) as String? ?? 'Not set').trim()}',
+              ),
               const SizedBox(height: 10),
-              const Text('Skills',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const Text(
+                'Skills',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 6),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: {...skills, ...cvSkills}
                     .take(20)
-                    .map((s) => _skillPill(s, color: const Color(0xFF1565C0)))
+                    .map(
+                      (s) => _skillPill(
+                        s,
+                        color: _primaryBlue,
+                      ),
+                    )
                     .toList(),
               ),
               if (verified.isNotEmpty) ...[
                 const SizedBox(height: 10),
-                const Text('Verified Skills',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
+                const Text(
+                  'Verified Skills',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
@@ -1364,11 +1349,11 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
       case 'rejected':
         return AppTheme.error;
       case 'interview_scheduled':
-        return const Color(0xFF1E88E5);
+        return _accentBlue;
       case 'applied':
         return AppTheme.warning;
       default:
-        return Colors.grey;
+        return _mutedText;
     }
   }
 
@@ -1453,16 +1438,23 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F7FC),
+        color: _softBlue,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _cardBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFF5A6C83)),
+          Icon(icon, size: 14, color: _navy),
           const SizedBox(width: 5),
-          Text(text,
-              style: const TextStyle(color: Color(0xFF5A6C83), fontSize: 12)),
+          Text(
+            text,
+            style: const TextStyle(
+              color: _navy,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -1474,6 +1466,7 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
       child: Text(
         text,

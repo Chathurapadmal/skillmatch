@@ -609,6 +609,7 @@ class _InternshipManagementTabState extends State<_InternshipManagementTab> {
                 final aboutRole = (data['aboutRole'] as String? ?? '').trim();
                 final skills =
                     ((data['skills'] as List?) ?? []).map((e) => '$e').toList();
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(12),
@@ -1454,7 +1455,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     setState(() => _industryCtrl.text = selected);
   }
 
-  Future<void> _uploadCompanyLogoToSupabase() async {
+  Future<void> _uploadCompanyLogo() async {
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['png', 'jpg', 'jpeg', 'webp'],
@@ -1493,8 +1494,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
       if (!mounted) return;
       setState(() => _logoCtrl.text = signedUrl);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content:
-            Text('Company logo uploaded to Supabase $_profileBucket bucket.'),
+        content: Text('Company logo uploaded successfully.'),
         backgroundColor: AppTheme.success,
       ));
     } catch (e) {
@@ -1503,8 +1503,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
           message.contains('statuscode: 404')) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Supabase bucket "profile" not found. Please create it in Supabase Storage.'),
+          content: Text('Logo storage is not configured. Please contact support.'),
           backgroundColor: AppTheme.warning,
         ));
       } else if (message.contains('statuscode: 403') ||
@@ -1513,8 +1512,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
           message.contains('permission denied')) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Supabase policy denied upload (403). Allow INSERT/SELECT on bucket "profile" for anon and authenticated roles.'),
+          content: Text('Logo upload permission was denied. Please contact support.'),
           backgroundColor: AppTheme.warning,
         ));
       } else {
@@ -1540,6 +1538,40 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
       padding: const EdgeInsets.all(16),
       children: [
         _buildSettingsHeader(),
+        const SizedBox(height: 14),
+        _buildSettingsSection(
+          icon: Icons.image_outlined,
+          title: 'Brand Assets',
+          subtitle: 'Upload your company logo so candidates can recognize your brand.',
+          children: [
+            _buildLogoPreview(),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: OutlinedButton.icon(
+                onPressed: _uploadingLogo ? null : _uploadCompanyLogo,
+                icon: _uploadingLogo
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.cloud_upload_outlined),
+                label: Text(
+                  _uploadingLogo ? 'Uploading logo...' : 'Upload Company Logo',
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF1565C0),
+                  side: const BorderSide(color: Color(0xFFB8C7DC)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 14),
         _buildSettingsSection(
           icon: Icons.business_center_outlined,
@@ -1580,52 +1612,6 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         ),
         const SizedBox(height: 14),
         _buildSettingsSection(
-          icon: Icons.image_outlined,
-          title: 'Brand Assets',
-          subtitle: 'Add or upload a company logo for a more complete profile.',
-          children: [
-            TextField(
-              controller: _logoCtrl,
-              onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                labelText: 'Company Logo URL',
-                hintText: 'Paste a hosted logo URL',
-                prefixIcon: Icon(Icons.link_outlined),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildLogoPreview(),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 46,
-              child: OutlinedButton.icon(
-                onPressed: _uploadingLogo ? null : _uploadCompanyLogoToSupabase,
-                icon: _uploadingLogo
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.cloud_upload_outlined),
-                label: Text(
-                  _uploadingLogo
-                      ? 'Uploading logo...'
-                      : 'Upload Company Logo (Supabase)',
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF1565C0),
-                  side: const BorderSide(color: Color(0xFFB8C7DC)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        _buildSettingsSection(
           icon: Icons.notifications_active_outlined,
           title: 'Notification Preferences',
           subtitle: 'Choose the company updates you want to receive.',
@@ -1657,7 +1643,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
           icon: Icons.tune_outlined,
           title: 'Workspace Controls',
           subtitle:
-              'Manage appearance, storage, policy pages, and account access.',
+              'Manage appearance, policy pages, and account access.',
           children: [
             _buildSettingsSwitchTile(
               icon: Icons.dark_mode_outlined,
@@ -1667,32 +1653,18 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
               onChanged: (value) => setState(() => _darkMode = value),
             ),
             const SizedBox(height: 14),
-            _buildResponsiveSettingsRow([
-              _buildSettingsActionButton(
-                icon: Icons.inbox_outlined,
-                label: 'Notification Inbox',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationsCenterScreen(),
-                    ),
-                  );
-                },
-              ),
-              _buildSettingsActionButton(
-                icon: Icons.cloud_outlined,
-                label: 'Supabase Storage',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const SupabaseStoragePage(),
-                    ),
-                  );
-                },
-              ),
-            ]),
+            _buildSettingsActionButton(
+              icon: Icons.inbox_outlined,
+              label: 'Notification Inbox',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsCenterScreen(),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 10),
             _buildResponsiveSettingsRow([
               _buildSettingsActionButton(
@@ -1748,6 +1720,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         ? widget.initialCompanyName
         : _nameCtrl.text.trim();
     final industry = _industryCtrl.text.trim();
+    final logoUrl = _logoCtrl.text.trim();
 
     return Container(
       width: double.infinity,
@@ -1770,20 +1743,33 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.22),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.22),
+                ),
               ),
-            ),
-            child: const Icon(
-              Icons.settings_suggest_outlined,
-              color: Colors.white,
-              size: 27,
+              child: logoUrl.isEmpty
+                  ? const Icon(
+                      Icons.business_outlined,
+                      color: Colors.white,
+                      size: 28,
+                    )
+                  : Image.network(
+                      logoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.business_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 14),
@@ -1999,7 +1985,7 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Logo Preview',
+                  'Company Logo',
                   style: TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w700,
@@ -2008,8 +1994,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
                 const SizedBox(height: 4),
                 Text(
                   logoUrl.isEmpty
-                      ? 'No logo URL added yet. Upload or paste one above.'
-                      : 'Logo URL is set and will be saved with your profile.',
+                      ? 'No logo added yet. Upload a company logo to show it in your profile header.'
+                      : 'Logo added successfully. This logo will appear in your company profile header.',
                   style: const TextStyle(
                     color: Colors.black54,
                     fontSize: 12.5,
