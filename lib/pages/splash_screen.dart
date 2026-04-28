@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'onboarding/onboarding_screen.dart';
 import 'wrapper.dart';
 
 const Color _primary = Color(0xFF1565C0);
@@ -16,12 +19,23 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AuthWrapper()),
-      );
-    });
+    _routeAfterSplash();
+  }
+
+  Future<void> _routeAfterSplash() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding =
+        prefs.getBool('has_seen_skillmatch_onboarding') ?? false;
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) =>
+            hasSeenOnboarding ? const AuthWrapper() : const OnboardingScreen(),
+      ),
+    );
   }
 
   @override

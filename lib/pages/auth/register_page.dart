@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
+import '../../services/totp_service.dart';
 
 const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
@@ -41,6 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   bool _obscurePass = true;
   bool _obscureConfirm = true;
+  bool _enableTwoFa = false;
 
   @override
   void dispose() {
@@ -69,9 +71,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
+        // Set up 2FA if user chose to enable it
+        if (_enableTwoFa) {
+          try {
+            final secret = TotpService.generateSecret();
+            await TotpService.saveSecretLocally(secret);
+          } catch (e) {
+            print('2FA setup warning: $e');
+            // Don't fail registration if 2FA setup fails
+          }
+        }
+
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'industry': _selectedIndustry,
           'field': _selectedIndustry,
+          'twoFactorEnabled': _enableTwoFa,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       }
