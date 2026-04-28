@@ -6,6 +6,11 @@ import '../../../../theme/app_theme.dart';
 class ProfileViewsScreen extends StatelessWidget {
   const ProfileViewsScreen({super.key});
 
+  static const Color _primary = Color(0xFF1565C0);
+  static const Color _primaryDark = Color(0xFF0D47A1);
+  static const Color _background = Color(0xFFF5F7FA);
+  static const Color _cardBorder = Color(0xFFDCE3F0);
+
   String _fmtDate(Timestamp? timestamp) {
     if (timestamp == null) return 'Recently';
     final date = timestamp.toDate();
@@ -25,29 +30,7 @@ class ProfileViewsScreen extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Profile Views',
-          style: TextStyle(
-            color: Color(0xFF1565C0),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1565C0)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Color(0xFF1565C0)),
-            onPressed: () {},
-          ),
-        ],
-      ),
+      backgroundColor: _background,
       body: uid == null
           ? const Center(child: Text('Sign in to view profile views.'))
           : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -72,65 +55,60 @@ class ProfileViewsScreen extends StatelessWidget {
                     if (viewsSnapshot.connectionState ==
                         ConnectionState.waiting) {
                       return const Center(
-                          child: CircularProgressIndicator(
-                              color: AppTheme.primary));
+                        child: CircularProgressIndicator(
+                          color: AppTheme.primary,
+                        ),
+                      );
                     }
 
                     final views = viewsSnapshot.data?.docs ?? const [];
 
-                    return ListView(
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        _buildTotalViewsCard(totalViews),
-                        const SizedBox(height: 24),
-                        const Text('Quick Insights',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                                child: _buildInsightCard(
-                                    'Growth',
-                                    '33% Increase',
-                                    Icons.trending_up,
-                                    Colors.orange.shade100)),
-                            const SizedBox(width: 12),
-                            Expanded(
-                                child: _buildInsightCard(
-                                    'Top Industry',
-                                    'FinTech',
-                                    Icons.business_center,
-                                    Colors.blueGrey.shade100)),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('View History',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                            TextButton(
-                              onPressed: () {},
-                              child: const Text('Export Report',
-                                  style: TextStyle(color: Color(0xFF1565C0))),
+                    return SafeArea(
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: [
+                          _buildHeader(context, totalViews),
+                          const SizedBox(height: 20),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: [
+                                _buildSection(
+                                  title: 'Quick Insights',
+                                  subtitle:
+                                      'A snapshot of how your profile is performing.',
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildInsightCard(
+                                          'Growth',
+                                          '33% Increase',
+                                          Icons.trending_up,
+                                          Colors.orange.shade100,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildInsightCard(
+                                          'Top Industry',
+                                          'FinTech',
+                                          Icons.business_center,
+                                          Colors.blueGrey.shade100,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                _buildHistorySection(views),
+                                const SizedBox(height: 18),
+                                _buildBoostBanner(),
+                                const SizedBox(height: 24),
+                              ],
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        if (views.isEmpty)
-                          const Center(
-                              child: Padding(
-                            padding: EdgeInsets.only(top: 20),
-                            child:
-                                Text('No company has viewed your profile yet.'),
-                          ))
-                        else
-                          ...views.map((doc) => _buildHistoryItem(doc.data())),
-                        const SizedBox(height: 24),
-                        _buildBoostBanner(),
-                      ],
+                          ),
+                        ],
+                      ),
                     );
                   },
                 );
@@ -140,71 +118,304 @@ class ProfileViewsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTotalViewsCard(int totalViews) {
+  Widget _buildHeader(BuildContext context, int totalViews) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [_primaryDark, _primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              const Text('TOTAL PROFILE VIEWS',
-                  style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold)),
-              Row(
-                children: [
-                  Text('$totalViews',
-                      style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1565C0))),
-                  const SizedBox(width: 8),
-                  const Text('+4 this week',
-                      style: TextStyle(color: Colors.orange, fontSize: 14)),
-                ],
+              _buildHeaderIconButton(
+                icon: Icons.arrow_back,
+                onPressed: () => Navigator.pop(context),
+              ),
+              const Spacer(),
+              const Text(
+                'Profile Views',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              _buildHeaderIconButton(
+                icon: Icons.more_vert,
+                onPressed: () {},
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-                color: const Color(0xFF1565C0).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.visibility, color: Color(0xFF1565C0)),
-          )
+          const SizedBox(height: 26),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'TOTAL PROFILE VIEWS',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        letterSpacing: 0.8,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$totalViews',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 42,
+                        height: 1,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.16),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        '+4 this week',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 68,
+                width: 68,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.22),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.visibility,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInsightCard(
-      String title, String value, IconData icon, Color bgColor) {
+  Widget _buildHeaderIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      height: 42,
+      width: 42,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white),
+        onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required String subtitle,
+    required Widget child,
+    Widget? trailing,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(16)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.035),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildSectionTitle(
+                  title: title,
+                  subtitle: subtitle,
+                ),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle({
+    required String title,
+    required String subtitle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF172033),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Colors.grey,
+            height: 1.3,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInsightCard(
+    String title,
+    String value,
+    IconData icon,
+    Color bgColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8EEF7)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            height: 38,
+            width: 38,
             decoration: BoxDecoration(
-                color: bgColor, borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, size: 20, color: Colors.black87),
+              color: bgColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 21, color: Colors.black87),
           ),
-          const SizedBox(height: 12),
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          Text(value,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 14),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+              color: Color(0xFF172033),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistorySection(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> views,
+  ) {
+    return _buildSection(
+      title: 'View History',
+      subtitle: 'Companies that recently viewed your profile.',
+      trailing: TextButton(
+        onPressed: () {},
+        style: TextButton.styleFrom(
+          foregroundColor: _primary,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+        ),
+        child: const Text(
+          'Export',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      child: views.isEmpty
+          ? _buildEmptyState()
+          : Column(
+              children: views
+                  .map((doc) => _buildHistoryItem(doc.data()))
+                  .toList(),
+            ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8EEF7)),
+      ),
+      child: Column(
+        children: const [
+          Icon(
+            Icons.visibility_off_outlined,
+            color: Colors.grey,
+            size: 34,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'No company has viewed your profile yet.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -216,32 +427,64 @@ class ProfileViewsScreen extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFDCE3F0)),
+        color: const Color(0xFFF8FAFD),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8EEF7)),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: const Color(0xFFF5F7FA),
-            child: const Icon(Icons.business, color: Color(0xFF1565C0)),
+          Container(
+            height: 46,
+            width: 46,
+            decoration: BoxDecoration(
+              color: _primary.withOpacity(0.09),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const Icon(
+              Icons.business,
+              color: _primary,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(companyName,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15)),
-                Text('Viewed ${_fmtDate(viewedAt)}',
-                    style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  companyName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: Color(0xFF172033),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Viewed ${_fmtDate(viewedAt)}',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
+          Container(
+            height: 32,
+            width: 32,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE8EEF7)),
+            ),
+            child: const Icon(
+              Icons.chevron_right,
+              color: Colors.grey,
+              size: 20,
+            ),
+          ),
         ],
       ),
     );
@@ -252,31 +495,79 @@ class ProfileViewsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-            colors: [Color(0xFF1976D2), Color(0xFF1565C0)]),
-        borderRadius: BorderRadius.circular(16),
+          colors: [Color(0xFF1976D2), Color(0xFF1565C0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: _primary.withOpacity(0.22),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          const Text('Boost Visibility',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          const Text(
-              'Get 5x more views by appearing at the top of recruiter searches.',
-              style: TextStyle(color: Colors.white70, fontSize: 14)),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF1565C0),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8))),
-            child: const Text('LEARN MORE'),
-          )
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Boost Visibility',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Get 5x more views by appearing at the top of recruiter searches.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: _primary,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'LEARN MORE',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Container(
+            height: 58,
+            width: 58,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.16),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Icon(
+              Icons.rocket_launch,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
         ],
       ),
     );
@@ -286,15 +577,27 @@ class ProfileViewsScreen extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: 2,
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF1565C0),
+      selectedItemColor: _primary,
       unselectedItemColor: Colors.grey,
+      backgroundColor: Colors.white,
+      elevation: 12,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
         BottomNavigationBarItem(
-            icon: Icon(Icons.people_outline), label: 'Network'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          icon: Icon(Icons.home_outlined),
+          label: 'Home',
+        ),
         BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined), label: 'Settings'),
+          icon: Icon(Icons.people_outline),
+          label: 'Network',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Profile',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings_outlined),
+          label: 'Settings',
+        ),
       ],
     );
   }

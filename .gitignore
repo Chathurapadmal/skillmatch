@@ -70,3 +70,8 @@ android/hs_err_pid11284.log
 # Node.js
 **/node_modules/
 search_results.txt
+android/build.gradle
+android/build.gradle.kts
+android/settings.gradle
+android/app/build.gradle
+

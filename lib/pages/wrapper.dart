@@ -5,6 +5,12 @@ import '../services/auth_gate_controller.dart';
 import 'auth/login_page.dart';
 import 'navigation.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _mutedText = Color(0xFF64748B);
+
 /// Root widget that listens to auth-state AND Firestore role changes.
 /// Automatically routes to the correct screen.
 class AuthWrapper extends StatefulWidget {
@@ -135,10 +141,11 @@ class _LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _background,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+            colors: [_navy, _primary, _accent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -173,6 +180,7 @@ class _AuthDataErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _background,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -181,12 +189,17 @@ class _AuthDataErrorScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.lock_outline, size: 54, color: Colors.red),
+                const Icon(
+                  Icons.lock_outline,
+                  size: 54,
+                  color: Colors.red,
+                ),
                 const SizedBox(height: 14),
                 Text(
                   title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
+                    color: _navy,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -195,10 +208,14 @@ class _AuthDataErrorScreen extends StatelessWidget {
                 Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black54),
+                  style: const TextStyle(color: _mutedText),
                 ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _primary,
+                    foregroundColor: Colors.white,
+                  ),
                   onPressed: () async {
                     await AuthService.signOut();
                   },

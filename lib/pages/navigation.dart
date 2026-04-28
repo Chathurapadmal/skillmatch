@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skillmatch/pages/company/company_dashboard.dart';
 import 'package:skillmatch/pages/dashboard_tab.dart';
 import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
 import 'package:skillmatch/pages/applicant/home/home_screen.dart';
@@ -64,7 +65,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             icon: Icons.home_rounded,
             page: const DashboardTab(),
           ),
-          ...commonPages,
+          _NavPage(
+            label: 'User Controls',
+            icon: Icons.manage_accounts_rounded,
+            page: AdminDashboard(
+              user: widget.user,
+              showInternalNavigation: false,
+              initialTabIndex: 2,
+            ),
+          ),
         ];
 
       case UserRole.company:
@@ -83,7 +92,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
             page: const BrowseJobsPage(),
           ),
           _NavPage(
-            label: 'Applications', // 🔥 FIXED (was My Applications)
+            label: 'Applications', //
             icon: Icons.assignment_rounded,
             page: const HomeScreen(initialTabIndex: 2),
           ),
@@ -116,7 +125,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         children: pages.map((entry) => entry.page).toList(),
       ),
 
-      // 🔥 FIXED CUSTOM NAV BAR
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(

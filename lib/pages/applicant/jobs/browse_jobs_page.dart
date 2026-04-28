@@ -6,6 +6,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../services/api_service.dart';
 import '../../../theme/app_theme.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
+const Color _softBlue = Color(0xFFEAF3FA);
+const Color _mutedText = Color(0xFF64748B);
+
 class BrowseJobsPage extends StatefulWidget {
   const BrowseJobsPage({super.key});
 
@@ -221,7 +229,10 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open job link.')),
+        const SnackBar(
+          content: Text('Could not open job link.'),
+          backgroundColor: _navy,
+        ),
       );
     }
   }
@@ -235,9 +246,6 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
     final uri = Uri.tryParse(job.url.trim());
     if (uri == null || uri.scheme != 'skillmatch') return null;
 
-    // Support both formats:
-    // 1) skillmatch://internship/<id>  (host=internship, path=/id)
-    // 2) skillmatch:///internship/<id> (path=/internship/id)
     String id = '';
     if (uri.host == 'internship' && uri.pathSegments.isNotEmpty) {
       id = uri.pathSegments.first.trim();
@@ -266,7 +274,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
               Text(
                 job.title,
                 style: const TextStyle(
-                  color: Colors.black87,
+                  color: _navy,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                 ),
@@ -289,7 +297,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                     ? 'No additional description provided.'
                     : job.description,
                 style: const TextStyle(
-                  color: Color(0xFF58637A),
+                  color: _mutedText,
                   height: 1.45,
                 ),
               ),
@@ -427,7 +435,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F6FF),
+      backgroundColor: _background,
       body: SafeArea(
         child: Column(
           children: [
@@ -437,16 +445,16 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1554F6), Color(0xFF4E7BFF)],
+                    colors: [_navy, _primary, _accent],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: Color(0x331554F6),
+                      color: _primary.withValues(alpha: 0.18),
                       blurRadius: 18,
-                      offset: Offset(0, 10),
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
@@ -472,7 +480,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                     const Text(
                       'Discover matches from SkillMatch and live market listings',
                       style: TextStyle(
-                        color: Color(0xFFEAF1FF),
+                        color: Colors.white70,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -502,7 +510,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E9F6)),
+                        border: Border.all(color: _cardBorder),
                       ),
                       child: Column(
                         children: [
@@ -510,20 +518,25 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                             controller: _queryController,
                             textInputAction: TextInputAction.search,
                             onSubmitted: (_) => _searchJobs(),
+                            style: const TextStyle(color: _navy),
                             decoration: InputDecoration(
                               hintText: 'Search by title, skill, or keyword',
-                              prefixIcon: const Icon(Icons.search_rounded),
+                              hintStyle: const TextStyle(color: _mutedText),
+                              prefixIcon: const Icon(
+                                Icons.search_rounded,
+                                color: _primary,
+                              ),
                               filled: true,
-                              fillColor: const Color(0xFFF7FAFF),
+                              fillColor: _background,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide:
-                                    const BorderSide(color: Color(0xFFE0E0E0)),
+                                    const BorderSide(color: _cardBorder),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide:
-                                    const BorderSide(color: Color(0xFFE0E0E0)),
+                                    const BorderSide(color: _cardBorder),
                               ),
                             ),
                           ),
@@ -535,22 +548,27 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                                   controller: _locationController,
                                   textInputAction: TextInputAction.done,
                                   onSubmitted: (_) => _searchJobs(),
+                                  style: const TextStyle(color: _navy),
                                   decoration: InputDecoration(
                                     hintText:
                                         'Location (e.g. remote, new york)',
-                                    prefixIcon:
-                                        const Icon(Icons.location_on_outlined),
+                                    hintStyle:
+                                        const TextStyle(color: _mutedText),
+                                    prefixIcon: const Icon(
+                                      Icons.location_on_outlined,
+                                      color: _primary,
+                                    ),
                                     filled: true,
-                                    fillColor: const Color(0xFFF7FAFF),
+                                    fillColor: _background,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: Color(0xFFE0E0E0)),
+                                          color: _cardBorder),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: Color(0xFFE0E0E0)),
+                                          color: _cardBorder),
                                     ),
                                   ),
                                 ),
@@ -558,7 +576,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                               const SizedBox(width: 10),
                               FilledButton.icon(
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: AppTheme.primary,
+                                  backgroundColor: _primary,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 14,
                                     vertical: 14,
@@ -582,7 +600,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                           ? 'Searching jobs...'
                           : 'Showing $_resultCount jobs matched to your search',
                       style: const TextStyle(
-                        color: Color(0xFFEAF1FF),
+                        color: Colors.white70,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -602,9 +620,9 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0x24FFFFFF),
+        color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: const Color(0x55FFFFFF)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.34)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -626,7 +644,9 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: _primary),
+      );
     }
 
     if (_error != null) {
@@ -649,7 +669,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                 Text(
                   _error!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black87),
+                  style: const TextStyle(color: _navy),
                 ),
                 const SizedBox(height: 14),
                 OutlinedButton(
@@ -670,12 +690,11 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.search_off_rounded,
-                  color: Color(0xFF7F8CA3), size: 34),
+              Icon(Icons.search_off_rounded, color: _mutedText, size: 34),
               SizedBox(height: 10),
               Text(
                 'No jobs found. Try another keyword or location.',
-                style: TextStyle(color: Colors.black54),
+                style: TextStyle(color: _mutedText),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -685,6 +704,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
     }
 
     return RefreshIndicator(
+      color: _primary,
       onRefresh: _searchJobs,
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
@@ -697,12 +717,12 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFE4EBF7)),
-              boxShadow: const [
+              border: Border.all(color: _cardBorder),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x120A2F6A),
+                  color: _navy.withValues(alpha: 0.05),
                   blurRadius: 14,
-                  offset: Offset(0, 8),
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -720,7 +740,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                            color: _navy,
                           ),
                         ),
                       ),
@@ -745,7 +765,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF58637A),
+                        color: _mutedText,
                         height: 1.35,
                       ),
                     ),
@@ -753,9 +773,9 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.auto_awesome_rounded,
-                        color: AppTheme.primary,
+                        color: _primary,
                         size: 16,
                       ),
                       const SizedBox(width: 6),
@@ -765,7 +785,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                               ? 'Matched from your platform database'
                               : 'Live listing from job provider',
                           style: const TextStyle(
-                            color: Color(0xFF52607A),
+                            color: _mutedText,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -823,8 +843,8 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
 
   Widget _sourceBadge(String source) {
     final isLocal = source == 'SkillMatch DB';
-    final bg = isLocal ? const Color(0xFFE8F1FF) : const Color(0xFFEAF8EE);
-    final fg = isLocal ? const Color(0xFF1B5ED8) : const Color(0xFF1E8B4A);
+    final bg = isLocal ? _softBlue : const Color(0xFFE6F7F8);
+    final fg = isLocal ? _primary : _accent;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -846,14 +866,14 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F7FC),
+        color: _softBlue,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE1E8F4)),
+        border: Border.all(color: _cardBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15, color: const Color(0xFF60708D)),
+          Icon(icon, size: 15, color: _accent),
           const SizedBox(width: 6),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 220),
@@ -861,7 +881,7 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
               text,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color: Color(0xFF2E3A4D),
+                color: _navy,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),

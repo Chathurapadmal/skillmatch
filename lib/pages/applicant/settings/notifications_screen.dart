@@ -18,6 +18,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   final Map<String, bool> _prefs = {};
   bool _loading = true;
 
+  static const Color _primary = Color(0xFF1565C0);
+  static const Color _navy = Color(0xFF1E3A5F);
+  static const Color _accent = Color(0xFF2E86AB);
+  static const Color _background = Color(0xFFF8FAFC);
+  static const Color _cardBorder = Color(0xFFDCE3F0);
+  static const Color _textMuted = Color(0xFF64748B);
+
   static const _keys = [
     'notif_job_matches',
     'notif_application_updates',
@@ -53,16 +60,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: _background,
       appBar: AppBar(
           title: const Text('Notifications'),
-          backgroundColor: AppTheme.bgDark,
+          backgroundColor: _background,
+          foregroundColor: _navy,
+          elevation: 0,
           actions: const [
-            ApplicantNotificationButton(iconColor: Colors.white)
+            ApplicantNotificationButton(iconColor: _navy)
           ]),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primary))
+              child: CircularProgressIndicator(color: _primary))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -83,6 +92,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     return SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _primary,
+                          side: const BorderSide(color: _primary),
+                        ),
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const NotificationsCenterScreen(),
@@ -135,18 +148,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppTheme.info.withOpacity(0.08),
+                    color: _accent.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.info.withOpacity(0.2)),
+                    border: Border.all(color: _accent.withOpacity(0.2)),
                   ),
-                  child: Row(children: [
-                    const Icon(Icons.info_outline,
-                        color: AppTheme.info, size: 18),
-                    const SizedBox(width: 10),
-                    const Expanded(
+                  child: const Row(children: [
+                    Icon(Icons.info_outline,
+                        color: _accent, size: 18),
+                    SizedBox(width: 10),
+                    Expanded(
                       child: Text(
                           'You can manage device-level permissions in your phone settings.',
-                          style: TextStyle(color: AppTheme.info, fontSize: 12)),
+                          style: TextStyle(color: _accent, fontSize: 12)),
                     ),
                   ]),
                 ),
@@ -161,16 +174,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       children: [
         Text(title,
             style: const TextStyle(
-                color: AppTheme.textMuted,
+                color: _textMuted,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.8)),
         const SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.bgCard,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF2D2D5E)),
+            border: Border.all(color: _cardBorder),
           ),
           child: Column(
               children: tiles
@@ -180,7 +193,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         if (e.key > 0)
                           Divider(
                               height: 1,
-                              color: const Color(0xFF2D2D5E).withOpacity(0.5)),
+                              color: _cardBorder.withOpacity(0.8)),
                         e.value,
                       ]))
                   .toList()),
@@ -191,14 +204,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _tile(String key, IconData icon, String title, String subtitle) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryLight, size: 22),
+      leading: Icon(icon, color: _accent, size: 22),
       title: Text(title,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14)),
+          style: const TextStyle(color: _navy, fontSize: 14)),
       subtitle: Text(subtitle,
-          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11)),
+          style: const TextStyle(color: _textMuted, fontSize: 11)),
       trailing: Switch(
         value: _prefs[key] ?? true,
-        activeColor: AppTheme.primary,
+        activeColor: _primary,
         onChanged: (v) => _toggle(key, v),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),

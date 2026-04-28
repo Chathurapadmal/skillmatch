@@ -12,6 +12,14 @@ import 'package:skillmatch/shared/notifications_center_screen.dart';
 import '../../models/user_model.dart';
 import '../../shared/chat_overlay.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _softBlue = Color(0xFFEAF3FA);
+const Color _darkText = Color(0xFF1E3A5F);
+const Color _mutedText = Color(0xFF64748B);
+
 class ApplicantDashboard extends StatelessWidget {
   final UserModel user;
 
@@ -35,14 +43,14 @@ class ApplicantDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChatOverlay(
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: _background,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: _background,
           elevation: 0,
           title: const Text(
             'SkillMatch',
             style: TextStyle(
-              color: Color(0xFF1554F6),
+              color: _primary,
               fontWeight: FontWeight.w800,
               fontSize: 22,
               letterSpacing: -0.5,
@@ -50,7 +58,7 @@ class ApplicantDashboard extends StatelessWidget {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.notifications, color: Color(0xFF4A5568)),
+              icon: const Icon(Icons.notifications, color: _navy),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -63,7 +71,7 @@ class ApplicantDashboard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 16.0, left: 8.0),
               child: PopupMenuButton<String>(
-                color: const Color(0xFFF8FBFF),
+                color: _background,
                 surfaceTintColor: Colors.transparent,
                 offset: const Offset(0, 45),
                 shape: RoundedRectangleBorder(
@@ -71,8 +79,8 @@ class ApplicantDashboard extends StatelessWidget {
                 ),
                 child: const CircleAvatar(
                   radius: 16,
-                  backgroundColor: Color.fromARGB(255, 255, 255, 255),
-                  child: Icon(Icons.person, color: Color(0xFF4A5568), size: 20),
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, color: _navy, size: 20),
                 ),
                 onSelected: (value) async {
                   if (value == 'profile') {
@@ -86,7 +94,8 @@ class ApplicantDashboard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const HelpSupportScreen()),
+                        builder: (_) => const HelpSupportScreen(),
+                      ),
                     );
                     return;
                   }
@@ -109,47 +118,69 @@ class ApplicantDashboard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(user.displayName,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(user.email,
-                            style: const TextStyle(
-                                color: Colors.grey, fontSize: 12)),
+                        Text(
+                          user.displayName,
+                          style: const TextStyle(
+                            color: _navy,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          user.email,
+                          style: const TextStyle(
+                            color: _mutedText,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const PopupMenuDivider(),
                   const PopupMenuItem(
                     value: 'profile',
-                    child: Row(children: [
-                      Icon(Icons.person_outline),
-                      SizedBox(width: 8),
-                      Text('My Profile'),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_outline, color: _navy),
+                        SizedBox(width: 8),
+                        Text('My Profile', style: TextStyle(color: _navy)),
+                      ],
+                    ),
                   ),
                   const PopupMenuItem(
                     value: 'help',
-                    child: Row(children: [
-                      Icon(Icons.support_agent_outlined),
-                      SizedBox(width: 8),
-                      Text('Help & Support'),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(Icons.support_agent_outlined, color: _navy),
+                        SizedBox(width: 8),
+                        Text('Help & Support', style: TextStyle(color: _navy)),
+                      ],
+                    ),
                   ),
                   const PopupMenuItem(
                     value: 'privacy',
-                    child: Row(children: [
-                      Icon(Icons.privacy_tip_outlined),
-                      SizedBox(width: 8),
-                      Text('Privacy & Security'),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(Icons.privacy_tip_outlined, color: _navy),
+                        SizedBox(width: 8),
+                        Text(
+                          'Privacy & Security',
+                          style: TextStyle(color: _navy),
+                        ),
+                      ],
+                    ),
                   ),
                   const PopupMenuItem(
                     value: 'signout',
-                    child: Row(children: [
-                      Icon(Icons.logout, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Sign Out', style: TextStyle(color: Colors.red)),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text(
+                          'Sign Out',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -187,12 +218,11 @@ class ApplicantDashboard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Welcome banner ─────────────────────────────────────────────
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1554F6),
+                          color: _primary,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
@@ -220,8 +250,6 @@ class ApplicantDashboard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      // ── Quick stats ────────────────────────────────────────────────
                       _StatCard(
                         title: 'SAVED JOBS',
                         count: '$savedCount',
@@ -254,14 +282,13 @@ class ApplicantDashboard extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 32),
-
-                      // ── Actions ────────────────────────────────────────────────────
                       const Text(
                         'Quick Actions',
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A202C)),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: _darkText,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -287,9 +314,7 @@ class ApplicantDashboard extends StatelessWidget {
                             child: _SecondaryActionCard(
                               icon: Icons.payments_outlined,
                               label: 'Salary\nTrends',
-                              onTap: () {
-                                // Original placeholder logic preserved
-                              },
+                              onTap: () {},
                             ),
                           ),
                         ],
@@ -311,17 +336,16 @@ class ApplicantDashboard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-
-                      // ── Recommended jobs ─────────────────────────
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             'Recommended Jobs',
                             style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A202C)),
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: _darkText,
+                            ),
                           ),
                           GestureDetector(
                             onTap: () {},
@@ -330,12 +354,16 @@ class ApplicantDashboard extends StatelessWidget {
                                 Text(
                                   'See All',
                                   style: TextStyle(
-                                      color: Color(0xFF1554F6),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14),
+                                    color: _primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                                Icon(Icons.keyboard_arrow_down,
-                                    color: Color(0xFF1554F6), size: 18),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: _primary,
+                                  size: 18,
+                                ),
                               ],
                             ),
                           )
@@ -354,8 +382,8 @@ class ApplicantDashboard extends StatelessWidget {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
                               child: Center(
-                                child: CircularProgressIndicator(
-                                    color: Color(0xFF1554F6)),
+                                child:
+                                    CircularProgressIndicator(color: _primary),
                               ),
                             );
                           }
@@ -369,6 +397,7 @@ class ApplicantDashboard extends StatelessWidget {
                             final tags = ((data['skills'] as List?) ?? const [])
                                 .map((e) => '$e')
                                 .toList();
+
                             return {
                               'title':
                                   (data['title'] as String?) ?? 'Internship',
@@ -394,13 +423,15 @@ class ApplicantDashboard extends StatelessWidget {
                                 jobIndustry == normalizedIndustry;
                           }).toList();
 
-                          mapped.sort((a, b) =>
-                              (b['match'] as int).compareTo(a['match'] as int));
+                          mapped.sort(
+                            (a, b) => (b['match'] as int)
+                                .compareTo(a['match'] as int),
+                          );
 
                           if (mapped.isEmpty) {
                             return const Text(
                               'No active jobs found for your profile right now.',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: _mutedText),
                             );
                           }
 
@@ -421,9 +452,7 @@ class ApplicantDashboard extends StatelessWidget {
                           );
                         },
                       ),
-                      const SizedBox(
-                          height:
-                              100), // Spacing to ensure bottom content isn't hidden behind the parent nav bar
+                      const SizedBox(height: 100),
                     ],
                   ),
                 );
@@ -435,8 +464,6 @@ class ApplicantDashboard extends StatelessWidget {
     );
   }
 }
-
-// ── Helpers & Components ────────────────────────────────────────────────────────
 
 class _StatCard extends StatelessWidget {
   final String title;
@@ -465,7 +492,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: _navy.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -477,7 +504,7 @@ class _StatCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Color(0xFF718096),
+              color: _mutedText,
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.8,
@@ -491,29 +518,28 @@ class _StatCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A202C),
+                  color: _darkText,
                 ),
               ),
               const SizedBox(width: 12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPositive ? const Color(0xFFE6FFFA) : Colors.red[50],
+                  color: isPositive ? _softBlue : Colors.red[50],
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       isPositive ? Icons.trending_up : Icons.trending_down,
-                      color: isPositive ? const Color(0xFF38A169) : Colors.red,
+                      color: isPositive ? _accent : Colors.red,
                       size: 14,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       trendText,
                       style: TextStyle(
-                        color:
-                            isPositive ? const Color(0xFF38A169) : Colors.red,
+                        color: isPositive ? _accent : Colors.red,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -531,14 +557,13 @@ class _StatCard extends StatelessWidget {
                 Text(
                   actionText,
                   style: const TextStyle(
-                    color: Color(0xFF1554F6),
+                    color: _primary,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_forward,
-                    color: Color(0xFF1554F6), size: 16),
+                const Icon(Icons.arrow_forward, color: _primary, size: 16),
               ],
             ),
           ),
@@ -567,11 +592,11 @@ class _PrimaryActionCard extends StatelessWidget {
         height: 140,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF2962FF),
+          color: _primary,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF2962FF).withOpacity(0.2),
+              color: _primary.withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -628,7 +653,7 @@ class _SecondaryActionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: _navy.withOpacity(0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -641,15 +666,15 @@ class _SecondaryActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFEBF3FF),
+                color: _softBlue,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFF1554F6), size: 24),
+              child: Icon(icon, color: _primary, size: 24),
             ),
             Text(
               label,
               style: const TextStyle(
-                color: Color(0xFF1A202C),
+                color: _darkText,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 height: 1.2,
@@ -684,7 +709,7 @@ class _SecondaryFullWidthActionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: _navy.withOpacity(0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -695,16 +720,16 @@ class _SecondaryFullWidthActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFEBF3FF),
+                color: _softBlue,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFF1554F6), size: 24),
+              child: Icon(icon, color: _primary, size: 24),
             ),
             const SizedBox(width: 16),
             Text(
               label,
               style: const TextStyle(
-                color: Color(0xFF1A202C),
+                color: _darkText,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -742,7 +767,7 @@ class _JobCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: _navy.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -755,7 +780,7 @@ class _JobCard extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: const Color(0xFF00ACC1),
+              color: _accent,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Center(
@@ -777,28 +802,33 @@ class _JobCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A202C),
+                          color: _darkText,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEBF3FF),
+                        color: _softBlue,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.flash_on,
-                              color: Color(0xFF1554F6), size: 14),
+                          const Icon(
+                            Icons.flash_on,
+                            color: _primary,
+                            size: 14,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '$matchRate% Match',
                             style: const TextStyle(
-                              color: Color(0xFF1554F6),
+                              color: _primary,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -812,7 +842,7 @@ class _JobCard extends StatelessWidget {
                 Text(
                   company,
                   style: const TextStyle(
-                    color: Color(0xFF718096),
+                    color: _mutedText,
                     fontSize: 14,
                   ),
                 ),
@@ -846,12 +876,12 @@ class _JobInfoPill extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: const Color(0xFFA0AEC0), size: 16),
+        Icon(icon, color: _mutedText, size: 16),
         const SizedBox(width: 6),
         Text(
           text,
           style: const TextStyle(
-            color: Color(0xFFA0AEC0),
+            color: _mutedText,
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),

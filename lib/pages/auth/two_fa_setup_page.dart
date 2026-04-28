@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -7,6 +8,11 @@ import '../../services/backup_code_service.dart';
 import '../../services/firestore_user_service.dart';
 import '../../services/totp_service.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+const Color _cardBorder = Color(0xFFDCE3F0);
 
 class TwoFASetupPage extends StatefulWidget {
   final UserModel user;
@@ -18,7 +24,6 @@ class TwoFASetupPage extends StatefulWidget {
 }
 
 class _TwoFASetupPageState extends State<TwoFASetupPage> {
-  // TOTP secret (generated once and reused)
   late final String _secret;
   late final String _otpauthUrl;
 
@@ -27,7 +32,7 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
 
   bool _verifying = false;
   bool _secretVisible = false;
-  bool _done = false; // true once verified; shows backup codes
+  bool _done = false;
   List<String> _backupCodes = [];
 
   @override
@@ -63,21 +68,18 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
         return;
       }
 
-      // Generate backup codes
       final plainCodes = BackupCodeService.generateCodes();
       final hashedCodes = BackupCodeService.hashCodes(plainCodes);
 
-      // Persist to Firestore and Secure Storage
       await Future.wait([
         FirestoreUserService.enableTwoFactor(
           uid: widget.user.uid,
-          totpSecret: _secret, // TODO (production): remove from Firestore
+          totpSecret: _secret,
           backupCodesHash: hashedCodes,
         ),
         TotpService.saveSecretLocally(_secret),
       ]);
 
-      // Mark TOTP verified for this session so AuthWrapper skips the challenge
       AuthService.totpSessionVerified.value = true;
 
       if (!mounted) return;
@@ -97,44 +99,97 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: isError ? Colors.red.shade700 : Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isError ? _navy : _accent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
-
-  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _background,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+            colors: [_navy, _primary, _accent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: _done ? _backupCodesCard() : _setupCard(),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -80,
+              right: -60,
+              child: Container(
+                height: 220,
+                width: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _accent.withOpacity(0.25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _accent.withOpacity(0.55),
+                      blurRadius: 45,
+                      spreadRadius: 12,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+            Positioned(
+              bottom: -90,
+              left: -70,
+              child: Container(
+                height: 210,
+                width: 210,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _primary.withOpacity(0.18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _primary.withOpacity(0.35),
+                      blurRadius: 50,
+                      spreadRadius: 10,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: _done ? _backupCodesCard() : _setupCard(),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ── 2FA setup card: QR + code input ──────────────────────────────────────
   Widget _setupCard() {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 8,
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 12,
+      shadowColor: _navy.withOpacity(0.18),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(color: _cardBorder),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Form(
@@ -142,34 +197,65 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
-              const Icon(Icons.security_rounded,
-                  size: 48, color: Color(0xFF1A237E)),
-              const SizedBox(height: 12),
+              Container(
+                width: 82,
+                height: 82,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [_primary, _accent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: _primary.withOpacity(0.28),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.security_rounded,
+                  size: 42,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 18),
               const Text(
                 'Set Up 2-Step Verification',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w900,
+                  color: _navy,
+                  letterSpacing: -0.3,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Scan the QR code with Google Authenticator, Authy, or '
                 'Microsoft Authenticator.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                  height: 1.35,
+                ),
               ),
               const SizedBox(height: 24),
 
-              // QR code
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  color: _background,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: _cardBorder),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 12,
+                      color: _navy.withOpacity(0.06),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
@@ -179,17 +265,16 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
                   size: 200,
                   eyeStyle: const QrEyeStyle(
                     eyeShape: QrEyeShape.square,
-                    color: Color(0xFF1A237E),
+                    color: _navy,
                   ),
                   dataModuleStyle: const QrDataModuleStyle(
                     dataModuleShape: QrDataModuleShape.square,
-                    color: Color(0xFF1A237E),
+                    color: _primary,
                   ),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Manual secret key
               _ManualSecretTile(
                 secret: _secret,
                 visible: _secretVisible,
@@ -198,15 +283,19 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
               ),
               const SizedBox(height: 24),
 
-              // Code input
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Enter the 6-digit code from your app to confirm:',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _navy,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
+
               TextFormField(
                 controller: _codeCtrl,
                 keyboardType: TextInputType.number,
@@ -215,12 +304,34 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
                 style: const TextStyle(
                   fontSize: 28,
                   letterSpacing: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
+                  color: _navy,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '000000',
                   counterText: '',
-                  border: OutlineInputBorder(),
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  filled: true,
+                  fillColor: _background,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: _cardBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: _accent, width: 1.5),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: Colors.red.shade400),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(
+                      color: Colors.red.shade400,
+                      width: 1.5,
+                    ),
+                  ),
                 ),
                 validator: (v) {
                   final c = v?.trim() ?? '';
@@ -233,16 +344,17 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
               ),
               const SizedBox(height: 24),
 
-              // Verify button
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A237E),
+                    backgroundColor: _primary,
                     foregroundColor: Colors.white,
+                    elevation: 0,
+                    shadowColor: _primary.withOpacity(0.35),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   onPressed: _verifying ? null : _verify,
@@ -258,17 +370,25 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
                       : const Text(
                           'Verify & Enable 2FA',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                 ),
               ),
               const SizedBox(height: 12),
 
               TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey.shade600,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 onPressed: () => AuthService.signOut(),
                 child: const Text(
                   'Cancel and sign out',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -278,40 +398,77 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
     );
   }
 
-  // ── Backup codes card (shown after successful 2FA setup) ──────────────────
   Widget _backupCodesCard() {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      elevation: 8,
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 12,
+      shadowColor: _navy.withOpacity(0.18),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(color: _cardBorder),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle_rounded,
-                size: 56, color: Colors.green),
-            const SizedBox(height: 12),
+            Container(
+              width: 82,
+              height: 82,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [_primary, _accent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _primary.withOpacity(0.28),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                size: 44,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 18),
+
             const Text(
               '2FA Enabled!',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+                color: _navy,
+                letterSpacing: -0.3,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
+
+            Text(
               'Save these backup codes somewhere safe.\n'
               'Each code can be used once if you lose access to your authenticator app.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+                height: 1.35,
+              ),
             ),
             const SizedBox(height: 20),
 
-            // Grid of backup codes
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
+                color: _background,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: _cardBorder),
               ),
               child: Column(
                 children: [
@@ -338,41 +495,49 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
             ),
             const SizedBox(height: 12),
 
-            // Copy all button
             TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: _primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               onPressed: () {
                 Clipboard.setData(
-                    ClipboardData(text: _backupCodes.join('\n')));
+                  ClipboardData(text: _backupCodes.join('\n')),
+                );
                 _showSnack('Backup codes copied to clipboard.', isError: false);
               },
               icon: const Icon(Icons.copy),
-              label: const Text('Copy All Codes'),
+              label: const Text(
+                'Copy All Codes',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
             const SizedBox(height: 20),
 
-            // Continue button
-            // AuthWrapper is already watching totpSessionVerified.value = true,
-            // so it will route automatically. This button dismisses the snackbar
-            // and is just a visual cue for the user.
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: _accent,
                   foregroundColor: Colors.white,
+                  elevation: 0,
+                  shadowColor: _accent.withOpacity(0.35),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 onPressed: () {
-                  // AuthWrapper handles routing automatically via stream.
-                  // Dismiss any snackbar first.
                   ScaffoldMessenger.of(context).clearSnackBars();
                 },
                 child: const Text(
                   'Continue to App',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ),
@@ -382,8 +547,6 @@ class _TwoFASetupPageState extends State<TwoFASetupPage> {
     );
   }
 }
-
-// ── Manual secret tile ────────────────────────────────────────────────────────
 
 class _ManualSecretTile extends StatelessWidget {
   final String secret;
@@ -398,19 +561,18 @@ class _ManualSecretTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Format secret in groups of 4 for readability
     final formatted = _formatSecret(secret);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
+        color: _background,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _cardBorder),
       ),
       child: Row(
         children: [
-          const Icon(Icons.key_rounded, size: 18, color: Colors.grey),
+          const Icon(Icons.key_rounded, size: 18, color: _primary),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -418,7 +580,11 @@ class _ManualSecretTile extends StatelessWidget {
               children: [
                 const Text(
                   'Manual entry key',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 visible
@@ -426,13 +592,17 @@ class _ManualSecretTile extends StatelessWidget {
                         formatted,
                         style: const TextStyle(
                           fontFamily: 'monospace',
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                           letterSpacing: 2,
+                          color: _navy,
                         ),
                       )
                     : const Text(
                         '••••  ••••  ••••  ••••  ••••  ••••  ••••  ••••',
-                        style: TextStyle(letterSpacing: 1, color: Colors.grey),
+                        style: TextStyle(
+                          letterSpacing: 1,
+                          color: Colors.grey,
+                        ),
                       ),
               ],
             ),
@@ -441,17 +611,25 @@ class _ManualSecretTile extends StatelessWidget {
             icon: Icon(
               visible ? Icons.visibility_off : Icons.visibility,
               size: 18,
+              color: _navy,
             ),
             onPressed: onToggle,
             tooltip: visible ? 'Hide' : 'Show',
           ),
           if (visible)
             IconButton(
-              icon: const Icon(Icons.copy, size: 18),
+              icon: const Icon(Icons.copy, size: 18, color: _primary),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: secret));
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Secret key copied.')),
+                  SnackBar(
+                    content: const Text('Secret key copied.'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: _accent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 );
               },
               tooltip: 'Copy',
@@ -471,8 +649,6 @@ class _ManualSecretTile extends StatelessWidget {
   }
 }
 
-// ── Backup code chip ──────────────────────────────────────────────────────────
-
 class _CodeChip extends StatelessWidget {
   final String code;
 
@@ -481,20 +657,21 @@ class _CodeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFF1A237E).withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _primary.withOpacity(0.28)),
       ),
       child: Text(
         code,
         textAlign: TextAlign.center,
         style: const TextStyle(
           fontFamily: 'monospace',
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
           fontSize: 13,
           letterSpacing: 1,
+          color: _navy,
         ),
       ),
     );
