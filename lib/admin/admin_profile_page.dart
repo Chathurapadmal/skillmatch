@@ -264,18 +264,18 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
         appBar: AppBar(
-          title: const Text('User Control Center'),
+          title: const Text('User Control Center', style: TextStyle(color: Colors.white),),
           flexibleSpace: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF5F2EEA), Color(0xFF7B61FF)],
+                colors: [Color(0xFF1E3A5F), Color(0xFF1565C0)],
               ),
             ),
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _addingUser ? null : _showAddUserDialog,
-          backgroundColor: const Color(0xFF7B61FF),
+          backgroundColor: const Color(0xFF1565C0),
           foregroundColor: Colors.white,
           icon: _addingUser
               ? const SizedBox(

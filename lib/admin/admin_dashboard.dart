@@ -4,7 +4,6 @@ import 'package:skillmatch/admin/admin_profile_page.dart';
 
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
-import '../shared/chat_overlay.dart';
 
 class _AdminColors {
   static const Color primary = Color(0xFF1565C0);
@@ -50,159 +49,138 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return ChatOverlay(
-      child: Scaffold(
-        backgroundColor: _AdminColors.background,
-        appBar: AppBar(
-          elevation: 0,
-          toolbarHeight: 74,
-          backgroundColor: Colors.transparent,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_AdminColors.navy, _AdminColors.primary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+    return Scaffold(
+      backgroundColor: _AdminColors.background,
+      appBar: AppBar(
+        elevation: 0,
+        toolbarHeight: 74,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [_AdminColors.navy, _AdminColors.primary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.admin_panel_settings_rounded,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Admin Panel",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    "System management dashboard",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: PopupMenuButton<String>(
-                offset: const Offset(0, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                icon: Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: _AdminColors.primary,
-                    ),
-                  ),
-                ),
-                onSelected: (value) async {
-                  if (value == 'signout') {
-                    await AuthService.signOut();
-                  }
-                },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
-                    value: 'signout',
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout_rounded),
-                        SizedBox(width: 10),
-                        Text("Sign Out"),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: _AdminColors.primary,
-          elevation: 8,
-          icon: const Icon(
-            Icons.auto_awesome_rounded,
-            color: Colors.white,
-          ),
-          label: const Text(
-            "Quick Action",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          onPressed: () {},
-        ),
-        bottomNavigationBar: widget.showInternalNavigation
-            ? NavigationBar(
-                selectedIndex: _selectedIndex,
-                indicatorColor: const Color(0xFF7B61FF).withOpacity(0.2),
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                onDestinationSelected: (i) =>
-                    setState(() => _selectedIndex = i),
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.dashboard_rounded),
-                    label: "Overview",
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.people_rounded),
-                    label: "Users",
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.manage_accounts_rounded),
-                    label: "User Controls",
-                  ),
-                ],
-              )
-            : null,
-        body: IndexedStack(
-          index: _selectedIndex,
+        title: Row(
           children: [
-            _OverviewTab(adminUser: widget.user),
-            const _UsersTab(),
-            AdminProfilePage(adminUser: widget.user),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.16),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.admin_panel_settings_rounded,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Admin Panel",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  "System management dashboard",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: PopupMenuButton<String>(
+              offset: const Offset(0, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              icon: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: const CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person_rounded,
+                    color: _AdminColors.primary,
+                  ),
+                ),
+              ),
+              onSelected: (value) async {
+                if (value == 'signout') {
+                  await AuthService.signOut();
+                }
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(
+                  value: 'signout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout_rounded),
+                      SizedBox(width: 10),
+                      Text("Sign Out"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+      bottomNavigationBar: widget.showInternalNavigation
+          ? NavigationBar(
+              selectedIndex: _selectedIndex,
+              indicatorColor: const Color(0xFF7B61FF).withOpacity(0.2),
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+              onDestinationSelected: (i) {
+                setState(() => _selectedIndex = i);
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_rounded),
+                  label: "Overview",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.people_rounded),
+                  label: "Users",
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.manage_accounts_rounded),
+                  label: "User Controls",
+                ),
+              ],
+            )
+          : null,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _OverviewTab(adminUser: widget.user),
+          const _UsersTab(),
+          AdminProfilePage(adminUser: widget.user),
+        ],
       ),
     );
   }
 }
-
-////////////////////////////////////////////////////////////
-/// OVERVIEW TAB
-////////////////////////////////////////////////////////////
 
 class _OverviewTab extends StatelessWidget {
   final UserModel adminUser;
@@ -218,8 +196,7 @@ class _OverviewTab extends StatelessWidget {
         children: [
           const _HeroHeader(
             title: "Welcome, Admin ",
-            subtitle:
-                "Manage users, roles, and platform activity from one place.",
+            subtitle: "Manage users, roles, and platform activity from one place.",
             icon: Icons.workspace_premium_rounded,
           ),
           const SizedBox(height: 22),
@@ -261,7 +238,7 @@ class _OverviewTab extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 14,
-                childAspectRatio: 1.25,
+                childAspectRatio: 1.18,
                 children: [
                   _CountCard(
                     "Total Users",
@@ -297,10 +274,6 @@ class _OverviewTab extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////
-/// USERS TAB
-////////////////////////////////////////////////////////////
-
 class _UsersTab extends StatefulWidget {
   const _UsersTab();
 
@@ -323,8 +296,10 @@ class _UsersTabState extends State<_UsersTab> {
               prefixIcon: const Icon(Icons.search_rounded),
               filled: true,
               fillColor: Colors.white,
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 14,
+                horizontal: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
                 borderSide: BorderSide(color: _AdminColors.border),
@@ -359,6 +334,7 @@ class _UsersTabState extends State<_UsersTab> {
                 final d = doc.data() as Map<String, dynamic>;
                 final name = (d['displayName'] ?? "").toLowerCase();
                 final email = (d['email'] ?? "").toLowerCase();
+
                 return name.contains(_search) || email.contains(_search);
               }).toList();
 
@@ -386,10 +362,6 @@ class _UsersTabState extends State<_UsersTab> {
     );
   }
 }
-
-////////////////////////////////////////////////////////////
-/// HERO HEADER
-////////////////////////////////////////////////////////////
 
 class _HeroHeader extends StatelessWidget {
   final String title;
@@ -430,6 +402,8 @@ class _HeroHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -470,10 +444,6 @@ class _HeroHeader extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////
-/// SECTION HEADER
-////////////////////////////////////////////////////////////
-
 class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -506,9 +476,9 @@ class _SectionHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
+              const Text(
+                "Platform Overview",
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: _AdminColors.navy,
@@ -530,10 +500,6 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-
-////////////////////////////////////////////////////////////
-/// USER TILE
-////////////////////////////////////////////////////////////
 
 class _UserTile extends StatelessWidget {
   final String name;
@@ -594,9 +560,14 @@ class _UserTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(email,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  email,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
           ),
@@ -622,10 +593,6 @@ class _UserTile extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////
-/// COUNT CARD
-////////////////////////////////////////////////////////////
-
 class _CountCard extends StatelessWidget {
   final String label;
   final int count;
@@ -637,7 +604,7 @@ class _CountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -654,7 +621,7 @@ class _CountCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(11),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withOpacity(0.12),
               borderRadius: BorderRadius.circular(16),
@@ -662,25 +629,29 @@ class _CountCard extends StatelessWidget {
             child: Icon(
               icon,
               color: color,
-              size: 24,
+              size: 22,
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 10),
           Text(
             "$count",
             style: TextStyle(
-              fontSize: 25,
+              fontSize: 24,
               fontWeight: FontWeight.w900,
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
+          const SizedBox(height: 2),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
             ),
           ),
         ],
@@ -688,10 +659,6 @@ class _CountCard extends StatelessWidget {
     );
   }
 }
-
-////////////////////////////////////////////////////////////
-/// EMPTY STATE
-////////////////////////////////////////////////////////////
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
@@ -755,13 +722,12 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-////////////////////////////////////////////////////////////
-/// NAV ITEM
-////////////////////////////////////////////////////////////
-
 class _NavItem {
   final IconData icon;
   final String label;
 
-  const _NavItem({required this.icon, required this.label});
+  const _NavItem({
+    required this.icon,
+    required this.label,
+  });
 }
