@@ -1,12 +1,13 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'api_service.dart';
 
 /// Email Sending Service
 /// Handles sending emails through the backend API
 class EmailService {
-  static const String _backendUrl =
-      'http://localhost:5000'; // Update in production
+  // Resolve backend URL dynamically (supports localhost, emulator, or deployed URL)
+  static Future<String> _backendUrl() async => await ApiService.getBaseUrl();
 
   /// Send email via backend
   static Future<bool> sendEmail({
@@ -16,9 +17,10 @@ class EmailService {
     required String htmlBody,
   }) async {
     try {
+      final base = await _backendUrl();
       final response = await http
           .post(
-            Uri.parse('$_backendUrl/api/send-email'),
+            Uri.parse('$base/api/send-email'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'to': to,

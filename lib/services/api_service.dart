@@ -95,6 +95,11 @@ class ApiService {
     return _resolvedBaseUrl!;
   }
 
+  /// Public resolver for other services to get the resolved backend base URL.
+  static Future<String> getBaseUrl() async {
+    return _resolveBaseUrl();
+  }
+
   /// Get base URL depending on platform
   static Future<String> get _baseUrl async {
     return _resolveBaseUrl();
