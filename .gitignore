@@ -75,3 +75,4 @@ android/build.gradle.kts
 android/settings.gradle
 android/app/build.gradle
 
+backside/node_modules/data-uri-to-buffer/src/index.ts
