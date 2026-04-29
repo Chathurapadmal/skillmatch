@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SkillMatch</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Roboto, "Segoe UI", Arial; color:#0f172a; background:#f8fafc; display:flex; align-items:center; justify-content:center; height:100vh; margin:0 }
+      .box{max-width:720px;padding:28px;border-radius:12px;background:#fff;border:1px solid #e6eef8;box-shadow:0 8px 30px rgba(16,24,40,0.06)}
+      a{color:#1e40af;text-decoration:none;font-weight:600}
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h1>SkillMatch</h1>
+      <p>The backend is deployed. This is a temporary landing page while the Flutter web app is not served from this deployment.</p>
+      <ul>
+        <li><a href="/api/health">Backend health (JSON)</a></li>
+        <li><a href="/api/send-email">Send email endpoint (POST)</a> — use a POST request to test</li>
+        <li><a href="https://github.com/Chathurapadmal/skillmatch">Repository on GitHub</a></li>
+      </ul>
+      <p>If you want the Flutter web app served here, build it locally with <code>flutter build web</code> and publish the contents of <code>build/web</code> to the project root (or configure a build step).</p>
+    </div>
+  </body>
+</html>
