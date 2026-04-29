@@ -12,9 +12,6 @@ class _ProfileColors {
   static const Color navy = Color(0xFF1E3A5F);
   static const Color background = Color(0xFFF5F7FB);
   static const Color border = Color(0xFFDCE3F0);
-  static const Color purple = Color(0xFF8A5BFF);
-  static const Color success = Color(0xFF18C17C);
-  static const Color warning = Color(0xFFFFB020);
   static const Color textMuted = Color(0xFF6B7280);
   static const Color softBlue = Color(0xFFEAF3FF);
 }
@@ -1233,58 +1230,6 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: _showEditProfileDialog,
             ),
           ],
-        ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 16,
-                offset: const Offset(0, -6),
-              ),
-            ],
-          ),
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: _ProfileColors.primary,
-            unselectedItemColor: _ProfileColors.textMuted,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            elevation: 0,
-            currentIndex: 3,
-            selectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            ),
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view_outlined),
-                activeIcon: Icon(Icons.grid_view_rounded),
-                label: 'Feed',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.people_outline_rounded),
-                activeIcon: Icon(Icons.people_rounded),
-                label: 'Network',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.work_outline_rounded),
-                activeIcon: Icon(Icons.work_rounded),
-                label: 'Jobs',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline_rounded),
-                activeIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
-              ),
-            ],
-          ),
         ),
         body: _loading
             ? const Center(

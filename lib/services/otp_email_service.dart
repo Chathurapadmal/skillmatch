@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
+import 'dart:developer' as developer;
 
 /// OTP Email Service
 /// Handles generation, storage, and verification of one-time passwords (OTPs)
@@ -43,7 +44,10 @@ class OtpEmailService {
 
     // In production, you would send this via email using the backend API
     // For now, we store it and return it (in debug, log it)
-    print('OTP for $email: $otp (expires in $_expirationMinutes minutes)');
+    developer.log(
+      'OTP generated for $email (expires in $_expirationMinutes minutes)',
+      name: 'OtpEmailService',
+    );
   }
 
   /// Verify OTP code

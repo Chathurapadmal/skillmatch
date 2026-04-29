@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skillmatch/pages/company/company_dashboard.dart';
 import 'package:skillmatch/pages/dashboard_tab.dart';
-import 'package:skillmatch/pages/applicant/profile/profilepage.dart';
 import 'package:skillmatch/pages/applicant/home/home_screen.dart';
 
 import '../admin/admin_dashboard.dart';
@@ -24,19 +23,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   List<_NavPage> get _pages {
     final role = widget.user.role;
-
-    final commonPages = <_NavPage>[
-      _NavPage(
-        label: 'Profile',
-        icon: Icons.person_rounded,
-        page: const ProfilePage(),
-      ),
-      _NavPage(
-        label: 'Upload CV',
-        icon: Icons.cloud_upload_rounded,
-        page: const UploadCvPage(returnResultOnExtract: false),
-      ),
-    ];
 
     switch (role) {
       case UserRole.admin:

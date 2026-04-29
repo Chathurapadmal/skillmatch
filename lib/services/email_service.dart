@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 /// Email Sending Service
 /// Handles sending emails through the backend API
@@ -32,12 +33,13 @@ class EmailService {
         return true;
       }
 
-      print(
+      developer.log(
         'Email sending failed: ${response.statusCode} - ${response.body}',
+        name: 'EmailService',
       );
       return false;
     } catch (e) {
-      print('Email sending error: $e');
+      developer.log('Email sending error: $e', name: 'EmailService');
       return false;
     }
   }

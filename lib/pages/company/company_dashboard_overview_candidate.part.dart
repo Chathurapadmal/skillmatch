@@ -529,7 +529,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
   static const Color _mutedText = Color(0xFF64748B);
 
   String _companyIndustry = '';
-  bool _loadingIndustry = true;
   String _candidateScope = 'Applied';
   bool _enforceIndustryFilter = true;
 
@@ -550,7 +549,6 @@ class _CandidateDiscoveryTabState extends State<_CandidateDiscoveryTab> {
     final data = doc.data() ?? <String, dynamic>{};
     setState(() {
       _companyIndustry = (data['industry'] as String? ?? '').trim();
-      _loadingIndustry = false;
     });
   }
 
