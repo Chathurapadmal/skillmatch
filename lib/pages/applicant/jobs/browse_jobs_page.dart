@@ -466,8 +466,9 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
         ),
       );
     } finally {
-      if (!mounted) return;
-      setState(() => _applyingJobKeys.remove(key));
+      if (mounted) {
+        setState(() => _applyingJobKeys.remove(key));
+      }
     }
   }
 

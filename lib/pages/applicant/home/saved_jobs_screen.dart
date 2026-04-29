@@ -2,13 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../theme/app_theme.dart';
 import '../../../shared/applicant_notification_button.dart';
 
 const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
 const Color _background = Color(0xFFF8FAFC);
-const Color _cardBorder = Color(0xFFDCE3F0);
 const Color _softBlue = Color(0xFFEAF3FA);
 const Color _mutedText = Color(0xFF64748B);
 

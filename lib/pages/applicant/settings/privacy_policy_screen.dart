@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/applicant_notification_button.dart';
 
-const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
 const Color _background = Color(0xFFF8FAFC);
 const Color _cardBorder = Color(0xFFDCE3F0);

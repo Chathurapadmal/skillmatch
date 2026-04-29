@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:skillmatch/widgets/policy/terms_of_service_card.dart';
 
 const Color _primary = Color(0xFF1565C0);
-const Color _navy = Color(0xFF1E3A5F);
 const Color _background = Color(0xFFF8FAFC);
 
 class TermsOfServiceScreen extends StatelessWidget {

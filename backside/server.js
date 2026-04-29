@@ -1,22 +1,148 @@
-import express from 'express';
-import cors from 'cors';
-import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
 import nodemailer from 'nodemailer';
+import http from 'node:http';
+import { URL } from 'node:url';
 
 dotenv.config();
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let raw = '';
+
+    req.on('data', (chunk) => {
+      raw += chunk;
+      if (raw.length > 1_000_000) {
+        reject(new Error('Request body too large'));
+        req.destroy();
+      }
+    });
+
+    req.on('end', () => {
+      if (!raw.trim()) {
+        resolve({});
+        return;
+      }
+
+      try {
+        resolve(JSON.parse(raw));
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    req.on('error', reject);
+  });
+}
+
+function createApp() {
+  const routes = [];
+
+  const register = (method, path, handler) => {
+    routes.push({ method, path, handler });
+  };
+
+  return {
+    use() {},
+    get(path, handler) {
+      register('GET', path, handler);
+    },
+    post(path, handler) {
+      register('POST', path, handler);
+    },
+    listen(port, host, callback) {
+      const server = http.createServer(async (req, res) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+
+        res.status = (code) => {
+          res.statusCode = code;
+          return res;
+        };
+
+        res.json = (payload) => {
+          if (!res.headersSent) {
+            res.setHeader('Content-Type', 'application/json');
+          }
+          res.end(JSON.stringify(payload));
+          return res;
+        };
+
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 204;
+          res.end();
+          return;
+        }
+
+        const requestUrl = new URL(req.url || '/', `http://${req.headers.host || host}`);
+        req.query = Object.fromEntries(requestUrl.searchParams.entries());
+
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          try {
+            req.body = await readJsonBody(req);
+          } catch (error) {
+            res.status(400).json({ error: 'Invalid JSON body' });
+            return;
+          }
+        }
+
+        const route = routes.find(
+          (entry) => entry.method === req.method && entry.path === requestUrl.pathname
+        );
+
+        if (!route) {
+          res.status(404).json({ error: 'Not found' });
+          return;
+        }
+
+        try {
+          await route.handler(req, res);
+        } catch (error) {
+          console.error('Unhandled route error:', error);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Internal server error' });
+          }
+        }
+      });
+
+      let currentPort = port;
+      let attempts = 0;
+      const maxAttempts = 20;
+
+      const start = () => {
+        server.once('error', onError);
+        server.listen(currentPort, host, () => {
+          if (typeof callback === 'function') {
+            callback(currentPort);
+          }
+        });
+      };
+
+      function onError(error) {
+        server.off('error', onError);
+
+        if (error?.code === 'EADDRINUSE' && attempts < maxAttempts) {
+          attempts += 1;
+          const nextPort = currentPort + 1;
+          console.warn(`Port ${currentPort} is busy, trying ${nextPort}...`);
+          currentPort = nextPort;
+          setImmediate(start);
+          return;
+        }
+
+        throw error;
+      }
+
+      start();
+      return server;
+    },
+  };
+}
+
+const app = createApp();
 
 const apiKey = process.env.OPENAI_API_KEY;
-
-if (!apiKey) {
-  console.error('Missing OPENAI_API_KEY in backside/.env');
-  process.exit(1);
-}
 
 // Email configuration
 const GMAIL_EMAIL = process.env.GMAIL_EMAIL || 'contact.skillmatchteam@gmail.com';
@@ -36,7 +162,7 @@ if (GMAIL_EMAIL && GMAIL_PASSWORD) {
   console.warn('Email configuration not complete. Email sending will be disabled.');
 }
 
-const openai = new OpenAI({ apiKey });
+const openai = apiKey ? new OpenAI({ apiKey }) : null;
 
 function sanitizeText(value, fallback = '') {
   const text = String(value ?? '').trim();
@@ -68,6 +194,10 @@ function extractJsonObject(raw) {
 }
 
 async function generateJson({ systemPrompt, userPrompt }) {
+  if (!openai) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     temperature: 0.5,
@@ -119,6 +249,10 @@ app.post('/api/generate', async (req, res) => {
 
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'prompt is required' });
+  }
+
+  if (!openai) {
+    return res.status(500).json({ error: 'Missing OPENAI_API_KEY' });
   }
 
   const safeHistory = Array.isArray(history)
@@ -385,6 +519,6 @@ app.get('/api/jobs', async (req, res) => {
 const port = Number(process.env.PORT || 5000);
 const host = '0.0.0.0';
 
-app.listen(port, host, () => {
-  console.log(`Server running on http://${host}:${port}`);
+app.listen(port, host, (boundPort) => {
+  console.log(`Server running on http://${host}:${boundPort}`);
 });

@@ -12,9 +12,6 @@ class _ProfileColors {
   static const Color navy = Color(0xFF1E3A5F);
   static const Color background = Color(0xFFF5F7FB);
   static const Color border = Color(0xFFDCE3F0);
-  static const Color purple = Color(0xFF8A5BFF);
-  static const Color success = Color(0xFF18C17C);
-  static const Color warning = Color(0xFFFFB020);
   static const Color textMuted = Color(0xFF6B7280);
   static const Color softBlue = Color(0xFFEAF3FF);
 }

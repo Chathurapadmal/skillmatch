@@ -1,0 +1,123 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter build apk --debug
+
+## exception
+
+ProcessException: ProcessException: Process exited abnormally with exit code 1:
+
+[Incubating] Problems report is available at: file:///home/chathura/adroidproj/skillmatch/build/reports/problems/problems-report.html
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Cannot locate tasks that match 'app:tasks' as project 'app' not found in root project 'android'.
+
+* Try:
+> Run gradlew projects to get a list of available projects.
+> For more on name expansion, please refer to https://docs.gradle.org/8.14/userguide/command_line_interface.html#sec:name_abbreviation in the Gradle documentation.
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 323ms
+  Command: /home/chathura/adroidproj/skillmatch/android/gradlew app:tasks --all --console=auto
+
+```
+#0      RunResult.throwException (package:flutter_tools/src/base/process.dart:153:5)
+#1      _DefaultProcessUtils.run (package:flutter_tools/src/base/process.dart:379:19)
+<asynchronous suspension>
+#2      flavorUndefinedHandler.<anonymous closure> (package:flutter_tools/src/android/gradle_errors.dart:232:38)
+<asynchronous suspension>
+#3      AndroidGradleBuilder._runGradleTask (package:flutter_tools/src/android/gradle.dart:374:40)
+<asynchronous suspension>
+#4      AndroidGradleBuilder.buildGradleApp (package:flutter_tools/src/android/gradle.dart:569:26)
+<asynchronous suspension>
+#5      AndroidGradleBuilder.buildApk (package:flutter_tools/src/android/gradle.dart:234:5)
+<asynchronous suspension>
+#6      BuildApkCommand.runCommand (package:flutter_tools/src/commands/build_apk.dart:131:5)
+<asynchronous suspension>
+#7      FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1590:27)
+<asynchronous suspension>
+#8      AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#9      CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+<asynchronous suspension>
+#10     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:496:9)
+<asynchronous suspension>
+#11     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#12     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:431:5)
+<asynchronous suspension>
+#13     FlutterCommandRunner.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:307:33)
+<asynchronous suspension>
+#14     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:104:11)
+<asynchronous suspension>
+#15     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#16     main (package:flutter_tools/executable.dart:103:3)
+<asynchronous suspension>
+```
+
+## flutter doctor
+
+```
+[32m[✓][39m Flutter (Channel stable, 3.41.4, on Arch Linux 6.19.11-arch1-1, locale
+    en_US.UTF-8) [41ms]
+    [32m•[39m Flutter version 3.41.4 on channel stable at /home/chathura/flutter
+    [32m•[39m Upstream repository https://github.com/flutter/flutter.git
+    [32m•[39m Framework revision ff37bef603 (8 weeks ago), 2026-03-03 16:03:22 -0800
+    [32m•[39m Engine revision e4b8dca3f1
+    [32m•[39m Dart version 3.11.1
+    [32m•[39m DevTools version 2.54.1
+    [32m•[39m Feature flags: enable-web, enable-linux-desktop, enable-macos-desktop,
+      enable-windows-desktop, enable-android, enable-ios, cli-animations,
+      enable-native-assets, omit-legacy-version-file, enable-lldb-debugging,
+      enable-uiscene-migration
+
+[32m[✓][39m Android toolchain - develop for Android devices (Android SDK version 35.0.0)
+    [7.0s]
+    [32m•[39m Android SDK at /home/chathura/Android/Sdk
+    [32m•[39m Emulator version unknown
+    [32m•[39m Platform android-36, build-tools 35.0.0
+    [32m•[39m Java binary at: /usr/bin/java
+      This JDK was found in the system PATH.
+      To manually set the JDK path, use: `flutter config
+      --jdk-dir="path/to/jdk"`.
+    [32m•[39m Java version OpenJDK Runtime Environment (build 17.0.18+8)
+    [32m•[39m All Android licenses accepted.
+
+[31m[✗][39m Chrome - develop for the web (Cannot find Chrome executable at
+    google-chrome) [36ms]
+    [33m![39m Cannot find Chrome. Try setting CHROME_EXECUTABLE to a Chrome executable.
+
+[32m[✓][39m Linux toolchain - develop for Linux desktop [383ms]
+    [32m•[39m clang version 22.1.2
+    [32m•[39m cmake version 4.3.1
+    [32m•[39m ninja version 1.13.2
+    [32m•[39m pkg-config version 2.5.1
+    [32m•[39m OpenGL core renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2
+    [32m•[39m OpenGL core version: 4.6.0 NVIDIA 595.58.03
+    [32m•[39m OpenGL core shading language version: 4.60 NVIDIA
+    [32m•[39m OpenGL ES renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2
+    [32m•[39m OpenGL ES version: OpenGL ES 3.2 NVIDIA 595.58.03
+    [32m•[39m OpenGL ES shading language version: OpenGL ES GLSL ES 3.20
+    [32m•[39m GL_EXT_framebuffer_blit: yes
+    [32m•[39m GL_EXT_texture_format_BGRA8888: yes
+
+[32m[✓][39m Connected device (2 available) [81ms]
+    [32m•[39m WayDroid x86 64 Device (mobile) • 192.168.240.112:5555 • android-x64 •
+      Android 13 (API 33)
+    [32m•[39m Linux (desktop)                 • linux                • linux-x64   •
+      Arch Linux 6.19.11-arch1-1
+
+[32m[✓][39m Network resources [2.3s]
+    [32m•[39m All expected network resources are available.
+
+[33m![39m Doctor found issues in 1 category.
+```

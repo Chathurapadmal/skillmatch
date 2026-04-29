@@ -11,7 +11,6 @@ const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
 const Color _accent = Color(0xFF2E86AB);
 const Color _background = Color(0xFFF8FAFC);
-const Color _cardBorder = Color(0xFFDCE3F0);
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -42,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   bool _obscurePass = true;
   bool _obscureConfirm = true;
-  bool _enableTwoFa = false;
+  final bool _enableTwoFa = false;
 
   @override
   void dispose() {
@@ -77,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
             final secret = TotpService.generateSecret();
             await TotpService.saveSecretLocally(secret);
           } catch (e) {
-            print('2FA setup warning: $e');
+            debugPrint('2FA setup warning: $e');
             // Don't fail registration if 2FA setup fails
           }
         }

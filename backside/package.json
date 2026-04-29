@@ -13,10 +13,12 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.6",
+    "data-uri-to-buffer": "^8.0.0",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.7",
-    "openai": "^6.33.0"
+    "openai": "^6.33.0",
+    "path-to-regexp": "^8.4.2"
   }
 }

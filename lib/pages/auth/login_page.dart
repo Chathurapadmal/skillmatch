@@ -30,7 +30,6 @@ class _LoginPageState extends State<LoginPage>
   static const Color _navy = Color(0xFF1E3A5F);
   static const Color _accent = Color(0xFF2E86AB);
   static const Color _background = Color(0xFFF8FAFC);
-  static const Color _linkColor = Color(0xFF1565C0);
 
   @override
   void initState() {
