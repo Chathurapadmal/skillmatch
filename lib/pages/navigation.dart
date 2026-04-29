@@ -109,7 +109,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         index: _selectedIndex,
         children: pages.map((entry) => entry.page).toList(),
       ),
-
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(

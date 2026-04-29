@@ -1503,7 +1503,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
           message.contains('statuscode: 404')) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Logo storage is not configured. Please contact support.'),
+          content:
+              Text('Logo storage is not configured. Please contact support.'),
           backgroundColor: AppTheme.warning,
         ));
       } else if (message.contains('statuscode: 403') ||
@@ -1512,7 +1513,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
           message.contains('permission denied')) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Logo upload permission was denied. Please contact support.'),
+          content:
+              Text('Logo upload permission was denied. Please contact support.'),
           backgroundColor: AppTheme.warning,
         ));
       } else {
@@ -1542,10 +1544,9 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         _buildSettingsSection(
           icon: Icons.image_outlined,
           title: 'Brand Assets',
-          subtitle: 'Upload your company logo so candidates can recognize your brand.',
+          subtitle:
+              'Upload your company logo so candidates can recognize your brand.',
           children: [
-            _buildLogoPreview(),
-            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -1642,17 +1643,8 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
         _buildSettingsSection(
           icon: Icons.tune_outlined,
           title: 'Workspace Controls',
-          subtitle:
-              'Manage appearance, policy pages, and account access.',
+          subtitle: 'Manage appearance, policy pages, and account access.',
           children: [
-            _buildSettingsSwitchTile(
-              icon: Icons.dark_mode_outlined,
-              title: 'Dark appearance mode',
-              subtitle: 'Preference is saved for this account.',
-              value: _darkMode,
-              onChanged: (value) => setState(() => _darkMode = value),
-            ),
-            const SizedBox(height: 14),
             _buildSettingsActionButton(
               icon: Icons.inbox_outlined,
               label: 'Notification Inbox',
@@ -1943,73 +1935,6 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     );
   }
 
-  Widget _buildLogoPreview() {
-    final logoUrl = _logoCtrl.text.trim();
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFE),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE3EAF5)),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              width: 72,
-              height: 72,
-              color: const Color(0xFFEAF1FB),
-              child: logoUrl.isEmpty
-                  ? const Icon(
-                      Icons.business,
-                      size: 34,
-                      color: Color(0xFF1565C0),
-                    )
-                  : Image.network(
-                      logoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.business,
-                        size: 34,
-                        color: Color(0xFF1565C0),
-                      ),
-                    ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Company Logo',
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  logoUrl.isEmpty
-                      ? 'No logo added yet. Upload a company logo to show it in your profile header.'
-                      : 'Logo added successfully. This logo will appear in your company profile header.',
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 12.5,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSettingsSwitchTile({
     required IconData icon,
     required String title,
@@ -2202,6 +2127,3 @@ class _CompanySettingsTabState extends State<_CompanySettingsTab> {
     );
   }
 }
-// ============================================================================
-// Interview Scheduling Dialog
-// ============================================================================

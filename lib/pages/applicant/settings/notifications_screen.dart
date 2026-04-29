@@ -65,12 +65,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           backgroundColor: _background,
           foregroundColor: _navy,
           elevation: 0,
-          actions: const [
-            ApplicantNotificationButton(iconColor: _navy)
-          ]),
+          actions: const [ApplicantNotificationButton(iconColor: _navy)]),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: _primary))
+          ? const Center(child: CircularProgressIndicator(color: _primary))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -152,8 +149,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     border: Border.all(color: _accent.withOpacity(0.2)),
                   ),
                   child: const Row(children: [
-                    Icon(Icons.info_outline,
-                        color: _accent, size: 18),
+                    Icon(Icons.info_outline, color: _accent, size: 18),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -191,8 +187,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   .map((e) => Column(children: [
                         if (e.key > 0)
                           Divider(
-                              height: 1,
-                              color: _cardBorder.withOpacity(0.8)),
+                              height: 1, color: _cardBorder.withOpacity(0.8)),
                         e.value,
                       ]))
                   .toList()),
@@ -204,8 +199,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget _tile(String key, IconData icon, String title, String subtitle) {
     return ListTile(
       leading: Icon(icon, color: _accent, size: 22),
-      title: Text(title,
-          style: const TextStyle(color: _navy, fontSize: 14)),
+      title: Text(title, style: const TextStyle(color: _navy, fontSize: 14)),
       subtitle: Text(subtitle,
           style: const TextStyle(color: _textMuted, fontSize: 11)),
       trailing: Switch(
