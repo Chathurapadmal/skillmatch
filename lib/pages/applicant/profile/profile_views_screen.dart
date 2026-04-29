@@ -101,8 +101,6 @@ class ProfileViewsScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 18),
                                 _buildHistorySection(views),
-                                const SizedBox(height: 18),
-                                _buildBoostBanner(),
                                 const SizedBox(height: 24),
                               ],
                             ),
@@ -150,10 +148,7 @@ class ProfileViewsScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              _buildHeaderIconButton(
-                icon: Icons.more_vert,
-                onPressed: () {},
-              ),
+              const SizedBox(width: 42), // Replaced the more_vert icon with an empty box to maintain exact centering
             ],
           ),
           const SizedBox(height: 26),
@@ -369,17 +364,6 @@ class ProfileViewsScreen extends StatelessWidget {
     return _buildSection(
       title: 'View History',
       subtitle: 'Companies that recently viewed your profile.',
-      trailing: TextButton(
-        onPressed: () {},
-        style: TextButton.styleFrom(
-          foregroundColor: _primary,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-        ),
-        child: const Text(
-          'Export',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-      ),
       child: views.isEmpty
           ? _buildEmptyState()
           : Column(
@@ -483,89 +467,6 @@ class ProfileViewsScreen extends StatelessWidget {
               Icons.chevron_right,
               color: Colors.grey,
               size: 20,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBoostBanner() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1976D2), Color(0xFF1565C0)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: _primary.withOpacity(0.22),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Boost Visibility',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Get 5x more views by appearing at the top of recruiter searches.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: _primary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'LEARN MORE',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Container(
-            height: 58,
-            width: 58,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.16),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.rocket_launch,
-              color: Colors.white,
-              size: 30,
             ),
           ),
         ],
