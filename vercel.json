@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "backside/api/**/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/backside/api/$1.js" },
+    { "src": "/health", "dest": "/backside/api/health.js" }
+  ]
+}
