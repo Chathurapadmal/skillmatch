@@ -8,8 +8,10 @@ class ProfileViewsScreen extends StatelessWidget {
 
   static const Color _primary = Color(0xFF1565C0);
   static const Color _primaryDark = Color(0xFF0D47A1);
+  static const Color _accent = Color(0xFF2E86AB);
   static const Color _background = Color(0xFFF5F7FA);
   static const Color _cardBorder = Color(0xFFDCE3F0);
+  static const Color _textDark = Color(0xFF172033);
 
   String _fmtDate(Timestamp? timestamp) {
     if (timestamp == null) return 'Recently';
@@ -64,36 +66,38 @@ class ProfileViewsScreen extends StatelessWidget {
                     final views = viewsSnapshot.data?.docs ?? const [];
 
                     return SafeArea(
+                      bottom: false,
                       child: ListView(
                         padding: EdgeInsets.zero,
                         children: [
                           _buildHeader(context, totalViews),
-                          const SizedBox(height: 20),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 _buildSection(
                                   title: 'Quick Insights',
                                   subtitle:
                                       'A snapshot of how your profile is performing.',
+                                  icon: Icons.insights_rounded,
                                   child: Row(
                                     children: [
                                       Expanded(
                                         child: _buildInsightCard(
-                                          'Growth',
-                                          '33% Increase',
-                                          Icons.trending_up,
-                                          Colors.orange.shade100,
+                                          title: 'Growth',
+                                          value: '33% Increase',
+                                          icon: Icons.trending_up_rounded,
+                                          bgColor: Colors.orange.shade100,
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: _buildInsightCard(
-                                          'Top Industry',
-                                          'FinTech',
-                                          Icons.business_center,
-                                          Colors.blueGrey.shade100,
+                                          title: 'Top Industry',
+                                          value: 'FinTech',
+                                          icon: Icons.business_center_rounded,
+                                          bgColor: Colors.blueGrey.shade100,
                                         ),
                                       ),
                                     ],
@@ -101,9 +105,6 @@ class ProfileViewsScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 18),
                                 _buildHistorySection(views),
-                                const SizedBox(height: 18),
-                                _buildBoostBanner(),
-                                const SizedBox(height: 24),
                               ],
                             ),
                           ),
@@ -114,112 +115,150 @@ class ProfileViewsScreen extends StatelessWidget {
                 );
               },
             ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
   Widget _buildHeader(BuildContext context, int totalViews) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [_primaryDark, _primary],
+          colors: [_primaryDark, _primary, _accent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          Row(
-            children: [
-              _buildHeaderIconButton(
-                icon: Icons.arrow_back,
-                onPressed: () => Navigator.pop(context),
+          Positioned(
+            right: -34,
+            top: -42,
+            child: Container(
+              height: 130,
+              width: 130,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
               ),
-              const Spacer(),
-              const Text(
-                'Profile Views',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const Spacer(),
-              _buildHeaderIconButton(
-                icon: Icons.more_vert,
-                onPressed: () {},
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 26),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Positioned(
+            right: 28,
+            bottom: -54,
+            child: Container(
+              height: 110,
+              width: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.07),
+              ),
+            ),
+          ),
+          Column(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'TOTAL PROFILE VIEWS',
+              Row(
+                children: [
+                  _buildHeaderIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Profile Views',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        letterSpacing: 0.8,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '$totalViews',
-                      style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 42,
-                        height: 1,
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.16),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        '+4 this week',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: 68,
-                width: 68,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.22),
                   ),
-                ),
-                child: const Icon(
-                  Icons.visibility,
-                  color: Colors.white,
-                  size: 32,
-                ),
+                  const SizedBox(width: 12),
+                  const SizedBox(width: 42),
+                ],
+              ),
+              const SizedBox(height: 30),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Total profile views',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '$totalViews',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 48,
+                            height: 1,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.18),
+                            ),
+                          ),
+                          child: const Text(
+                            '+4 this week',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Container(
+                    height: 78,
+                    width: 78,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.16),
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.24),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.10),
+                          blurRadius: 22,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.visibility_rounded,
+                      color: Colors.white,
+                      size: 36,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -238,9 +277,12 @@ class ProfileViewsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.14),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.18),
+        ),
       ),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white),
+        icon: Icon(icon, color: Colors.white, size: 22),
         onPressed: onPressed,
       ),
     );
@@ -249,20 +291,20 @@ class ProfileViewsScreen extends StatelessWidget {
   Widget _buildSection({
     required String title,
     required String subtitle,
+    required IconData icon,
     required Widget child,
-    Widget? trailing,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: _cardBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.035),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            blurRadius: 20,
+            offset: const Offset(0, 9),
           ),
         ],
       ),
@@ -271,16 +313,29 @@ class ProfileViewsScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: _primary.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  icon,
+                  color: _primary,
+                  size: 23,
+                ),
+              ),
+              const SizedBox(width: 13),
               Expanded(
                 child: _buildSectionTitle(
                   title: title,
                   subtitle: subtitle,
                 ),
               ),
-              if (trailing != null) trailing,
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           child,
         ],
       ),
@@ -298,64 +353,66 @@ class ProfileViewsScreen extends StatelessWidget {
           title,
           style: const TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF172033),
+            fontWeight: FontWeight.w900,
+            color: _textDark,
+            letterSpacing: -0.2,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: Colors.grey,
-            height: 1.3,
+            color: _textDark.withOpacity(0.55),
+            height: 1.35,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInsightCard(
-    String title,
-    String value,
-    IconData icon,
-    Color bgColor,
-  ) {
+  Widget _buildInsightCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color bgColor,
+  }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFD),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE8EEF7)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 38,
-            width: 38,
+            height: 40,
+            width: 40,
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, size: 21, color: Colors.black87),
+            child: Icon(icon, size: 22, color: Colors.black87),
           ),
           const SizedBox(height: 14),
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.grey,
+            style: TextStyle(
+              color: _textDark.withOpacity(0.48),
               fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 5),
           Text(
             value,
             style: const TextStyle(
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
               fontSize: 15,
-              color: Color(0xFF172033),
+              color: _textDark,
             ),
           ),
         ],
@@ -369,23 +426,18 @@ class ProfileViewsScreen extends StatelessWidget {
     return _buildSection(
       title: 'View History',
       subtitle: 'Companies that recently viewed your profile.',
-      trailing: TextButton(
-        onPressed: () {},
-        style: TextButton.styleFrom(
-          foregroundColor: _primary,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-        ),
-        child: const Text(
-          'Export',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-      ),
+      icon: Icons.history_rounded,
       child: views.isEmpty
           ? _buildEmptyState()
           : Column(
-              children: views
-                  .map((doc) => _buildHistoryItem(doc.data()))
-                  .toList(),
+              children: List.generate(views.length, (index) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index == views.length - 1 ? 0 : 12,
+                  ),
+                  child: _buildHistoryItem(views[index].data()),
+                );
+              }),
             ),
     );
   }
@@ -393,10 +445,10 @@ class ProfileViewsScreen extends StatelessWidget {
   Widget _buildEmptyState() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFD),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE8EEF7)),
       ),
       child: Column(
@@ -404,7 +456,7 @@ class ProfileViewsScreen extends StatelessWidget {
           Icon(
             Icons.visibility_off_outlined,
             color: Colors.grey,
-            size: 34,
+            size: 36,
           ),
           SizedBox(height: 10),
           Text(
@@ -413,7 +465,7 @@ class ProfileViewsScreen extends StatelessWidget {
             style: TextStyle(
               color: Colors.grey,
               fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -426,28 +478,27 @@ class ProfileViewsScreen extends StatelessWidget {
     final viewedAt = data['viewedAt'] as Timestamp?;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFD),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE8EEF7)),
       ),
       child: Row(
         children: [
           Container(
-            height: 46,
-            width: 46,
+            height: 48,
+            width: 48,
             decoration: BoxDecoration(
               color: _primary.withOpacity(0.09),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
-              Icons.business,
+              Icons.business_rounded,
               color: _primary,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,150 +506,25 @@ class ProfileViewsScreen extends StatelessWidget {
                 Text(
                   companyName,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w900,
                     fontSize: 15,
-                    color: Color(0xFF172033),
+                    color: _textDark,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   'Viewed ${_fmtDate(viewedAt)}',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
+                  style: TextStyle(
+                    color: _textDark.withOpacity(0.48),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            height: 32,
-            width: 32,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE8EEF7)),
-            ),
-            child: const Icon(
-              Icons.chevron_right,
-              color: Colors.grey,
-              size: 20,
-            ),
-          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBoostBanner() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1976D2), Color(0xFF1565C0)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: _primary.withOpacity(0.22),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Boost Visibility',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Get 5x more views by appearing at the top of recruiter searches.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: _primary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'LEARN MORE',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Container(
-            height: 58,
-            width: 58,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.16),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.rocket_launch,
-              color: Colors.white,
-              size: 30,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 2,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: _primary,
-      unselectedItemColor: Colors.grey,
-      backgroundColor: Colors.white,
-      elevation: 12,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          label: 'Network',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          label: 'Settings',
-        ),
-      ],
     );
   }
 }

@@ -4,6 +4,11 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../wrapper.dart';
 
+const Color _primary = Color(0xFF1565C0);
+const Color _navy = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF2E86AB);
+const Color _background = Color(0xFFF8FAFC);
+
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -21,7 +26,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Start your internship journey with SkillMatch',
       description:
           'Get a simple overview of how the app works before you sign in and build your profile.',
-      accentColor: Color(0xFF4052B6),
+      accentColor: _primary,
       illustrationAsset: 'assets/images/onboarding/welcome.png',
       points: [
         'Discover internship opportunities faster',
@@ -34,7 +39,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Drop your CV and let the app read it',
       description:
           'Upload a PDF or DOCX resume and we will extract the important details for matching and profile setup.',
-      accentColor: Color(0xFF5B66D6),
+      accentColor: _accent,
       illustrationAsset: 'assets/images/onboarding/upload_cv.png',
       points: [
         'Keep your CV ready in PDF or DOCX format',
@@ -47,7 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Find internships that fit your skills',
       description:
           'SkillMatch helps you explore opportunities, compare your strengths, and learn what to improve next.',
-      accentColor: Color(0xFF1F7A8C),
+      accentColor: _primary,
       illustrationAsset: 'assets/images/onboarding/match_and_grow.png',
       points: [
         'See role suggestions based on your profile',
@@ -106,26 +111,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final page = _pages[_currentPage];
 
     return Scaffold(
+      backgroundColor: _background,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFF8FAFF), Color(0xFFE9F0FF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            colors: [_navy, _primary, _accent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
         child: SafeArea(
           child: Stack(
             children: [
               Positioned(
-                top: -70,
-                right: -30,
-                child: _GlowOrb(color: page.accentColor.withOpacity(0.25)),
+                top: -80,
+                right: -60,
+                child: _GlowOrb(
+                  color: _accent.withOpacity(0.25),
+                  glowColor: _accent.withOpacity(0.65),
+                ),
               ),
               Positioned(
-                bottom: 140,
-                left: -50,
-                child: _GlowOrb(color: page.accentColor.withOpacity(0.12)),
+                bottom: 110,
+                left: -70,
+                child: _GlowOrb(
+                  color: Colors.white.withOpacity(0.08),
+                  glowColor: Colors.white.withOpacity(0.18),
+                ),
               ),
               Column(
                 children: [
@@ -135,14 +147,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       children: [
                         TextButton(
                           onPressed: _skip,
-                          child: const Text('Skip'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            backgroundColor: Colors.white.withOpacity(0.12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                              side: BorderSide(
+                                color: Colors.white.withOpacity(0.18),
+                              ),
+                            ),
+                          ),
+                          child: const Text(
+                            'Skip',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
                         ),
                         const Spacer(),
-                        Text(
-                          '${_currentPage + 1}/${_pages.length}',
-                          style: TextStyle(
-                            color: Colors.black.withOpacity(0.55),
-                            fontWeight: FontWeight.w600,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.18),
+                            ),
+                          ),
+                          child: Text(
+                            '${_currentPage + 1}/${_pages.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ],
@@ -176,8 +219,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           controller: _pageController,
                           count: _pages.length,
                           effect: ExpandingDotsEffect(
-                            activeDotColor: page.accentColor,
-                            dotColor: Colors.black.withOpacity(0.12),
+                            activeDotColor: Colors.white,
+                            dotColor: Colors.white.withOpacity(0.28),
                             dotHeight: 10,
                             dotWidth: 10,
                             expansionFactor: 2.6,
@@ -188,21 +231,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         SizedBox(
                           width: double.infinity,
                           height: 54,
-                          child: FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: page.accentColor,
-                              shape: RoundedRectangleBorder(
+                          child: GestureDetector(
+                            onTap: _nextPage,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [_primary, _accent],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
                                 borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _primary.withOpacity(0.45),
+                                    blurRadius: 28,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
                               ),
-                            ),
-                            onPressed: _nextPage,
-                            child: Text(
-                              _currentPage == _pages.length - 1
-                                  ? 'Get Started'
-                                  : 'Next',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                              child: Center(
+                                child: Text(
+                                  _currentPage == _pages.length - 1
+                                      ? 'Get Started'
+                                      : 'Next',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -236,12 +293,15 @@ class _OnboardingCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.18),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.34),
+        ),
         boxShadow: [
           BoxShadow(
-            color: data.accentColor.withOpacity(0.14),
+            color: _navy.withOpacity(0.20),
             blurRadius: 30,
-            offset: const Offset(0, 16),
+            offset: const Offset(0, 18),
           ),
         ],
       ),
@@ -255,8 +315,8 @@ class _OnboardingCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    data.accentColor,
-                    data.accentColor.withOpacity(0.72),
+                    Colors.white.withOpacity(0.16),
+                    Colors.white.withOpacity(0.07),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -274,19 +334,20 @@ class _OnboardingCard extends StatelessWidget {
                       data.title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 34,
-                        height: 1.05,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 31,
+                        height: 1.06,
+                        fontWeight: FontWeight.w900,
                         letterSpacing: -0.8,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       data.description,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.92),
+                      style: const TextStyle(
+                        color: Colors.white70,
                         fontSize: 15,
                         height: 1.45,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -347,15 +408,8 @@ class _OnboardingIllustration extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
-        gradient: LinearGradient(
-          colors: [
-            accentColor.withOpacity(0.14),
-            Colors.white,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: accentColor.withOpacity(0.10)),
+        color: Colors.white.withOpacity(0.14),
+        border: Border.all(color: Colors.white.withOpacity(0.20)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(26),
@@ -366,41 +420,65 @@ class _OnboardingIllustration extends StatelessWidget {
               assetPath,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        pageIndex == 1
-                            ? Icons.explore_rounded
-                            : pageIndex == 2
-                                ? Icons.upload_file_rounded
-                                : Icons.trending_up_rounded,
-                        size: 72,
-                        color: accentColor,
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final bool compact = constraints.maxHeight < 210;
+                    final double iconSize = compact ? 56 : 66;
+                    final double topGap = compact ? 10 : 14;
+                    final double smallGap = compact ? 4 : 6;
+                    final double horizontalPadding = compact ? 14 : 20;
+                    final double verticalPadding = compact ? 12 : 20;
+                    final double titleFont = compact ? 12.5 : 14;
+                    final double subtitleFont = compact ? 11.5 : 13;
+
+                    return Container(
+                      color: Colors.white.withOpacity(0.94),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                        vertical: verticalPadding,
                       ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Add your onboarding image here',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.black.withOpacity(0.7),
-                          fontWeight: FontWeight.w700,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                pageIndex == 1
+                                    ? Icons.explore_rounded
+                                    : pageIndex == 2
+                                        ? Icons.upload_file_rounded
+                                        : Icons.trending_up_rounded,
+                                size: iconSize,
+                                color: _primary,
+                              ),
+                              SizedBox(height: topGap),
+                              Text(
+                                'Add your onboarding image here',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: _navy,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: titleFont,
+                                ),
+                              ),
+                              SizedBox(height: smallGap),
+                              Text(
+                                'Use $assetPath for this page.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: _navy.withOpacity(0.62),
+                                  fontSize: subtitleFont,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Use $assetPath for this page.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.black.withOpacity(0.55),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),
@@ -418,7 +496,7 @@ class _OnboardingIllustration extends StatelessWidget {
                   '0$pageIndex / 0$totalPages',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
                 ),
@@ -447,13 +525,14 @@ class _FeatureRow extends StatelessWidget {
           width: 22,
           height: 22,
           decoration: BoxDecoration(
-            color: accentColor.withOpacity(0.14),
+            color: Colors.white.withOpacity(0.18),
             shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withOpacity(0.22)),
           ),
-          child: Icon(
+          child: const Icon(
             Icons.check_rounded,
             size: 14,
-            color: accentColor,
+            color: Colors.white,
           ),
         ),
         const SizedBox(width: 12),
@@ -461,9 +540,10 @@ class _FeatureRow extends StatelessWidget {
           child: Text(
             text,
             style: const TextStyle(
+              color: Colors.white,
               fontSize: 15,
               height: 1.35,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -490,7 +570,7 @@ class _PillLabel extends StatelessWidget {
         text,
         style: const TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           fontSize: 12,
         ),
       ),
@@ -500,17 +580,28 @@ class _PillLabel extends StatelessWidget {
 
 class _GlowOrb extends StatelessWidget {
   final Color color;
+  final Color glowColor;
 
-  const _GlowOrb({required this.color});
+  const _GlowOrb({
+    required this.color,
+    required this.glowColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 180,
-      height: 180,
+      width: 190,
+      height: 190,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,
+        boxShadow: [
+          BoxShadow(
+            color: glowColor,
+            blurRadius: 45,
+            spreadRadius: 10,
+          ),
+        ],
       ),
     );
   }
