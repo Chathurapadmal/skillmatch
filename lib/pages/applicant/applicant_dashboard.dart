@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:skillmatch/pages/applicant/advanced/industry_forecast_screen.dart';
 import 'package:skillmatch/pages/applicant/advanced/roadmap_screen.dart';
 import 'package:skillmatch/pages/applicant/advanced/skill_verification_screen.dart';
 import 'package:skillmatch/pages/applicant/home/saved_jobs_screen.dart';
@@ -343,7 +344,18 @@ class ApplicantDashboard extends StatelessWidget {
                             child: _SecondaryActionCard(
                               icon: Icons.payments_outlined,
                               label: 'Salary\nTrends',
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => IndustryForecastScreen(
+                                      field: industry.trim().isEmpty
+                                          ? 'IT & Software'
+                                          : industry,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],

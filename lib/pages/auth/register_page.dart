@@ -42,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   bool _obscurePass = true;
   bool _obscureConfirm = true;
-  bool _enableTwoFa = false;
+  final bool _enableTwoFa = false;
 
   @override
   void dispose() {
@@ -337,8 +337,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   icon: Icons.business_rounded,
                   subtitle: 'Hire top talent',
                   selected: _selectedRole == UserRole.company,
-                  onTap: () =>
-                      setState(() => _selectedRole = UserRole.company),
+                  onTap: () => setState(() => _selectedRole = UserRole.company),
                 ),
               ),
             ],
@@ -460,8 +459,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       : Icons.visibility_off_outlined,
                   color: Colors.black54,
                 ),
-                onPressed: () =>
-                    setState(() => _obscurePass = !_obscurePass),
+                onPressed: () => setState(() => _obscurePass = !_obscurePass),
               ),
             ),
             validator: (v) {

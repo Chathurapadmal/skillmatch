@@ -11,7 +11,6 @@ import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../../shared/chat_overlay.dart';
 import '../../shared/notifications_center_screen.dart';
-import '../../shared/supabase_storage_page.dart';
 import '../../theme/app_theme.dart';
 
 part 'company_dashboard_overview_candidate.part.dart';

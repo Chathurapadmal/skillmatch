@@ -9,7 +9,6 @@ import '../models/user_model.dart';
 import 'applicant/jobs/browse_jobs_page.dart';
 import 'applicant/applicant_dashboard.dart';
 import 'applicant/upload_cv_page.dart';
-import 'company/company_dashboard.dart';
 
 class MainNavigationPage extends StatefulWidget {
   final UserModel user;
@@ -124,7 +123,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         index: _selectedIndex,
         children: pages.map((entry) => entry.page).toList(),
       ),
-
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(
