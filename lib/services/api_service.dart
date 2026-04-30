@@ -47,17 +47,16 @@ class ApiService {
 
   static const String _defaultLocalBaseUrl = 'http://localhost:5000';
   
-  // Production backend (Vercel) - this is now the primary URL
+  // Production backend (Vercel) - fallback only
   static const String _vercelBackendUrl = 'https://skillmatch-ed2u.vercel.app';
 
   static const List<String> _androidCandidates = <String>[
-    _vercelBackendUrl, // Try Vercel first  
+    'http://127.0.0.1:5000',
+    'http://localhost:5000',
     'http://10.0.2.2:5000',
     'http://192.168.240.1:5000',
     'http://192.168.1.103:5000',
-    'http://127.0.0.1:5000',
-    'http://localhost:5000',
-    'https://skillmatch-ed2u.vercel.app',
+    _vercelBackendUrl, // Try Vercel last
   ];
 
   static Future<bool> _isHealthy(String baseUrl) async {
