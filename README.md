@@ -17,7 +17,7 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Chatbot API setup
 
-1. Go to [backside/.env.example](backside/.env.example) and create `backside/.env`.
+1. Go to [backend/.env.example](backend/.env.example) and create `backend/.env`.
 2. Add your key:
 
 	```env
@@ -28,7 +28,7 @@ samples, guidance on mobile development, and a full API reference.
 3. Start backend:
 
 	```bash
-	cd backside
+	cd backend
 	npm start
 	```
 

@@ -66,8 +66,8 @@ Successfully implemented OTP for password reset, 2FA for registration, email ver
 
 ### 5. **Backend Email Endpoint**
 ✅ **Files Modified:**
-- `backside/server.js` - MODIFIED
-- `backside/package.json` - MODIFIED
+- `backend/server.js` - MODIFIED
+- `backend/package.json` - MODIFIED
 
 **Endpoint:** `POST /api/send-email`
 - **Parameters:** `to`, `subject`, `text`, `html`
@@ -86,7 +86,7 @@ Successfully implemented OTP for password reset, 2FA for registration, email ver
 4. Copy the password
 
 ### Step 2: Configure Backend
-Update `backside/.env`:
+Update `backend/.env`:
 ```env
 GMAIL_EMAIL=contact.skillmatchteam@gmail.com
 GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx

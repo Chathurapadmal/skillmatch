@@ -36,14 +36,21 @@ Thumbs.db
 **/captures/
 
 # Backend / Node dependencies
-backside/node_modules/
+backend/node_modules/
+backend/npm-debug.log*
+backend/yarn-error.log*
+backend/*firebase-adminsdk*.json
+backend/serviceAccountKey.json
+backend/firebase-service-account.json
+backend/service-account.json
+backend/.env
+backend/.env.local
+backend/.env.*.local
 
-backside/npm-debug.log*
-backside/yarn-error.log*
-backside/*firebase-adminsdk*.json
-backside/serviceAccountKey.json
-backside/firebase-service-account.json
-backside/service-account.json
+# Frontend environment files
+.env
+.env.local
+.env.*.local
 
 # Secret files
 **/google-services.json
@@ -78,7 +85,7 @@ android/build.gradle.kts
 android/settings.gradle
 android/app/build.gradle
 
-backside/node_modules/data-uri-to-buffer/src/index.ts
+backend/node_modules/data-uri-to-buffer/src/index.ts
 
 # Ignore accidentally committed Firebase admin SDK keys
 /backend/skillmatch-b37cd-firebase-adminsdk-fbsvc-36fce512ed.json

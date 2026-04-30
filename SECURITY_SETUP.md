@@ -54,18 +54,18 @@
 - Currently configured to call `http://localhost:5000/api/send-email`
 
 ### 6. **Backend Email Endpoint**
-**File**: `backside/server.js` (MODIFIED)
+**File**: `backend/server.js` (MODIFIED)
 - Added nodemailer integration
 - New endpoint: `POST /api/send-email`
 - Accepts: `to`, `subject`, `text`, `html`
 - Uses Gmail SMTP with app password authentication
 - Sends from: `contact.skillmatchteam@gmail.com`
 
-**File**: `backside/package.json` (MODIFIED)
+**File**: `backend/package.json` (MODIFIED)
 - Added `nodemailer` dependency
 
 ### 7. **Configuration Files**
-**File**: `backside/.env.example` (EXISTS)
+**File**: `backend/.env.example` (EXISTS)
 - Need to add/update: `GMAIL_EMAIL` and `GMAIL_APP_PASSWORD`
 
 ---
@@ -79,7 +79,7 @@
    - Go to: https://myaccount.google.com/apppasswords
    - Select "Mail" and "Windows Computer"
    - Copy the 16-character password
-4. Update `backside/.env`:
+4. Update `backend/.env`:
    ```
    GMAIL_EMAIL=contact.skillmatchteam@gmail.com
    GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx

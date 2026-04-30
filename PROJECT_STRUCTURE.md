@@ -35,7 +35,7 @@
 
 ## Backend
 
-- `backside/` - Node/Express chatbot and job API
+- `backend/` - Node/Express chatbot and job API
 
 ## Cleanup Performed
 
