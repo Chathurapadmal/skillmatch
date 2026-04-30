@@ -370,7 +370,10 @@ app.post('/api/generate', async (req, res) => {
   }
 
   if (!openai) {
-    return res.status(500).json({ error: 'Missing OPENAI_API_KEY' });
+    return res.status(503).json({ 
+      error: 'AI features are not available. Please configure OPENAI_API_KEY in backend/.env',
+      code: 'AI_NOT_CONFIGURED'
+    });
   }
 
   const safeHistory = Array.isArray(history)
@@ -400,14 +403,24 @@ app.post('/api/generate', async (req, res) => {
   } catch (error) {
     const errorMsg = error?.message || error?.error?.message || String(error);
     console.error('OpenAI Error:', errorMsg);
-    console.error('Full error:', error);
-    res.status(500).json({ error: errorMsg || 'Failed to generate text' });
+    const statusCode = error?.status === 401 ? 401 : 500;
+    const errorResponse = error?.status === 401 
+      ? { error: 'Invalid OpenAI API key. Please add a valid key to backend/.env', code: 'INVALID_API_KEY' }
+      : { error: errorMsg || 'Failed to generate text' };
+    res.status(statusCode).json(errorResponse);
   }
 });
 
 app.post('/api/roadmap', async (req, res) => {
   const field = sanitizeText(req.body?.field, 'IT & Software');
   const skills = sanitizeSkills(req.body?.skills);
+
+  if (!openai) {
+    return res.status(503).json({ 
+      error: 'AI features are not available. Please configure OPENAI_API_KEY in backend/.env',
+      code: 'AI_NOT_CONFIGURED'
+    });
+  }
 
   try {
     const payload = await generateJson({
@@ -466,13 +479,24 @@ Rules:
   } catch (error) {
     const errorMsg = error?.message || error?.error?.message || String(error);
     console.error('Roadmap API Error:', errorMsg);
-    res.status(500).json({ error: errorMsg || 'Failed to generate roadmap' });
+    const statusCode = error?.status === 401 ? 401 : 500;
+    const errorResponse = error?.status === 401 
+      ? { error: 'Invalid OpenAI API key. Please add a valid key to backend/.env', code: 'INVALID_API_KEY' }
+      : { error: errorMsg || 'Failed to generate roadmap' };
+    res.status(statusCode).json(errorResponse);
   }
 });
 
 app.post('/api/trends', async (req, res) => {
   const field = sanitizeText(req.body?.field, 'IT & Software');
   const skills = sanitizeSkills(req.body?.skills);
+
+  if (!openai) {
+    return res.status(503).json({ 
+      error: 'AI features are not available. Please configure OPENAI_API_KEY in backend/.env',
+      code: 'AI_NOT_CONFIGURED'
+    });
+  }
 
   try {
     const payload = await generateJson({
@@ -529,7 +553,11 @@ Rules:
   } catch (error) {
     const errorMsg = error?.message || error?.error?.message || String(error);
     console.error('Trends API Error:', errorMsg);
-    res.status(500).json({ error: errorMsg || 'Failed to generate trends' });
+    const statusCode = error?.status === 401 ? 401 : 500;
+    const errorResponse = error?.status === 401 
+      ? { error: 'Invalid OpenAI API key. Please add a valid key to backend/.env', code: 'INVALID_API_KEY' }
+      : { error: errorMsg || 'Failed to generate trends' };
+    res.status(statusCode).json(errorResponse);
   }
 });
 
@@ -538,6 +566,13 @@ app.post('/api/skill-quiz', async (req, res) => {
   const skill = sanitizeText(req.body?.skill, field);
   const questionCount = Math.min(8, Math.max(3, Number(req.body?.questionCount) || 5));
   const skills = sanitizeSkills(req.body?.skills);
+
+  if (!openai) {
+    return res.status(503).json({ 
+      error: 'AI features are not available. Please configure OPENAI_API_KEY in backend/.env',
+      code: 'AI_NOT_CONFIGURED'
+    });
+  }
 
   try {
     const payload = await generateJson({
@@ -590,7 +625,11 @@ Rules:
   } catch (error) {
     const errorMsg = error?.message || error?.error?.message || String(error);
     console.error('Skill Quiz API Error:', errorMsg);
-    res.status(500).json({ error: errorMsg || 'Failed to generate skill quiz' });
+    const statusCode = error?.status === 401 ? 401 : 500;
+    const errorResponse = error?.status === 401 
+      ? { error: 'Invalid OpenAI API key. Please add a valid key to backend/.env', code: 'INVALID_API_KEY' }
+      : { error: errorMsg || 'Failed to generate skill quiz' };
+    res.status(statusCode).json(errorResponse);
   }
 });
 
