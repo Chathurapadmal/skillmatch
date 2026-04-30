@@ -57,6 +57,7 @@ class ApiService {
     'http://192.168.1.103:5000',
     'http://127.0.0.1:5000',
     'http://localhost:5000',
+    'https://skillmatch-ed2u.vercel.app',
   ];
 
   static Future<bool> _isHealthy(String baseUrl) async {
