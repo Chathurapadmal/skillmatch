@@ -37,8 +37,7 @@ Thumbs.db
 
 # Backend / Node dependencies
 backside/node_modules/
-backside/.env
-backside/.env.*
+
 backside/npm-debug.log*
 backside/yarn-error.log*
 backside/*firebase-adminsdk*.json
