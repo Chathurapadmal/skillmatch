@@ -1,10 +1,19 @@
 {
   "version": 2,
+  "buildCommand": "npm install",
   "builds": [
-    { "src": "backside/api/**/*.js", "use": "@vercel/node" }
+    { "src": "backend/api/**/*.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/backside/api/$1.js" },
-    { "src": "/health", "dest": "/backside/api/health.js" }
+    { "src": "/api/health", "dest": "/backend/api/health.js" },
+    { "src": "/health", "dest": "/backend/api/health.js" },
+    { "src": "/api/send-email", "dest": "/backend/api/send-email.js", "methods": ["POST", "OPTIONS"] },
+    { "src": "/api/auth/reset-password", "dest": "/backend/api/auth/reset-password.js", "methods": ["POST", "OPTIONS"] },
+    { "src": "/api/auth/verify-email", "dest": "/backend/api/auth/verify-email.js", "methods": ["POST", "OPTIONS"] },
+    { "src": "/api/generate", "dest": "/backend/api/generate.js", "methods": ["POST", "OPTIONS"] },
+    { "src": "/api/roadmap", "dest": "/backend/api/roadmap.js", "methods": ["POST", "OPTIONS"] },
+    { "src": "/api/trends", "dest": "/backend/api/trends.js", "methods": ["POST", "OPTIONS"] },
+    { "src": "/api/skill-quiz", "dest": "/backend/api/skill-quiz.js", "methods": ["POST", "OPTIONS"] },
+    { "src": "/api/jobs", "dest": "/backend/api/jobs.js", "methods": ["GET", "OPTIONS"] }
   ]
 }
