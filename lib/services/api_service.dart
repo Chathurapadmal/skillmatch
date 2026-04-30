@@ -43,6 +43,7 @@ class JobSearchResponse {
 
 class ApiService {
   static String? _resolvedBaseUrl;
+  static String? _manualBackendUrl; // User can set this manually
 
   static const String _defaultLocalBaseUrl = 'http://localhost:5000';
   
@@ -59,8 +60,15 @@ class ApiService {
 
   static Future<bool> _isHealthy(String baseUrl) async {
     try {
-      final response = await http
+      // Try /health first (local development)
+      var response = await http
           .get(Uri.parse('$baseUrl/health'))
+          .timeout(const Duration(seconds: 2));
+      if (response.statusCode == 200) return true;
+
+      // Try /api/health (Vercel deployment)
+      response = await http
+          .get(Uri.parse('$baseUrl/api/health'))
           .timeout(const Duration(seconds: 2));
       return response.statusCode == 200;
     } catch (_) {
@@ -68,15 +76,40 @@ class ApiService {
     }
   }
 
+  /// Manually set the backend URL (useful when auto-detection fails)
+  static void setBackendUrl(String url) {
+    _manualBackendUrl = url;
+    _resolvedBaseUrl = url;
+    debugPrint('Backend URL manually set to: $url');
+  }
+
+  /// Reset the backend URL to auto-detection mode
+  static void resetBackendUrl() {
+    _manualBackendUrl = null;
+    _resolvedBaseUrl = null;
+  }
+
+  /// Get the currently configured backend URL (for display/settings)
+  static Future<String> getCurrentBackendUrl() async {
+    return _resolveBaseUrl();
+  }
+
   static Future<String> _resolveBaseUrl() async {
+    // 1. Check if user manually set a URL
+    if (_manualBackendUrl != null) {
+      return _manualBackendUrl!;
+    }
+
     if (_resolvedBaseUrl != null) return _resolvedBaseUrl!;
 
+    // 2. Check environment variable
     const configuredBaseUrl = String.fromEnvironment('API_BASE_URL');
     if (configuredBaseUrl.isNotEmpty) {
       _resolvedBaseUrl = configuredBaseUrl;
       return configuredBaseUrl;
     }
 
+    // 3. Auto-detect by testing candidates
     final candidates = <String>[
       if (kIsWeb)
         _defaultLocalBaseUrl
@@ -94,6 +127,7 @@ class ApiService {
       }
     }
 
+    // 4. Fallback to first candidate if none are healthy
     _resolvedBaseUrl = candidates.first;
     return _resolvedBaseUrl!;
   }

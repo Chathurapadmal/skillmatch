@@ -6,6 +6,7 @@ import 'package:skillmatch/pages/applicant/settings/privacy_security_screen.dart
 import 'package:skillmatch/services/auth_service.dart';
 import 'package:skillmatch/theme/app_theme.dart';
 import 'package:skillmatch/theme/skillmatch_theme.dart';
+import 'backend_settings_dialog.dart';
 
 class ApplicantDashboardMenuButton extends StatefulWidget {
   final String? displayName;
@@ -157,6 +158,12 @@ class _ApplicantDashboardMenuButtonState
     );
   }
 
+  void _openBackendSettings() {
+    _hideMenu();
+    if (!mounted) return;
+    showBackendSettingsDialog(context);
+  }
+
   Future<void> _signOut() async {
     _hideMenu();
     await AuthService.signOut();
@@ -221,6 +228,11 @@ class _ApplicantDashboardMenuButtonState
           icon: Icons.privacy_tip_outlined,
           label: 'Privacy & Security',
           onTap: _openPrivacy,
+        ),
+        _MenuActionTile(
+          icon: Icons.router_outlined,
+          label: 'Backend Server',
+          onTap: _openBackendSettings,
         ),
         _MenuActionTile(
           icon: Icons.logout,
