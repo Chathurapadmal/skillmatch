@@ -131,6 +131,49 @@ SkillMatch Team
     );
   }
 
+  /// Send a password reset notification email through the backend.
+  ///
+  /// This no longer uses Firebase Auth's built-in reset email flow.
+  static Future<bool> sendPasswordResetNotification({
+    required String to,
+    String userName = 'User',
+  }) async {
+    const subject = 'Password Reset Request Received';
+    final body = '''
+Hello $userName,
+
+We received a password reset request for your SkillMatch account.
+
+If you requested this inside the app, continue with the next step shown in the app.
+If you did not request this, you can safely ignore this email.
+
+Best regards,
+SkillMatch Team
+''';
+
+    final htmlBody = '''
+<html>
+  <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h2 style="color: #1565C0; text-align: center;">SkillMatch</h2>
+      <h3 style="color: #333;">$subject</h3>
+      <p style="color: #666;">Hello $userName,</p>
+      <p style="color: #666; margin-bottom: 20px;">We received a password reset request for your SkillMatch account.</p>
+      <p style="color: #666; margin-bottom: 20px;">If you requested this inside the app, continue with the next step shown in the app. If you did not request this, you can safely ignore this email.</p>
+      <p style="color: #999; font-size: 14px; margin-top: 20px;">Best regards,<br>SkillMatch Team</p>
+    </div>
+  </body>
+</html>
+''';
+
+    return sendEmail(
+      to: to,
+      subject: subject,
+      body: body,
+      htmlBody: htmlBody,
+    );
+  }
+
   /// Send application confirmation email to applicant
   static Future<bool> sendApplicationConfirmationEmail({
     required String to,

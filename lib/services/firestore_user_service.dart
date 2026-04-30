@@ -18,8 +18,14 @@ class FirestoreUserService {
       final snap = await _db.collection('users').doc(uid).get();
       if (!snap.exists) return null;
       return UserModel.fromFirestore(snap);
-    } catch (_) {
-      return null;
+    } on FirebaseException catch (e) {
+      // Surface permission errors to the caller so the auth gate can
+      // show a clear permission-denied state. For other errors, rethrow.
+      if (e.code == 'permission-denied' ||
+          e.message?.contains('permission-denied') == true) {
+        throw Exception('Firestore permission-denied: ${e.message}');
+      }
+      rethrow;
     }
   }
 

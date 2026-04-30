@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/otp_email_service.dart';
-import '../../services/email_service.dart';
 
 const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
@@ -10,13 +9,17 @@ const Color _background = Color(0xFFF8FAFC);
 class OtpVerificationPage extends StatefulWidget {
   final String email;
   final String purpose; // 'password_reset' or 'email_verification'
-  final VoidCallback onSuccess;
+  final Future<void> Function()? onSuccess;
+  final WidgetBuilder? successPageBuilder;
+  final bool closeOnSuccess;
 
   const OtpVerificationPage({
     super.key,
     required this.email,
     required this.purpose,
-    required this.onSuccess,
+    this.onSuccess,
+    this.successPageBuilder,
+    this.closeOnSuccess = true,
   });
 
   @override
@@ -74,13 +77,6 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         purpose: widget.purpose,
       );
 
-      // In production, send email via backend
-      await EmailService.sendOtpEmail(
-        to: widget.email,
-        otp: 'Check app for OTP',
-        purpose: widget.purpose,
-      );
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -130,8 +126,22 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         ),
       );
 
-      widget.onSuccess();
-      Navigator.pop(context);
+      if (widget.successPageBuilder != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: widget.successPageBuilder!),
+        );
+        return;
+      }
+
+      if (widget.onSuccess != null) {
+        await widget.onSuccess!.call();
+      }
+
+      if (!mounted) return;
+      if (widget.closeOnSuccess && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(

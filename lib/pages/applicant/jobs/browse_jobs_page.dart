@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../services/api_service.dart';
+import '../../../services/auth_service.dart';
+import '../../auth/otp_verification_page.dart';
 import '../../../theme/app_theme.dart';
 
 const Color _primary = Color(0xFF1565C0);
@@ -361,15 +363,16 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
         return;
       }
 
-      final uid = FirebaseAuth.instance.currentUser?.uid;
       final currentUser = FirebaseAuth.instance.currentUser;
+      final uid = currentUser?.uid;
       
       if (uid == null) {
         throw Exception('Please sign in to apply for this job.');
       }
 
       // Check if email is verified
-      if (currentUser != null && !currentUser.emailVerified) {
+      final localEmailVerified = await AuthService.isEmailVerifiedLocally(uid);
+      if (!localEmailVerified) {
         if (!mounted) return;
         final shouldVerify = await showDialog<bool>(
           context: context,
@@ -393,12 +396,27 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
 
         if (shouldVerify == true) {
           if (!mounted) return;
-          await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+          await AuthService.sendEmailVerification();
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Verification email sent. Check your inbox.'),
-              backgroundColor: _primary,
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OtpVerificationPage(
+                email: currentUser?.email ?? '',
+                purpose: 'email_verification',
+                onSuccess: () async {
+                  await AuthService.confirmEmailVerification(
+                    email: currentUser?.email ?? '',
+                  );
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Email verified successfully.'),
+                      backgroundColor: _primary,
+                    ),
+                  );
+                },
+              ),
             ),
           );
         }
@@ -586,12 +604,11 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                               Expanded(
                                 child: TextField(
                                   controller: _locationController,
-                                  textInputAction: TextInputAction.done,
+                                  textInputAction: TextInputAction.search,
                                   onSubmitted: (_) => _searchJobs(),
                                   style: const TextStyle(color: _navy),
                                   decoration: InputDecoration(
-                                    hintText:
-                                        'Location (e.g. remote, new york)',
+                                    hintText: 'Location (e.g. remote, new york)',
                                     hintStyle:
                                         const TextStyle(color: _mutedText),
                                     prefixIcon: const Icon(
@@ -602,13 +619,13 @@ class _BrowseJobsPageState extends State<BrowseJobsPage> {
                                     fillColor: _background,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                          color: _cardBorder),
+                                      borderSide:
+                                          const BorderSide(color: _cardBorder),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                          color: _cardBorder),
+                                      borderSide:
+                                          const BorderSide(color: _cardBorder),
                                     ),
                                   ),
                                 ),

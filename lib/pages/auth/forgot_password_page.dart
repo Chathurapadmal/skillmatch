@@ -2,9 +2,8 @@ import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
-import '../../services/otp_email_service.dart';
-import '../../services/email_service.dart';
 import 'otp_verification_page.dart';
+import 'reset_password_page.dart';
 
 const Color _primary = Color(0xFF1565C0);
 const Color _navy = Color(0xFF1E3A5F);
@@ -23,8 +22,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _emailCtrl = TextEditingController();
 
   bool _loading = false;
-  bool _sent = false;
-  String _userEmail = '';
 
   @override
   void dispose() {
@@ -39,36 +36,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     try {
       final email = _emailCtrl.text.trim();
-      
-      // Generate and send OTP
-      await OtpEmailService.sendOtpToEmail(
-        email: email,
-        purpose: 'password_reset',
-      );
 
-      // Send OTP via email
-      await EmailService.sendOtpEmail(
-        to: email,
-        otp: 'Check your app for OTP',
-        purpose: 'password_reset',
-      );
+      await AuthService.sendPasswordResetEmail(email);
 
       if (!mounted) return;
-      
-      setState(() {
-        _userEmail = email;
-        _sent = true;
-      });
 
-      // Navigate to OTP verification
-      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => OtpVerificationPage(
             email: email,
             purpose: 'password_reset',
-            onSuccess: _onOtpVerified,
+            successPageBuilder: (_) => ResetPasswordPage(email: email),
           ),
         ),
       );
@@ -99,29 +78,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  void _onOtpVerified() {
-    // OTP verified, now send password reset email from Firebase
-    AuthService.sendPasswordResetEmail(_userEmail).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Password reset email sent. Check your email.',
-          ),
-          backgroundColor: _primary,
-        ),
-      );
-      // Navigate back to login
-      Navigator.popUntil(context, (route) => route.isFirst);
-    }).catchError((e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    });
   }
 
   @override
@@ -236,7 +192,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(26),
-                              child: _sent ? _successBody() : _formBody(),
+                              child: _formBody(),
                             ),
                           ),
                         ),
@@ -399,84 +355,4 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 
-  Widget _successBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 74,
-          height: 74,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.16),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.28),
-            ),
-          ),
-          child: const Icon(
-            Icons.check_circle_rounded,
-            size: 42,
-            color: Colors.white,
-          ),
-        ),
-
-        const SizedBox(height: 22),
-
-        const Text(
-          'Email Sent!',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            letterSpacing: -0.3,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        Text(
-          'Check your inbox at ${_emailCtrl.text.trim()}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
-            height: 1.35,
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            height: 52,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [_primary, _accent],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: _primary.withOpacity(0.38),
-                  blurRadius: 24,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: const Text(
-              'Back to Login',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 15,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }

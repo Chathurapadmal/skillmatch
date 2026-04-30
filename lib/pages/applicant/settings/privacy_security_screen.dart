@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:skillmatch/services/auth_service.dart';
+import 'package:skillmatch/pages/auth/reset_password_page.dart';
 import '../../../shared/applicant_notification_button.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
@@ -34,7 +35,6 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
 
   static const info = Color(0xFF2E86AB);
   static const error = Colors.red;
-  static const success = Color(0xFF2E86AB);
 
   @override
   void initState() {
@@ -75,17 +75,16 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
               child: const Text('Cancel', style: TextStyle(color: textMuted))),
           TextButton(
             onPressed: () async {
-              final email = FirebaseAuth.instance.currentUser?.email ?? '';
+              final email = AuthService.currentUser?.email ?? '';
               if (email.isNotEmpty) {
-                await FirebaseAuth.instance
-                    .sendPasswordResetEmail(email: email);
+                await AuthService.sendPasswordResetEmail(email);
               }
               if (mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Password reset email sent!'),
-                      backgroundColor: success),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ResetPasswordPage(email: email),
+                  ),
                 );
               }
             },

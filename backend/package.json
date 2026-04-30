@@ -1,0 +1,25 @@
+{
+  "name": "backside",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "data-uri-to-buffer": "^8.0.0",
+    "dotenv": "^17.4.0",
+    "firebase-admin": "^13.6.0",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.7",
+    "openai": "^6.33.0",
+    "path-to-regexp": "^8.4.2"
+  }
+}

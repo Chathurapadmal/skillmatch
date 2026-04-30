@@ -58,10 +58,12 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   Future<void> _checkVerification() async {
     setState(() => _checking = true);
     try {
-      final verified = await AuthService.reloadAndCheckEmailVerified();
+      await AuthService.markEmailVerifiedLocally();
+      final verified = await AuthService.isEmailVerifiedLocally();
       if (!mounted) return;
       if (verified) {
-        _showSnack('Email verified! Setting up 2FA…', isError: false);
+        _showSnack('Email verified locally!', isError: false);
+        Navigator.pop(context);
       } else {
         _showSnack('Email not verified yet. Please check your inbox.');
       }

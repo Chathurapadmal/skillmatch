@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
 import 'dart:developer' as developer;
 import 'email_service.dart';
@@ -8,10 +7,9 @@ import 'email_service.dart';
 /// Handles generation, storage, and verification of one-time passwords (OTPs)
 /// for password reset and email verification flows.
 class OtpEmailService {
-  static final _firestore = FirebaseFirestore.instance;
-  static const String _otpCollection = 'otp_codes';
   static const int _otpLength = 6;
   static const int _expirationMinutes = 15;
+  static final Map<String, _OtpRecord> _otpCache = <String, _OtpRecord>{};
 
   /// Generate a 6-digit OTP
   static String generateOtp() {
@@ -22,7 +20,7 @@ class OtpEmailService {
     ).join();
   }
 
-  /// Send OTP to user's email (stored in Firestore)
+  /// Send OTP to user's email (stored locally in memory for development)
   static Future<void> sendOtpToEmail({
     required String email,
     required String purpose, // 'password_reset' or 'email_verification'
@@ -32,16 +30,12 @@ class OtpEmailService {
       Duration(minutes: _expirationMinutes),
     );
 
-    // Store OTP in Firestore
-    await _firestore.collection(_otpCollection).doc(email).set({
-      'email': email,
-      'otp': otp,
-      'purpose': purpose,
-      'createdAt': FieldValue.serverTimestamp(),
-      'expiresAt': expiresAt,
-      'verified': false,
-      'attempts': 0,
-    });
+    _otpCache[email] = _OtpRecord(
+      email: email,
+      otp: otp,
+      purpose: purpose,
+      expiresAt: expiresAt,
+    );
 
     // Send the OTP via the backend email endpoint (Nodemailer)
     try {
@@ -68,49 +62,41 @@ class OtpEmailService {
     required String purpose,
   }) async {
     try {
-      final doc = await _firestore.collection(_otpCollection).doc(email).get();
+      final record = _otpCache[email];
 
-      if (!doc.exists) {
+      if (record == null) {
         throw Exception('OTP not found. Please request a new one.');
       }
 
-      final data = doc.data()!;
-      final storedOtp = data['otp'] as String?;
-      final storedPurpose = data['purpose'] as String?;
-      final expiresAt = (data['expiresAt'] as Timestamp).toDate();
-      final attempts = (data['attempts'] as int?) ?? 0;
+      final attempts = record.attempts;
 
       // Check if expired
-      if (DateTime.now().isAfter(expiresAt)) {
-        await doc.reference.delete();
+      if (DateTime.now().isAfter(record.expiresAt)) {
+        _otpCache.remove(email);
         throw Exception('OTP has expired. Please request a new one.');
       }
 
       // Check attempts (max 5)
       if (attempts >= 5) {
-        await doc.reference.delete();
+        _otpCache.remove(email);
         throw Exception(
           'Too many failed attempts. Please request a new OTP.',
         );
       }
 
       // Check purpose
-      if (storedPurpose != purpose) {
+      if (record.purpose != purpose) {
         throw Exception('OTP purpose does not match.');
       }
 
       // Verify code
-      if (storedOtp != code.trim()) {
-        // Increment attempts
-        await doc.reference.update({'attempts': attempts + 1});
+      if (record.otp != code.trim()) {
+        _otpCache[email] = record.copyWith(attempts: attempts + 1);
         throw Exception('Invalid OTP. Please try again.');
       }
 
       // Mark as verified
-      await doc.reference.update({
-        'verified': true,
-        'verifiedAt': FieldValue.serverTimestamp(),
-      });
+      _otpCache.remove(email);
 
       return true;
     } catch (e) {
@@ -120,25 +106,45 @@ class OtpEmailService {
 
   /// Get OTP for debugging (development only)
   static Future<String?> getOtpDebug(String email) async {
-    if (!identical(0, 0)) return null; // Always false in production
-    try {
-      final doc = await _firestore.collection(_otpCollection).doc(email).get();
-      return doc.data()?['otp'] as String?;
-    } catch (_) {
-      return null;
-    }
+    return _otpCache[email]?.otp;
   }
 
   /// Clean up expired OTPs
   static Future<void> cleanupExpiredOtps() async {
-    final now = Timestamp.now();
-    final query = await _firestore
-        .collection(_otpCollection)
-        .where('expiresAt', isLessThan: now)
-        .get();
+    final now = DateTime.now();
+    final expiredKeys = _otpCache.entries
+        .where((entry) => now.isAfter(entry.value.expiresAt))
+        .map((entry) => entry.key)
+        .toList();
 
-    for (final doc in query.docs) {
-      await doc.reference.delete();
+    for (final key in expiredKeys) {
+      _otpCache.remove(key);
     }
+  }
+}
+
+class _OtpRecord {
+  final String email;
+  final String otp;
+  final String purpose;
+  final DateTime expiresAt;
+  final int attempts;
+
+  const _OtpRecord({
+    required this.email,
+    required this.otp,
+    required this.purpose,
+    required this.expiresAt,
+    this.attempts = 0,
+  });
+
+  _OtpRecord copyWith({int? attempts}) {
+    return _OtpRecord(
+      email: email,
+      otp: otp,
+      purpose: purpose,
+      expiresAt: expiresAt,
+      attempts: attempts ?? this.attempts,
+    );
   }
 }

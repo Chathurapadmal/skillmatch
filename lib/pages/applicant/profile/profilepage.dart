@@ -4,6 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:skillmatch/pages/applicant/upload_cv_page.dart';
+import 'package:skillmatch/pages/auth/otp_verification_page.dart';
+import 'package:skillmatch/services/auth_service.dart';
 import 'package:skillmatch/widgets/supabase_image_widget.dart';
 import '../../../shared/chat_overlay.dart';
 
@@ -135,7 +137,8 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!_formKey.currentState!.validate()) return;
 
     // Check if email is verified
-    if (!_user.emailVerified) {
+    final localEmailVerified = await AuthService.isEmailVerifiedLocally(_user.uid);
+    if (!localEmailVerified) {
       if (!mounted) return;
       final shouldVerify = await showDialog<bool>(
         context: context,
@@ -159,12 +162,27 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (shouldVerify == true) {
         if (!mounted) return;
-        await _user.sendEmailVerification();
+        await AuthService.sendEmailVerification();
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification email sent. Check your inbox.'),
-            backgroundColor: _ProfileColors.primary,
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OtpVerificationPage(
+              email: _user.email ?? '',
+              purpose: 'email_verification',
+              onSuccess: () async {
+                await AuthService.confirmEmailVerification(
+                  email: _user.email ?? '',
+                );
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Email verified successfully.'),
+                    backgroundColor: _ProfileColors.primary,
+                  ),
+                );
+              },
+            ),
           ),
         );
       }
@@ -512,18 +530,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Expanded(
                                   child: OutlinedButton(
                                     onPressed: () => Navigator.pop(context),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: _ProfileColors.navy,
-                                      side: const BorderSide(
-                                        color: _ProfileColors.border,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                    ),
                                     child: const Text(
                                       'Cancel',
                                       style: TextStyle(

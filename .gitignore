@@ -41,6 +41,10 @@ backside/.env
 backside/.env.*
 backside/npm-debug.log*
 backside/yarn-error.log*
+backside/*firebase-adminsdk*.json
+backside/serviceAccountKey.json
+backside/firebase-service-account.json
+backside/service-account.json
 
 # Secret files
 **/google-services.json
@@ -76,3 +80,6 @@ android/settings.gradle
 android/app/build.gradle
 
 backside/node_modules/data-uri-to-buffer/src/index.ts
+
+# Ignore accidentally committed Firebase admin SDK keys
+/backend/skillmatch-b37cd-firebase-adminsdk-fbsvc-36fce512ed.json

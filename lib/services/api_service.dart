@@ -45,6 +45,8 @@ class ApiService {
   static String? _resolvedBaseUrl;
 
   static const String _defaultLocalBaseUrl = 'http://localhost:5000';
+  
+  static const String _vercelBackendUrl = 'https://skillmatch-ed2u.vercel.app';
 
   static const List<String> _androidCandidates = <String>[
     'http://10.0.2.2:5000',
@@ -52,6 +54,7 @@ class ApiService {
     'http://192.168.1.103:5000',
     'http://127.0.0.1:5000',
     'http://localhost:5000',
+    _vercelBackendUrl,
   ];
 
   static Future<bool> _isHealthy(String baseUrl) async {
@@ -167,6 +170,14 @@ class ApiService {
     } catch (e) {
       throw Exception('Error calling $path: $e');
     }
+  }
+
+  /// Public generic POST helper for backend APIs.
+  static Future<Map<String, dynamic>> postJson(
+    String path,
+    Map<String, dynamic> payload,
+  ) {
+    return _postJson(path, payload);
   }
 
   static Future<Map<String, dynamic>> generateRoadmap({

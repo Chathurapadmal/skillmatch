@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import 'api_service.dart';
+import 'otp_email_service.dart';
 import '../models/user_model.dart';
 import 'firestore_user_service.dart';
 import 'totp_service.dart';
@@ -13,11 +15,14 @@ class AuthService {
   static final _auth = FirebaseAuth.instance;
 
   // Development-only switch to bypass authentication gates.
-  // Keep this false for production behavior.
-  static const bool bypassAllAuthInDevelopment = false;
+  // Enable by running with: `flutter run --dart-define=DEV_AUTH_BYPASS=true`
+  // Keep this disabled in production builds.
+  static const bool bypassAllAuthInDevelopment = bool.fromEnvironment(
+    'DEV_AUTH_BYPASS',
+    defaultValue: false,
+  );
 
-  static bool get isDevelopmentAuthBypassEnabled =>
-      kDebugMode && bypassAllAuthInDevelopment;
+  static bool get isDevelopmentAuthBypassEnabled => kDebugMode && bypassAllAuthInDevelopment;
 
   // ── TOTP session flag ─────────────────────────────────────────────────────
   //
@@ -125,24 +130,67 @@ class AuthService {
 
   // ── Send/re-send email verification ──────────────────────────────────────
   static Future<void> sendEmailVerification() async {
-    await _auth.currentUser?.sendEmailVerification();
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    await OtpEmailService.sendOtpToEmail(
+      email: user.email ?? '',
+      purpose: 'email_verification',
+    );
   }
 
   // ── Reload Firebase user and check emailVerified ──────────────────────────
   static Future<bool> reloadAndCheckEmailVerified() async {
     final user = _auth.currentUser;
     if (user == null) return false;
-    await user.reload();
-    if (_auth.currentUser!.emailVerified) {
-      await FirestoreUserService.setEmailVerified(user.uid);
-      return true;
-    }
-    return false;
+    final model = await fetchUserModel(user.uid);
+    return model?.emailVerified ?? false;
   }
 
   // ── Forgot password ───────────────────────────────────────────────────────
   static Future<void> sendPasswordResetEmail(String email) async {
-    await _auth.sendPasswordResetEmail(email: email.trim());
+    await OtpEmailService.sendOtpToEmail(
+      email: email.trim(),
+      purpose: 'password_reset',
+    );
+  }
+
+  static Future<void> confirmPasswordReset({
+    required String email,
+    required String newPassword,
+  }) async {
+    await ApiService.postJson('/api/auth/reset-password', {
+      'email': email.trim(),
+      'newPassword': newPassword,
+    });
+  }
+
+  static Future<void> confirmEmailVerification({
+    required String email,
+  }) async {
+    await ApiService.postJson('/api/auth/verify-email', {
+      'email': email.trim(),
+    });
+
+    final user = _auth.currentUser;
+    if (user != null) {
+      await FirestoreUserService.setEmailVerified(user.uid);
+    }
+  }
+
+  // ── Mark email verified in Firestore without Firebase Auth email flow ─────
+  static Future<void> markEmailVerifiedLocally([String? uid]) async {
+    final userId = uid ?? _auth.currentUser?.uid;
+    if (userId == null) return;
+    await FirestoreUserService.setEmailVerified(userId);
+  }
+
+  // ── Check local Firestore email verified flag ─────────────────────────────
+  static Future<bool> isEmailVerifiedLocally([String? uid]) async {
+    final userId = uid ?? _auth.currentUser?.uid;
+    if (userId == null) return false;
+    final model = await fetchUserModel(userId);
+    return model?.emailVerified ?? false;
   }
 
   // ── Sign out ──────────────────────────────────────────────────────────────
